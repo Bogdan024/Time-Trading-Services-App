@@ -1,0 +1,17 @@
+<div class="card bg-base-100 mx-auto mt-10 w-full max-w-2xl p-8 shadow-xl">
+  <h1 class="text-primary mb-6 text-3xl font-bold">{{ title }}</h1>
+
+  <ul class="list">
+    @for (member of members(); track member.id) {
+      <li class="list-row items-center gap-4">
+        <img src="/user.png" alt="Member avatar" class="size-12 rounded-box" />
+        <div>
+          <div class="font-semibold">{{ member.displayName }}</div>
+          <div class="text-base-content/70 text-sm">{{ member.email }}</div>
+        </div>
+      </li>
+    } @empty {
+      <li class="text-base-content/70">No members found yet.</li>
+    }
+  </ul>
+</div>
