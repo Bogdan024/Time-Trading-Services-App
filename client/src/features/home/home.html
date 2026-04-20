@@ -1,0 +1,26 @@
+<div class="home-shell min-h-screen pt-5">
+  @if (!registerMode()) {
+    <section class="home-hero mx-auto grid max-w-7xl gap-10 px-4 py-8 lg:grid-cols-[1.2fr_0.8fr] lg:px-8">
+      <div class="home-copy">
+        <h1 class="civic-display mt-6 text-5xl font-semibold leading-tight text-slate-800 md:text-7xl">
+          Exchange time.
+        </h1>
+        <div class="mt-8 flex flex-wrap items-center gap-4">
+          <button (click)="showRegister(true)" class="btn home-primary btn-lg">Join the time bank</button>
+        </div>
+      </div>
+
+      <aside class="home-panel civic-card rounded-[2rem] p-6 md:p-8">
+        <div class="panel-header">
+          <div>
+            <h2 class="civic-display text-3xl font-semibold text-slate-800"></h2>
+          </div>
+        </div>
+      </aside>
+    </section>
+  } @else {
+    <div class="mx-auto flex min-h-screen max-w-7xl items-start justify-center px-4 py-14 lg:px-8">
+      <app-register class="w-full" (cancelRegister)="showRegister($event)" />
+    </div>
+  }
+</div>

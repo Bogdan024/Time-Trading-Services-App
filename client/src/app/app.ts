@@ -1,25 +1,18 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { firstValueFrom } from 'rxjs';
+import { Component, inject, OnInit } from '@angular/core';
+import { AccountService } from '../core/services/account-service';
+import { Home } from '../features/home/home';
+import { Nav } from '../layout/nav/nav';
 
 @Component({
   selector: 'app-root',
-  imports: [],
+  imports: [Nav, Home],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App implements OnInit {
-  private http = inject(HttpClient);
-  protected readonly title = 'Time Trading App';
-  protected readonly members = signal<any[]>([]);
+  private accountService = inject(AccountService);
 
-  async ngOnInit() {
-    this.members.set(await this.getMembers());
-  }
-
-  private async getMembers() {
-    return firstValueFrom(
-      this.http.get<any[]>('https://localhost:5001/api/members')
-    );
+  ngOnInit() {
+    this.accountService.restoreUser();
   }
 }
