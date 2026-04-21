@@ -1,18 +1,13 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { AccountService } from '../core/services/account-service';
-import { Home } from '../features/home/home';
+import { Component, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
 import { Nav } from '../layout/nav/nav';
 
 @Component({
   selector: 'app-root',
-  imports: [Nav, Home],
+  imports: [Nav, RouterOutlet],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
-export class App implements OnInit {
-  private accountService = inject(AccountService);
-
-  ngOnInit() {
-    this.accountService.restoreUser();
-  }
+export class App {
+  protected router = inject(Router);
 }

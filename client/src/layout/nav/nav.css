@@ -63,6 +63,11 @@
   padding: 0.7rem 1rem;
 }
 
+.nav-links a.nav-link-active {
+  background: rgba(15, 76, 92, 0.12);
+  color: var(--civic-teal);
+}
+
 .nav-links a:hover {
   background: rgba(15, 76, 92, 0.08);
   color: var(--civic-teal);

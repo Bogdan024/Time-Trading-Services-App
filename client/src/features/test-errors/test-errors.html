@@ -1,0 +1,23 @@
+<section class="mx-auto max-w-5xl px-4 py-10">
+  <div class="civic-card rounded-4xl p-8">
+    <h1 class="civic-display text-4xl font-semibold text-slate-800">
+      Test errors
+    </h1>
+
+    <div class="mt-6 flex flex-wrap gap-3">
+      <button class="btn rounded-full bg-[var(--civic-teal)] text-white" (click)="get500Error()">500</button>
+      <button class="btn rounded-full" (click)="get400Error()">400</button>
+      <button class="btn rounded-full" (click)="get401Error()">401</button>
+      <button class="btn rounded-full" (click)="get404Error()">404</button>
+      <button class="btn rounded-full" (click)="get400ValidationError()">Validation</button>
+    </div>
+
+    @if (validationErrors().length > 0) {
+      <div class="mt-6 rounded-3xl border border-red-200 bg-red-50 p-5 text-red-700">
+        @for (error of validationErrors(); track $index) {
+          <p>{{ error }}</p>
+        }
+      </div>
+    }
+  </div>
+</section>
