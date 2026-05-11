@@ -1,0 +1,284 @@
+[
+  {
+    "Id": "ana-id",
+    "Email": "ana@test.com",
+    "DisplayName": "Ana",
+    "AvatarUrl": "https://randomuser.me/api/portraits/women/44.jpg",
+    "About": "Neighbourhood organizer who likes practical exchanges and helping people feel welcome.",
+    "City": "Cluj-Napoca",
+    "CountryCode": "RO",
+    "CreatedAtUtc": "2024-01-12T09:00:00Z",
+    "LastActiveAtUtc": "2026-04-18T17:30:00Z",
+    "OfferedSkills": [
+      {
+        "Key": "home-cooking",
+        "Name": "Home cooking",
+        "Note": "Batch cooking and simple family meals"
+      },
+      {
+        "Key": "language-practice",
+        "Name": "Language practice",
+        "Note": "Romanian conversation for beginners"
+      }
+    ],
+    "NeedsHelpWith": [
+      {
+        "Key": "bike-repair",
+        "Name": "Bike repair",
+        "Note": "Brake adjustment and tire checks"
+      },
+      {
+        "Key": "garden-cleanup",
+        "Name": "Garden cleanup",
+        "Note": "Small shared courtyard tasks"
+      }
+    ],
+    "AvailabilitySlots": [
+      {
+        "DayOfWeek": "Tuesday",
+        "StartHour": 18,
+        "EndHour": 20,
+        "Mode": "InPerson"
+      },
+      {
+        "DayOfWeek": "Thursday",
+        "StartHour": 18,
+        "EndHour": 20,
+        "Mode": "Either"
+      }
+    ]
+  },
+  {
+    "Id": "matei-id",
+    "Email": "matei@test.com",
+    "DisplayName": "Matei",
+    "AvatarUrl": "https://randomuser.me/api/portraits/men/32.jpg",
+    "About": "Comfortable with tools, small fixes, and patient explanations.",
+    "City": "Brasov",
+    "CountryCode": "RO",
+    "CreatedAtUtc": "2024-03-05T11:15:00Z",
+    "LastActiveAtUtc": "2026-04-20T13:10:00Z",
+    "OfferedSkills": [
+      {
+        "Key": "basic-repairs",
+        "Name": "Basic repairs",
+        "Note": "Small household fixes"
+      },
+      {
+        "Key": "computer-setup",
+        "Name": "Computer setup",
+        "Note": "Printers, backups, and simple troubleshooting"
+      }
+    ],
+    "NeedsHelpWith": [
+      {
+        "Key": "spanish-practice",
+        "Name": "Spanish practice",
+        "Note": "Conversation practice"
+      },
+      {
+        "Key": "meal-prep",
+        "Name": "Meal prep",
+        "Note": "Simple vegetarian meals"
+      }
+    ],
+    "AvailabilitySlots": [
+      {
+        "DayOfWeek": "Saturday",
+        "StartHour": 9,
+        "EndHour": 12,
+        "Mode": "InPerson"
+      }
+    ]
+  },
+  {
+    "Id": "elena-id",
+    "Email": "elena@test.com",
+    "DisplayName": "Elena",
+    "AvatarUrl": "https://randomuser.me/api/portraits/women/68.jpg",
+    "About": "Teacher who enjoys trading study support for practical household help.",
+    "City": "Bucharest",
+    "CountryCode": "RO",
+    "CreatedAtUtc": "2024-05-22T08:45:00Z",
+    "LastActiveAtUtc": "2026-04-21T07:25:00Z",
+    "OfferedSkills": [
+      {
+        "Key": "math-tutoring",
+        "Name": "Math tutoring",
+        "Note": "Middle school and high school support"
+      },
+      {
+        "Key": "study-planning",
+        "Name": "Study planning",
+        "Note": "Exam schedules and revision routines"
+      }
+    ],
+    "NeedsHelpWith": [
+      {
+        "Key": "window-cleaning",
+        "Name": "Window cleaning",
+        "Note": "Apartment windows"
+      },
+      {
+        "Key": "moving-help",
+        "Name": "Moving help",
+        "Note": "Boxes and light furniture"
+      }
+    ],
+    "AvailabilitySlots": [
+      {
+        "DayOfWeek": "Monday",
+        "StartHour": 15,
+        "EndHour": 18,
+        "Mode": "Either"
+      },
+      {
+        "DayOfWeek": "Wednesday",
+        "StartHour": 15,
+        "EndHour": 18,
+        "Mode": "Remote"
+      }
+    ]
+  },
+  {
+    "Id": "darius-id",
+    "Email": "darius@test.com",
+    "DisplayName": "Darius",
+    "AvatarUrl": "https://randomuser.me/api/portraits/men/76.jpg",
+    "About": "Gardening fan who believes every block should share tools before buying new ones.",
+    "City": "Timisoara",
+    "CountryCode": "RO",
+    "CreatedAtUtc": "2024-07-14T14:20:00Z",
+    "LastActiveAtUtc": "2026-04-19T18:05:00Z",
+    "OfferedSkills": [
+      {
+        "Key": "gardening",
+        "Name": "Gardening",
+        "Note": "Plant care and seasonal cleanup"
+      },
+      {
+        "Key": "compost-setup",
+        "Name": "Compost setup",
+        "Note": "Small balcony or courtyard systems"
+      }
+    ],
+    "NeedsHelpWith": [
+      {
+        "Key": "app-setup",
+        "Name": "App setup",
+        "Note": "Phone and tablet setup"
+      },
+      {
+        "Key": "document-scanning",
+        "Name": "Document scanning",
+        "Note": "Organizing scanned paperwork"
+      }
+    ],
+    "AvailabilitySlots": [
+      {
+        "DayOfWeek": "Sunday",
+        "StartHour": 14,
+        "EndHour": 17,
+        "Mode": "InPerson"
+      }
+    ]
+  },
+  {
+    "Id": "irina-id",
+    "Email": "irina@test.com",
+    "DisplayName": "Irina",
+    "AvatarUrl": "https://randomuser.me/api/portraits/women/21.jpg",
+    "About": "Designer and dog person, happy to trade creative help for hands-on tasks.",
+    "City": "Iasi",
+    "CountryCode": "RO",
+    "CreatedAtUtc": "2024-09-02T10:30:00Z",
+    "LastActiveAtUtc": "2026-04-17T16:40:00Z",
+    "OfferedSkills": [
+      {
+        "Key": "flyer-design",
+        "Name": "Flyer design",
+        "Note": "Community event posters"
+      },
+      {
+        "Key": "dog-walking",
+        "Name": "Dog walking",
+        "Note": "Short local walks"
+      }
+    ],
+    "NeedsHelpWith": [
+      {
+        "Key": "shelf-installation",
+        "Name": "Shelf installation",
+        "Note": "Wall shelf mounting"
+      },
+      {
+        "Key": "language-practice",
+        "Name": "Language practice",
+        "Note": "German conversation"
+      }
+    ],
+    "AvailabilitySlots": [
+      {
+        "DayOfWeek": "Friday",
+        "StartHour": 10,
+        "EndHour": 13,
+        "Mode": "Remote"
+      },
+      {
+        "DayOfWeek": "Saturday",
+        "StartHour": 16,
+        "EndHour": 18,
+        "Mode": "Either"
+      }
+    ]
+  },
+  {
+    "Id": "sorin-id",
+    "Email": "sorin@test.com",
+    "DisplayName": "Sorin",
+    "AvatarUrl": "https://randomuser.me/api/portraits/men/55.jpg",
+    "About": "Retired electrician who likes useful, safe, well-done neighbourhood work.",
+    "City": "Sibiu",
+    "CountryCode": "RO",
+    "CreatedAtUtc": "2024-10-11T12:00:00Z",
+    "LastActiveAtUtc": "2026-04-20T09:50:00Z",
+    "OfferedSkills": [
+      {
+        "Key": "electrical-advice",
+        "Name": "Electrical advice",
+        "Note": "Safety checks and light fixture guidance"
+      },
+      {
+        "Key": "mentoring",
+        "Name": "Mentoring",
+        "Note": "Practical skills and project planning"
+      }
+    ],
+    "NeedsHelpWith": [
+      {
+        "Key": "grocery-pickup",
+        "Name": "Grocery pickup",
+        "Note": "Occasional heavy items"
+      },
+      {
+        "Key": "photo-backup",
+        "Name": "Photo backup",
+        "Note": "Phone photos to cloud storage"
+      }
+    ],
+    "AvailabilitySlots": [
+      {
+        "DayOfWeek": "Tuesday",
+        "StartHour": 9,
+        "EndHour": 11,
+        "Mode": "InPerson"
+      },
+      {
+        "DayOfWeek": "Thursday",
+        "StartHour": 9,
+        "EndHour": 11,
+        "Mode": "InPerson"
+      }
+    ]
+  }
+]
