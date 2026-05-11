@@ -1,0 +1,78 @@
+@if (member(); as member) {
+  <section class="mx-auto max-w-6xl px-4 py-8">
+    <a routerLink="/members" class="btn btn-sm mb-6 rounded-full bg-white/70">Back</a>
+
+    <div class="grid gap-6 lg:grid-cols-[18rem_1fr]">
+      <aside class="space-y-4">
+        <div class="civic-card rounded-3xl p-5 text-center">
+          <img
+            [src]="member.avatarUrl || '/user.png'"
+            [alt]="member.displayName + ' avatar'"
+            class="mx-auto h-28 w-28 rounded-full object-cover"
+          />
+          <h1 class="mt-4 text-2xl font-semibold text-slate-800">{{ member.displayName }}</h1>
+          <p class="text-sm text-slate-500">{{ member.city || 'Local' }}{{ member.countryCode ? ', ' + member.countryCode : '' }}</p>
+          <p class="mt-3 text-xs uppercase tracking-[0.2em] text-[var(--civic-teal)]">
+            Active {{ member.lastActiveAtUtc | date: 'mediumDate' }}
+          </p>
+        </div>
+
+        <div class="civic-card rounded-3xl p-5">
+          <h2 class="font-semibold text-slate-800">Availability</h2>
+          <div class="mt-3 space-y-2 text-sm text-slate-600">
+            @for (slot of member.availabilitySlots; track slot.id) {
+              <div class="rounded-2xl bg-white/60 p-3">
+                {{ dayName(slot) }}, {{ slot.startHour }}:00-{{ slot.endHour }}:00
+                <span class="block text-xs text-slate-500">{{ modeName(slot) }}</span>
+              </div>
+            } @empty {
+              <p>Flexible</p>
+            }
+          </div>
+        </div>
+      </aside>
+
+      <div class="space-y-6">
+        <section class="civic-card rounded-3xl p-6">
+          <h2 class="civic-display text-3xl font-semibold text-slate-800">Profile</h2>
+          <p class="mt-4 text-slate-600">{{ member.about || 'No profile details yet.' }}</p>
+        </section>
+
+        <section class="grid gap-4 md:grid-cols-2">
+          <div class="civic-card rounded-3xl p-6">
+            <h2 class="text-xl font-semibold text-slate-800">Can Help With</h2>
+            <div class="mt-4 space-y-3">
+              @for (skill of member.offeredSkills; track skill.id) {
+                <div class="rounded-2xl bg-white/60 p-3">
+                  <div class="font-semibold text-slate-800">{{ skill.serviceCategory.name }}</div>
+                  @if (skill.note) {
+                    <p class="text-sm text-slate-500">{{ skill.note }}</p>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <div class="civic-card rounded-3xl p-6">
+            <h2 class="text-xl font-semibold text-slate-800">Needs Help With</h2>
+            <div class="mt-4 space-y-3">
+              @for (need of member.needsHelpWith; track need.id) {
+                <div class="rounded-2xl bg-white/60 p-3">
+                  <div class="font-semibold text-slate-800">{{ need.serviceCategory.name }}</div>
+                  @if (need.note) {
+                    <p class="text-sm text-slate-500">{{ need.note }}</p>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+        </section>
+
+        <section class="civic-card rounded-3xl p-6">
+          <h2 class="text-xl font-semibold text-slate-800">Tasks</h2>
+          <p class="mt-3 text-sm text-slate-600">Tasks from this member will appear here when task posting is connected.</p>
+        </section>
+      </div>
+    </div>
+  </section>
+}

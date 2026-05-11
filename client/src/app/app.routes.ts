@@ -6,6 +6,9 @@ import { MyTasks } from '../features/tasks/my-tasks/my-tasks';
 import { GroupList } from '../features/groups/group-list/group-list';
 import { GroupDetail } from '../features/groups/group-detail/group-detail';
 import { Messages } from '../features/messages/messages';
+import { MemberList } from '../features/members/member-list/member-list';
+import { MemberDetail } from '../features/members/member-detail/member-detail';
+import { memberResolver } from '../features/members/member-resolver';
 import { authGuard } from '../core/guards/auth-guard';
 import { TestErrors } from '../features/test-errors/test-errors';
 import { NotFound } from '../shared/errors/not-found/not-found';
@@ -21,6 +24,8 @@ export const routes: Routes = [
       { path: 'tasks', component: TaskList },
       { path: 'tasks/:id', component: TaskDetail },
       { path: 'my-tasks', component: MyTasks },
+      { path: 'members', component: MemberList },
+      { path: 'members/:id', component: MemberDetail, resolve: { member: memberResolver } },
       { path: 'groups', component: GroupList },
       { path: 'groups/:id', component: GroupDetail },
       { path: 'messages', component: Messages },

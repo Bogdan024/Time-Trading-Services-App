@@ -1,0 +1,26 @@
+@if (member(); as member) {
+  <article
+    class="civic-card flex h-full flex-col gap-5 rounded-3xl p-5 transition duration-200 hover:-translate-y-1"
+    [routerLink]="['/members', member.id]"
+  >
+    <div class="flex items-start gap-4">
+      <img
+        [src]="member.avatarUrl || '/user.png'"
+        [alt]="member.displayName + ' avatar'"
+        class="h-16 w-16 rounded-full object-cover"
+      />
+      <div class="min-w-0">
+        <h2 class="text-xl font-semibold text-slate-800">{{ member.displayName }}</h2>
+        <p class="text-sm text-slate-500">{{ member.city || 'Local' }}{{ member.countryCode ? ', ' + member.countryCode : '' }}</p>
+      </div>
+    </div>
+
+    <p class="line-clamp-2 text-sm text-slate-600">{{ member.about || 'Community member' }}</p>
+
+    <div class="flex flex-wrap gap-2">
+      @for (category of categories(member); track category) {
+        <span class="civic-badge rounded-full px-3 py-1 text-xs font-semibold">{{ category }}</span>
+      }
+    </div>
+  </article>
+}
