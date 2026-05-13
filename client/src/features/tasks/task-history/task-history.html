@@ -1,0 +1,36 @@
+@if (tasks$ | async; as tasks) {
+  <div class="grid gap-4">
+    @for (task of tasks; track task.id) {
+      <article class="civic-card rounded-3xl p-5">
+        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--civic-teal)]">
+              {{ task.serviceCategory.name }}
+            </p>
+            <h2 class="mt-2 text-xl font-semibold text-slate-800">{{ task.title }}</h2>
+            <p class="mt-2 text-sm text-slate-600">{{ taskRole(task) }} · {{ task.estimatedHours }} hours</p>
+          </div>
+
+          <span class="civic-badge w-fit rounded-full px-3 py-2 text-sm font-semibold">{{ statusName(task.status) }}</span>
+        </div>
+
+        <div class="mt-4 flex flex-wrap gap-3 text-sm text-slate-600">
+          @if (task.completedAtUtc) {
+            <span>Completed {{ task.completedAtUtc | date: 'mediumDate' }}</span>
+          } @else if (task.updatedAtUtc) {
+            <span>Updated {{ task.updatedAtUtc | date: 'mediumDate' }}</span>
+          }
+          @if (task.acceptedByMember) {
+            <span>Accepted by {{ task.acceptedByMember.displayName }}</span>
+          }
+        </div>
+
+        <div class="mt-5">
+          <a [routerLink]="['/tasks', task.id]" [queryParams]="{ from: 'my-history' }" class="btn btn-sm rounded-full">View</a>
+        </div>
+      </article>
+    } @empty {
+      <div class="civic-card rounded-3xl p-6 text-sm text-slate-600">Completed and cancelled tasks will appear here.</div>
+    }
+  </div>
+}

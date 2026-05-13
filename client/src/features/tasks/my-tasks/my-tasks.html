@@ -1,5 +1,20 @@
-<section class="mx-auto max-w-5xl px-4 py-10">
-  <div class="civic-card rounded-4xl p-8">
-    <h1 class="civic-display text-4xl font-semibold text-slate-800">My Tasks</h1>
+<section class="mx-auto max-w-6xl px-4 py-8">
+  <div class="civic-card rounded-4xl p-6">
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div>
+        <h1 class="civic-display text-4xl font-semibold text-slate-800">My Tasks</h1>
+        <p class="mt-2 text-sm text-slate-600">Manage requests you posted and commitments you accepted.</p>
+      </div>
+
+      <nav class="flex flex-wrap gap-2">
+        <a routerLink="posted" routerLinkActive="btn-accent" class="btn rounded-full">Posted by me</a>
+        <a routerLink="accepted" routerLinkActive="btn-accent" class="btn rounded-full">Accepted by me</a>
+        <a routerLink="history" routerLinkActive="btn-accent" class="btn rounded-full">Task History</a>
+      </nav>
+    </div>
+  </div>
+
+  <div class="mt-6">
+    <router-outlet />
   </div>
 </section>

@@ -1,7 +1,10 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { AccountService } from '../../../core/services/account-service';
+import { TaskService } from '../../../core/services/task-service';
 import { Member, MemberAvailabilitySlot } from '../../../types/member';
+import { TimeTransaction } from '../../../types/task';
 
 @Component({
   selector: 'app-member-detail',
@@ -11,11 +14,18 @@ import { Member, MemberAvailabilitySlot } from '../../../types/member';
 })
 export class MemberDetail implements OnInit {
   private route = inject(ActivatedRoute);
+  private taskService = inject(TaskService);
+  protected accountService = inject(AccountService);
   protected member = signal<Member | undefined>(undefined);
+  protected transactions = signal<TimeTransaction[]>([]);
 
   ngOnInit(): void {
     this.route.data.subscribe({
-      next: (data) => this.member.set(data['member']),
+      next: (data) => {
+        const member = data['member'] as Member;
+        this.member.set(member);
+        this.loadTransactionsForOwnProfile(member);
+      },
     });
   }
 
@@ -29,5 +39,35 @@ export class MemberDetail implements OnInit {
       2: 'Remote',
       3: 'Either',
     }[slot.mode] ?? 'Flexible';
+  }
+
+  protected isOwnProfile(member: Member) {
+    return member.id === this.accountService.currentUser()?.id;
+  }
+
+  protected balance() {
+    const userId = this.accountService.currentUser()?.id;
+
+    return this.transactions().reduce((total, transaction) => {
+      if (transaction.toMember.id === userId) return total + transaction.hours;
+      if (transaction.fromMember.id === userId) return total - transaction.hours;
+
+      return total;
+    }, 0);
+  }
+
+  protected transactionDirection(transaction: TimeTransaction) {
+    return transaction.toMember.id === this.accountService.currentUser()?.id ? 'Earned' : 'Spent';
+  }
+
+  private loadTransactionsForOwnProfile(member: Member) {
+    if (!this.isOwnProfile(member)) {
+      this.transactions.set([]);
+      return;
+    }
+
+    this.taskService.getTransactions().subscribe({
+      next: (transactions) => this.transactions.set(transactions),
+    });
   }
 }

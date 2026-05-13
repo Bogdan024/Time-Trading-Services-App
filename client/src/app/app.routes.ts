@@ -3,6 +3,9 @@ import { Home } from '../features/home/home';
 import { TaskList } from '../features/tasks/task-list/task-list';
 import { TaskDetail } from '../features/tasks/task-detail/task-detail';
 import { MyTasks } from '../features/tasks/my-tasks/my-tasks';
+import { PostedTasks } from '../features/tasks/posted-tasks/posted-tasks';
+import { AcceptedTasks } from '../features/tasks/accepted-tasks/accepted-tasks';
+import { TaskHistory } from '../features/tasks/task-history/task-history';
 import { GroupList } from '../features/groups/group-list/group-list';
 import { GroupDetail } from '../features/groups/group-detail/group-detail';
 import { Messages } from '../features/messages/messages';
@@ -23,7 +26,16 @@ export const routes: Routes = [
     children: [
       { path: 'tasks', component: TaskList },
       { path: 'tasks/:id', component: TaskDetail },
-      { path: 'my-tasks', component: MyTasks },
+      {
+        path: 'my-tasks',
+        component: MyTasks,
+        children: [
+          { path: 'posted', component: PostedTasks },
+          { path: 'accepted', component: AcceptedTasks },
+          { path: 'history', component: TaskHistory },
+          { path: '', redirectTo: 'posted', pathMatch: 'full' },
+        ],
+      },
       { path: 'members', component: MemberList },
       { path: 'members/:id', component: MemberDetail, resolve: { member: memberResolver } },
       { path: 'groups', component: GroupList },

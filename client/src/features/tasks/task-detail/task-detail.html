@@ -1,5 +1,63 @@
-<section class="mx-auto max-w-5xl px-4 py-10">
-  <div class="civic-card rounded-4xl p-8">
-    <h1 class="civic-display text-4xl font-semibold text-slate-800">Task</h1>
-  </div>
-</section>
+@if (task(); as task) {
+  <section class="mx-auto max-w-5xl px-4 py-8">
+    <a [routerLink]="backLink()" class="btn btn-sm mb-6 rounded-full bg-white/70">{{ backLabel() }}</a>
+
+    <div class="civic-card rounded-4xl p-8">
+      <div class="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--civic-teal)]">
+            {{ task.serviceCategory.name }}
+          </p>
+          <h1 class="civic-display mt-2 text-4xl font-semibold text-slate-800">{{ task.title }}</h1>
+          <p class="mt-3 text-sm text-slate-500">
+            Posted by
+            <a [routerLink]="['/members', task.postedByMember.id]" class="font-semibold text-slate-700">
+              {{ task.postedByMember.displayName }}
+            </a>
+          </p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <span class="civic-badge rounded-full px-3 py-2 text-sm font-semibold">{{ task.estimatedHours }} hours</span>
+          <span class="civic-badge rounded-full px-3 py-2 text-sm font-semibold">{{ statusName(task.status) }}</span>
+        </div>
+      </div>
+
+      <p class="mt-8 text-slate-700">{{ task.description }}</p>
+
+      <div class="mt-8 grid gap-4 md:grid-cols-3">
+        <div class="rounded-3xl bg-white/60 p-4">
+          <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Mode</p>
+          <p class="mt-1 font-semibold text-slate-800">{{ locationModeName(task.locationMode) }}</p>
+        </div>
+        <div class="rounded-3xl bg-white/60 p-4">
+          <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Location</p>
+          <p class="mt-1 font-semibold text-slate-800">
+            {{ task.city || 'Flexible' }}{{ task.countryCode ? ', ' + task.countryCode : '' }}
+          </p>
+        </div>
+        <div class="rounded-3xl bg-white/60 p-4">
+          <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Due</p>
+          <p class="mt-1 font-semibold text-slate-800">
+            {{ task.dueAtUtc ? (task.dueAtUtc | date: 'mediumDate') : 'Open' }}
+          </p>
+        </div>
+      </div>
+
+      @if (task.acceptedByMember) {
+        <div class="mt-6 rounded-3xl bg-white/60 p-4 text-sm text-slate-600">
+          Accepted by
+          <a [routerLink]="['/members', task.acceptedByMember.id]" class="font-semibold text-slate-800">
+            {{ task.acceptedByMember.displayName }}
+          </a>
+        </div>
+      }
+
+      @if (canAccept(task)) {
+        <div class="mt-8">
+          <button type="button" class="btn btn-accent rounded-full" (click)="acceptTask()">Accept task</button>
+        </div>
+      }
+    </div>
+  </section>
+}

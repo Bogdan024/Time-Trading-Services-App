@@ -32,8 +32,8 @@
             <span>{{ user.displayName }}</span>
           </div>
           <ul tabindex="0" class="dropdown-content menu civic-card mt-3 w-56 rounded-3xl p-3 shadow-sm">
+            <li><a [routerLink]="['/members', user.id]">My Profile</a></li>
             <li><a routerLink="/my-tasks">My Tasks</a></li>
-            <li><a routerLink="/members">Community</a></li>
             <li><a routerLink="/groups">Groups</a></li>
             <li><a (click)="logout()">Logout</a></li>
           </ul>

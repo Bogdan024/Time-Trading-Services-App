@@ -38,6 +38,38 @@
           <p class="mt-4 text-slate-600">{{ member.about || 'No profile details yet.' }}</p>
         </section>
 
+        @if (isOwnProfile(member)) {
+          <section class="civic-card rounded-3xl p-6">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h2 class="text-xl font-semibold text-slate-800">Time Ledger</h2>
+                <p class="mt-1 text-sm text-slate-600">Private history of your completed exchanges.</p>
+              </div>
+              <span class="civic-badge w-fit rounded-full px-4 py-2 text-sm font-semibold">
+                Balance {{ balance() }}h
+              </span>
+            </div>
+
+            <div class="mt-5 space-y-3">
+              @for (transaction of transactions(); track transaction.id) {
+                <div class="rounded-2xl bg-white/60 p-4">
+                  <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p class="font-semibold text-slate-800">{{ transaction.taskTitle }}</p>
+                      <p class="text-sm text-slate-500">{{ transaction.createdAtUtc | date: 'mediumDate' }}</p>
+                    </div>
+                    <span class="text-sm font-semibold text-slate-800">
+                      {{ transactionDirection(transaction) }} {{ transaction.hours }}h
+                    </span>
+                  </div>
+                </div>
+              } @empty {
+                <p class="text-sm text-slate-600">No completed exchanges yet.</p>
+              }
+            </div>
+          </section>
+        }
+
         <section class="grid gap-4 md:grid-cols-2">
           <div class="civic-card rounded-3xl p-6">
             <h2 class="text-xl font-semibold text-slate-800">Can Help With</h2>

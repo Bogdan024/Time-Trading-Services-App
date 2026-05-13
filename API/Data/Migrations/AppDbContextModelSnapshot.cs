@@ -43,7 +43,7 @@ namespace API.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.Member", b =>
@@ -78,7 +78,7 @@ namespace API.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Members");
+                    b.ToTable("Members", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.MemberAvailabilitySlot", b =>
@@ -107,7 +107,7 @@ namespace API.Data.Migrations
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("MemberAvailabilitySlots");
+                    b.ToTable("MemberAvailabilitySlots", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.MemberNeed", b =>
@@ -133,7 +133,7 @@ namespace API.Data.Migrations
                     b.HasIndex("MemberId", "ServiceCategoryId")
                         .IsUnique();
 
-                    b.ToTable("MemberNeeds");
+                    b.ToTable("MemberNeeds", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.MemberSkill", b =>
@@ -159,7 +159,7 @@ namespace API.Data.Migrations
                     b.HasIndex("MemberId", "ServiceCategoryId")
                         .IsUnique();
 
-                    b.ToTable("MemberSkills");
+                    b.ToTable("MemberSkills", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.Photo", b =>
@@ -183,7 +183,7 @@ namespace API.Data.Migrations
 
                     b.HasIndex("MemberId");
 
-                    b.ToTable("Photos");
+                    b.ToTable("Photos", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.ServiceCategory", b =>
@@ -205,7 +205,7 @@ namespace API.Data.Migrations
                     b.HasIndex("Key")
                         .IsUnique();
 
-                    b.ToTable("ServiceCategories");
+                    b.ToTable("ServiceCategories", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.TimeTask", b =>
@@ -273,7 +273,7 @@ namespace API.Data.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("TimeTasks");
+                    b.ToTable("TimeTasks", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.TimeTransaction", b =>
@@ -312,7 +312,7 @@ namespace API.Data.Migrations
 
                     b.HasIndex("ToMemberId");
 
-                    b.ToTable("TimeTransactions");
+                    b.ToTable("TimeTransactions", (string)null);
                 });
 
             modelBuilder.Entity("API.Entities.Member", b =>
