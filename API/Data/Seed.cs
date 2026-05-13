@@ -25,21 +25,16 @@ public class Seed
             return;
         }
 
-        var categories = new Dictionary<string, ServiceCategory>(StringComparer.OrdinalIgnoreCase);
+        var existingCategories = await context.ServiceCategories.ToListAsync();
+        var categories = existingCategories.ToDictionary(x => x.Key, StringComparer.OrdinalIgnoreCase);
 
         ServiceCategory GetCategory(SeedServiceCategoryDto serviceCategory)
         {
-            if (categories.TryGetValue(serviceCategory.Key, out var category))
+            if (!categories.TryGetValue(serviceCategory.Key, out var category))
             {
-                return category;
+                throw new InvalidOperationException(
+                    $"Seed user data references unknown service category '{serviceCategory.Key}'. Add it to ReferenceDataSeeder first.");
             }
-
-            category = new ServiceCategory
-            {
-                Key = serviceCategory.Key,
-                Name = serviceCategory.Name
-            };
-            categories.Add(serviceCategory.Key, category);
 
             return category;
         }
