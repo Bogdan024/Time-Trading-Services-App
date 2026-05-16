@@ -51,3 +51,23 @@ export type Member = {
   needsHelpWith: MemberNeed[];
   availabilitySlots: MemberAvailabilitySlot[];
 };
+
+export type EditableMember = {
+  displayName: string;
+  about?: string;
+  city?: string;
+  countryCode?: string;
+  isProfilePublic: boolean;
+};
+
+export type MemberServiceCategoryEdit = {
+  serviceCategoryId: number;
+  note?: string;
+};
+
+export type MemberAvailabilitySlotEdit = {
+  dayOfWeek: number;
+  startHour: number;
+  endHour: number;
+  mode: number;
+};

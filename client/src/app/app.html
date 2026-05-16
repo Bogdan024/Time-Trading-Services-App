@@ -1,6 +1,12 @@
 <div class="app-shell">
   <app-nav />
 
+  @if (busyService.busyRequestCount() > 0) {
+    <div class="fixed inset-x-0 top-0 z-[120] flex justify-center pt-3">
+      <span class="loading loading-spinner text-accent"></span>
+    </div>
+  }
+
   <main class="app-main">
     <router-outlet />
   </main>

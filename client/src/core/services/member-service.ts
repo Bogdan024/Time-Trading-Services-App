@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { Member } from '../../types/member';
+import { EditableMember, Member, MemberAvailabilitySlotEdit, MemberServiceCategoryEdit } from '../../types/member';
 
 @Injectable({
   providedIn: 'root',
@@ -16,5 +16,33 @@ export class MemberService {
 
   getMember(id: string) {
     return this.http.get<Member>(this.baseUrl + 'members/' + id);
+  }
+
+  updateMember(member: EditableMember) {
+    return this.http.put<void>(this.baseUrl + 'members', member);
+  }
+
+  addSkill(skill: MemberServiceCategoryEdit) {
+    return this.http.post<Member>(this.baseUrl + 'members/skills', skill);
+  }
+
+  deleteSkill(skillId: number) {
+    return this.http.delete<Member>(this.baseUrl + 'members/skills/' + skillId);
+  }
+
+  addNeed(need: MemberServiceCategoryEdit) {
+    return this.http.post<Member>(this.baseUrl + 'members/needs', need);
+  }
+
+  deleteNeed(needId: number) {
+    return this.http.delete<Member>(this.baseUrl + 'members/needs/' + needId);
+  }
+
+  addAvailabilitySlot(slot: MemberAvailabilitySlotEdit) {
+    return this.http.post<Member>(this.baseUrl + 'members/availability', slot);
+  }
+
+  deleteAvailabilitySlot(slotId: number) {
+    return this.http.delete<Member>(this.baseUrl + 'members/availability/' + slotId);
   }
 }

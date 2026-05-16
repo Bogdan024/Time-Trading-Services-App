@@ -13,6 +13,7 @@ import { MemberList } from '../features/members/member-list/member-list';
 import { MemberDetail } from '../features/members/member-detail/member-detail';
 import { memberResolver } from '../features/members/member-resolver';
 import { authGuard } from '../core/guards/auth-guard';
+import { preventUnsavedChangesGuard } from '../core/guards/prevent-unsaved-changes-guard';
 import { TestErrors } from '../features/test-errors/test-errors';
 import { NotFound } from '../shared/errors/not-found/not-found';
 import { ServerError } from '../shared/errors/server-error/server-error';
@@ -37,7 +38,12 @@ export const routes: Routes = [
         ],
       },
       { path: 'members', component: MemberList },
-      { path: 'members/:id', component: MemberDetail, resolve: { member: memberResolver } },
+      {
+        path: 'members/:id',
+        component: MemberDetail,
+        resolve: { member: memberResolver },
+        canDeactivate: [preventUnsavedChangesGuard],
+      },
       { path: 'groups', component: GroupList },
       { path: 'groups/:id', component: GroupDetail },
       { path: 'messages', component: Messages },

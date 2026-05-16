@@ -1,6 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { Router, RouterOutlet } from '@angular/router';
 import { Nav } from '../layout/nav/nav';
+import { BusyService } from '../core/services/busy-service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,5 @@ import { Nav } from '../layout/nav/nav';
 })
 export class App {
   protected router = inject(Router);
+  protected busyService = inject(BusyService);
 }

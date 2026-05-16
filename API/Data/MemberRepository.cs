@@ -18,6 +18,28 @@ public class MemberRepository(AppDbContext context) : IMemberRepository
             .SingleOrDefaultAsync(x => x.Id == id);
     }
 
+    public async Task<Member?> GetMemberForUpdateAsync(string id)
+    {
+        return await context.Members
+            .Include(x => x.User)
+            .SingleOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task<Member?> GetMemberWithServicePreferencesForUpdateAsync(string id)
+    {
+        return await context.Members
+            .Include(x => x.OfferedSkills)
+            .Include(x => x.NeedsHelpWith)
+            .SingleOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task<Member?> GetMemberWithAvailabilityForUpdateAsync(string id)
+    {
+        return await context.Members
+            .Include(x => x.AvailabilitySlots)
+            .SingleOrDefaultAsync(x => x.Id == id);
+    }
+
     public async Task<IReadOnlyList<Member>> GetMembersAsync()
     {
         return await context.Members
@@ -38,9 +60,47 @@ public class MemberRepository(AppDbContext context) : IMemberRepository
             .ToListAsync();
     }
 
+    public async Task<MemberSkill?> GetMemberSkillForUpdateAsync(string memberId, int skillId)
+    {
+        return await context.MemberSkills
+            .SingleOrDefaultAsync(x => x.Id == skillId && x.MemberId == memberId);
+    }
+
+    public async Task<MemberNeed?> GetMemberNeedForUpdateAsync(string memberId, int needId)
+    {
+        return await context.MemberNeeds
+            .SingleOrDefaultAsync(x => x.Id == needId && x.MemberId == memberId);
+    }
+
+    public async Task<MemberAvailabilitySlot?> GetAvailabilitySlotForUpdateAsync(string memberId, int slotId)
+    {
+        return await context.MemberAvailabilitySlots
+            .SingleOrDefaultAsync(x => x.Id == slotId && x.MemberId == memberId);
+    }
+
+    public async Task<bool> ServiceCategoryExistsAsync(int serviceCategoryId)
+    {
+        return await context.ServiceCategories.AnyAsync(x => x.Id == serviceCategoryId);
+    }
+
     public async Task<bool> SaveAllAsync()
     {
         return await context.SaveChangesAsync() > 0;
+    }
+
+    public void DeleteMemberSkill(MemberSkill skill)
+    {
+        context.MemberSkills.Remove(skill);
+    }
+
+    public void DeleteMemberNeed(MemberNeed need)
+    {
+        context.MemberNeeds.Remove(need);
+    }
+
+    public void DeleteAvailabilitySlot(MemberAvailabilitySlot slot)
+    {
+        context.MemberAvailabilitySlots.Remove(slot);
     }
 
     public void Update(Member member)
