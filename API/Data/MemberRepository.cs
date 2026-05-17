@@ -25,6 +25,14 @@ public class MemberRepository(AppDbContext context) : IMemberRepository
             .SingleOrDefaultAsync(x => x.Id == id);
     }
 
+    public async Task<Member?> GetMemberForAvatarUpdateAsync(string id)
+    {
+        return await context.Members
+            .Include(x => x.User)
+            .Include(x => x.Photos)
+            .SingleOrDefaultAsync(x => x.Id == id);
+    }
+
     public async Task<Member?> GetMemberWithServicePreferencesForUpdateAsync(string id)
     {
         return await context.Members
@@ -101,6 +109,11 @@ public class MemberRepository(AppDbContext context) : IMemberRepository
     public void DeleteAvailabilitySlot(MemberAvailabilitySlot slot)
     {
         context.MemberAvailabilitySlots.Remove(slot);
+    }
+
+    public void DeletePhoto(Photo photo)
+    {
+        context.Photos.Remove(photo);
     }
 
     public void Update(Member member)

@@ -10,6 +10,7 @@ public interface IMemberRepository
     Task<Member?> GetMemberByIdAsync(string id);
     Task<IReadOnlyList<Photo>> GetPhotosForMemberAsync(string memberId);
     Task<Member?> GetMemberForUpdateAsync(string id);
+    Task<Member?> GetMemberForAvatarUpdateAsync(string id);
     Task<Member?> GetMemberWithServicePreferencesForUpdateAsync(string id);
     Task<bool> ServiceCategoryExistsAsync(int serviceCategoryId);
     Task<MemberSkill?> GetMemberSkillForUpdateAsync(string memberId, int skillId);
@@ -19,4 +20,5 @@ public interface IMemberRepository
     void DeleteMemberSkill(MemberSkill skill);
     void DeleteMemberNeed(MemberNeed need);
     void DeleteAvailabilitySlot(MemberAvailabilitySlot slot);
+    void DeletePhoto(Photo photo);
 }

@@ -16,10 +16,11 @@ import {
   ServiceCategory,
 } from '../../../types/member';
 import { TimeTransaction } from '../../../types/task';
+import { UploadModal } from '../../../shared/upload-modal/upload-modal';
 
 @Component({
   selector: 'app-member-detail',
-  imports: [DatePipe, FormsModule, RouterLink],
+  imports: [DatePipe, FormsModule, RouterLink, UploadModal],
   templateUrl: './member-detail.html',
   styleUrl: './member-detail.css',
 })
@@ -44,6 +45,8 @@ export class MemberDetail implements OnInit {
   protected transactions = signal<TimeTransaction[]>([]);
   protected editMode = signal(false);
   protected availabilityEditMode = signal(false);
+  protected avatarUploadMode = signal(false);
+  protected avatarUploadLoading = signal(false);
   protected editableMember: EditableMember = {
     displayName: '',
     about: '',
@@ -89,6 +92,7 @@ export class MemberDetail implements OnInit {
         this.member.set(member);
         this.editMode.set(false);
         this.availabilityEditMode.set(false);
+        this.avatarUploadMode.set(false);
         this.setEditableMember(member);
         this.loadServiceCategoriesForOwnProfile(member);
         this.loadTransactionsForOwnProfile(member);
@@ -255,6 +259,40 @@ export class MemberDetail implements OnInit {
         this.toast.success('Availability removed');
       },
     });
+  }
+
+  protected openAvatarUpload(member: Member) {
+    if (!this.isOwnProfile(member)) return;
+
+    this.avatarUploadMode.set(true);
+  }
+
+  protected uploadAvatar(file: File) {
+    this.avatarUploadLoading.set(true);
+    this.memberService.uploadAvatar(file).subscribe({
+      next: (member) => {
+        const currentUser = this.accountService.currentUser();
+
+        if (currentUser) {
+          this.accountService.setCurrentUser({
+            ...currentUser,
+            imageUrl: member.avatarUrl,
+          });
+        }
+
+        this.member.set(member);
+        this.avatarUploadMode.set(false);
+        this.avatarUploadLoading.set(false);
+        this.toast.success('Avatar updated');
+      },
+      error: () => this.avatarUploadLoading.set(false),
+    });
+  }
+
+  protected closeAvatarUpload() {
+    if (this.avatarUploadLoading()) return;
+
+    this.avatarUploadMode.set(false);
   }
 
   private setEditableMember(member: Member) {

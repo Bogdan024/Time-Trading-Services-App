@@ -45,4 +45,11 @@ export class MemberService {
   deleteAvailabilitySlot(slotId: number) {
     return this.http.delete<Member>(this.baseUrl + 'members/availability/' + slotId);
   }
+
+  uploadAvatar(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<Member>(this.baseUrl + 'members/avatar', formData);
+  }
 }

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class MembersController(IMemberRepository memberRepository) : BaseApiController
+public class MembersController(IMemberRepository memberRepository, IPhotoService photoService) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers()
@@ -181,6 +181,50 @@ public class MembersController(IMemberRepository memberRepository) : BaseApiCont
         memberRepository.DeleteAvailabilitySlot(slot);
 
         if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to remove availability slot");
+
+        return await GetUpdatedMember(memberId);
+    }
+
+    [HttpPost("avatar")]
+    public async Task<ActionResult<Member>> UpdateAvatar([FromForm] IFormFile file)
+    {
+        if (file is null || file.Length == 0) return BadRequest("No file was uploaded");
+        if (!file.ContentType.StartsWith("image/")) return BadRequest("Only image files are allowed");
+
+        var memberId = User.GetMemberId();
+        var member = await memberRepository.GetMemberForAvatarUpdateAsync(memberId);
+
+        if (member is null) return BadRequest("Could not get member");
+
+        var uploadResult = await photoService.UploadAvatarAsync(file);
+
+        if (uploadResult.Error is not null) return BadRequest(uploadResult.Error.Message);
+
+        var oldAvatar = member.Photos.FirstOrDefault(x => x.Url == member.AvatarUrl);
+        var oldAvatarPublicId = oldAvatar?.PublicId;
+
+        if (oldAvatar is not null)
+        {
+            memberRepository.DeletePhoto(oldAvatar);
+        }
+
+        var photo = new Photo
+        {
+            Url = uploadResult.SecureUrl.AbsoluteUri,
+            PublicId = uploadResult.PublicId,
+            MemberId = memberId
+        };
+
+        member.AvatarUrl = photo.Url;
+        member.User.ImageUrl = photo.Url;
+        member.Photos.Add(photo);
+
+        if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to update avatar");
+
+        if (!string.IsNullOrWhiteSpace(oldAvatarPublicId))
+        {
+            await photoService.DeletePhotoAsync(oldAvatarPublicId);
+        }
 
         return await GetUpdatedMember(memberId);
     }
