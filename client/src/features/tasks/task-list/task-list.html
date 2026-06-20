@@ -8,9 +8,26 @@
     <a routerLink="/tasks/create" class="btn btn-accent rounded-full">Post a task</a>
   </div>
 
-  @if (tasks$ | async; as tasks) {
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-      @for (task of tasks; track task.id) {
+  <app-task-filters
+    [categories]="serviceCategories()"
+    [taskParams]="taskParams"
+    (applyFilters)="onFilterChange($event)"
+    (resetFilters)="resetFilters()"
+  />
+
+  @if (tasks(); as result) {
+    <div class="mt-6">
+      <app-paginator
+        [pageNumber]="result.metadata.currentPage"
+        [pageSize]="result.metadata.pageSize"
+        [totalCount]="result.metadata.totalCount"
+        [totalPages]="result.metadata.totalPages"
+        (pageChange)="onPageChange($event)"
+      />
+    </div>
+
+    <div class="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      @for (task of result.items; track task.id) {
         <article class="civic-card rounded-3xl p-5">
           <div class="flex items-start justify-between gap-3">
             <div>
@@ -32,6 +49,7 @@
             @if (task.dueAtUtc) {
               <p>Due {{ task.dueAtUtc | date: 'mediumDate' }}</p>
             }
+            <p>Posted {{ task.createdAtUtc | timeAgo }}</p>
           </div>
 
           <div class="mt-5 flex items-center justify-between gap-3">
@@ -42,11 +60,18 @@
           </div>
         </article>
       } @empty {
-        <div class="civic-card rounded-3xl p-6 text-sm text-slate-600">No open tasks right now.</div>
+        <div class="civic-card rounded-3xl p-6 text-sm text-slate-600">No open tasks match these filters.</div>
       }
+    </div>
+
+    <div class="mt-6">
+      <app-paginator
+        [pageNumber]="result.metadata.currentPage"
+        [pageSize]="result.metadata.pageSize"
+        [totalCount]="result.metadata.totalCount"
+        [totalPages]="result.metadata.totalPages"
+        (pageChange)="onPageChange($event)"
+      />
     </div>
   }
 </section>
-
-
-

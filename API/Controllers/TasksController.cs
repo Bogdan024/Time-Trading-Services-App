@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,11 +12,16 @@ namespace API.Controllers;
 public class TasksController(ITimeTaskRepository taskRepository) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<TimeTaskDto>>> GetTasks()
+    public async Task<ActionResult<PaginatedResult<TimeTaskDto>>> GetTasks([FromQuery] TaskParams taskParams)
     {
-        var tasks = await taskRepository.GetTasksAsync(User.GetMemberId());
+        taskParams.CurrentMemberId = User.GetMemberId();
+        var tasks = await taskRepository.GetTasksAsync(taskParams);
 
-        return Ok(tasks.Select(x => x.ToDto()));
+        return Ok(new PaginatedResult<TimeTaskDto>
+        {
+            Metadata = tasks.Metadata,
+            Items = tasks.Items.Select(x => x.ToDto()).ToList()
+        });
     }
 
     [HttpGet("mine")]

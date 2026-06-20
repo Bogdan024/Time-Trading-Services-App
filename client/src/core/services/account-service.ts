@@ -41,6 +41,8 @@ export class AccountService {
 
   logout() {
     localStorage.removeItem('user');
+    localStorage.removeItem('taskFilters');
     this.currentUser.set(null);
   }
 }
+

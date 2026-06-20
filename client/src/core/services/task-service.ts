@@ -1,7 +1,8 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
-import { CreateTimeTask, TimeTask, TimeTransaction, UpdateTimeTask } from '../../types/task';
+import { PaginatedResult } from '../../types/pagination';
+import { CreateTimeTask, TaskParams, TimeTask, TimeTransaction, UpdateTimeTask } from '../../types/task';
 
 @Injectable({
   providedIn: 'root',
@@ -10,8 +11,21 @@ export class TaskService {
   private http = inject(HttpClient);
   private baseUrl = environment.apiUrl;
 
-  getTasks() {
-    return this.http.get<TimeTask[]>(this.baseUrl + 'tasks');
+  getTasks(taskParams = new TaskParams()) {
+    let params = new HttpParams()
+      .set('pageNumber', taskParams.pageNumber)
+      .set('pageSize', taskParams.pageSize)
+      .set('orderBy', taskParams.orderBy);
+
+    if (taskParams.serviceCategoryId) params = params.set('serviceCategoryId', taskParams.serviceCategoryId);
+    if (taskParams.locationMode) params = params.set('locationMode', taskParams.locationMode);
+    if (taskParams.city) params = params.set('city', taskParams.city);
+    if (taskParams.countryCode) params = params.set('countryCode', taskParams.countryCode);
+    if (taskParams.minCredits) params = params.set('minCredits', taskParams.minCredits);
+    if (taskParams.maxCredits) params = params.set('maxCredits', taskParams.maxCredits);
+    if (taskParams.dueSoon) params = params.set('dueSoon', taskParams.dueSoon);
+
+    return this.http.get<PaginatedResult<TimeTask>>(this.baseUrl + 'tasks', { params });
   }
 
   getTask(id: number) {

@@ -52,3 +52,16 @@ export type TimeTransaction = {
   fromMember: TaskMember;
   toMember: TaskMember;
 };
+
+export class TaskParams {
+  serviceCategoryId?: number;
+  locationMode?: TaskLocationMode;
+  city?: string;
+  countryCode?: string;
+  minCredits?: number;
+  maxCredits?: number;
+  dueSoon = false;
+  orderBy = 'newest';
+  pageNumber = 1;
+  pageSize = 9;
+}

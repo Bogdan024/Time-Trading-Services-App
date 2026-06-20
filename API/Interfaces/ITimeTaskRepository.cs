@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Helpers;
 
 namespace API.Interfaces;
 
@@ -10,7 +11,7 @@ public interface ITimeTaskRepository
     Task<bool> SaveAllAsync();
     Task<bool> ServiceCategoryExistsAsync(int serviceCategoryId);
     Task<TimeTask?> GetTaskByIdAsync(int id);
-    Task<IReadOnlyList<TimeTask>> GetTasksAsync(string currentMemberId);
+    Task<PaginatedResult<TimeTask>> GetTasksAsync(TaskParams taskParams);
     Task<IReadOnlyList<TimeTask>> GetTasksForMemberAsync(string memberId);
     Task<IReadOnlyList<TimeTask>> GetAcceptedTasksForMemberAsync(string memberId);
     Task<TimeTransaction?> GetTransactionForTaskAsync(int taskId);

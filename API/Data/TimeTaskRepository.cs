@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,15 +38,61 @@ public class TimeTaskRepository(AppDbContext context) : ITimeTaskRepository
             .SingleOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<IReadOnlyList<TimeTask>> GetTasksAsync(string currentMemberId)
+    public async Task<PaginatedResult<TimeTask>> GetTasksAsync(TaskParams taskParams)
     {
-        return await context.TimeTasks
+        var query = context.TimeTasks
             .Include(x => x.ServiceCategory)
             .Include(x => x.PostedByMember)
             .Include(x => x.AcceptedByMember)
-            .Where(x => x.Status == TimeTaskStatus.Open && x.PostedByMemberId != currentMemberId)
-            .OrderByDescending(x => x.CreatedAtUtc)
-            .ToListAsync();
+            .Where(x => x.Status == TimeTaskStatus.Open && x.PostedByMemberId != taskParams.CurrentMemberId)
+            .AsQueryable();
+
+        if (taskParams.ServiceCategoryId.HasValue)
+        {
+            query = query.Where(x => x.ServiceCategoryId == taskParams.ServiceCategoryId.Value);
+        }
+
+        if (taskParams.LocationMode.HasValue)
+        {
+            query = query.Where(x => x.LocationMode == taskParams.LocationMode.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(taskParams.City))
+        {
+            var city = taskParams.City.Trim().ToLower();
+            query = query.Where(x => x.City != null && x.City.ToLower() == city);
+        }
+
+        if (!string.IsNullOrWhiteSpace(taskParams.CountryCode))
+        {
+            var countryCode = taskParams.CountryCode.Trim().ToUpper();
+            query = query.Where(x => x.CountryCode != null && x.CountryCode.ToUpper() == countryCode);
+        }
+
+        if (taskParams.MinCredits.HasValue)
+        {
+            query = query.Where(x => x.EstimatedHours >= taskParams.MinCredits.Value);
+        }
+
+        if (taskParams.MaxCredits.HasValue)
+        {
+            query = query.Where(x => x.EstimatedHours <= taskParams.MaxCredits.Value);
+        }
+
+        if (taskParams.DueSoon)
+        {
+            var dueSoonCutoff = DateTime.UtcNow.AddDays(7);
+            query = query.Where(x => x.DueAtUtc.HasValue && x.DueAtUtc <= dueSoonCutoff);
+        }
+
+        query = taskParams.OrderBy switch
+        {
+            "dueSoon" => query.OrderBy(x => x.DueAtUtc ?? DateTime.MaxValue),
+            "credits" => query.OrderByDescending(x => x.EstimatedHours),
+            _ => query.OrderByDescending(x => x.CreatedAtUtc)
+        };
+
+        return await PaginationHelper.CreateAsync(query, taskParams.PageNumber, taskParams.PageSize);
     }
 
     public async Task<IReadOnlyList<TimeTask>> GetTasksForMemberAsync(string memberId)
