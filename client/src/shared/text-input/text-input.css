@@ -1,0 +1,6 @@
+.register-input {
+  min-height: 3.25rem;
+  border-color: rgba(15, 76, 92, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.85);
+}

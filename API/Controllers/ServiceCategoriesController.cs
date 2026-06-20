@@ -9,6 +9,7 @@ namespace API.Controllers;
 [Authorize]
 public class ServiceCategoriesController(AppDbContext context) : BaseApiController
 {
+    [AllowAnonymous]
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ServiceCategoryDto>>> GetServiceCategories()
     {

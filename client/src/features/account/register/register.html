@@ -1,33 +1,159 @@
-<div class="register-shell civic-card mx-auto flex w-full max-w-2xl flex-col rounded-[2rem] p-3 shadow-lg">
-  <div class="register-frame grid gap-8 rounded-[1.6rem] bg-white/60 p-5 md:grid-cols-[0.8fr_1.2fr] md:p-8">
+<div class="register-shell civic-card mx-auto flex w-full max-w-5xl flex-col rounded-[2rem] p-3 shadow-lg">
+  <div class="register-frame grid gap-8 rounded-[1.6rem] bg-white/60 p-5 lg:grid-cols-[0.75fr_1.25fr] md:p-8">
     <section class="register-aside">
-      <h2 class="civic-display mt-5 text-4xl font-semibold text-slate-800">Register</h2>
+      <p class="note-label">Time banking setup</p>
+      <h2 class="civic-display mt-5 text-4xl font-semibold text-slate-800">Join the exchange</h2>
+      <p class="mt-4 text-sm leading-7 text-slate-600">
+        A complete profile helps people understand where you can help, what you need, and when exchanges can happen.
+      </p>
+
+      <div class="mt-8 grid gap-3">
+        @for (step of steps; track step; let index = $index) {
+          <div
+            class="rounded-2xl border px-4 py-3 text-sm font-semibold"
+            [class.border-[var(--civic-teal)]]="currentStep() === index + 1"
+            [class.bg-white]="currentStep() === index + 1"
+            [class.text-[var(--civic-teal)]]="currentStep() === index + 1"
+            [class.border-white-60]="currentStep() !== index + 1"
+            [class.text-slate-500]="currentStep() !== index + 1"
+          >
+            {{ index + 1 }}. {{ step }}
+          </div>
+        }
+      </div>
     </section>
 
     <section class="register-form-panel">
-      <div class="card-title justify-center text-3xl text-slate-800">Create account</div>
-      <div class="card-body w-full px-0">
-        <form #registerForm="ngForm" class="flex w-full flex-col gap-4" (ngSubmit)="register()">
-          <input class="input register-input w-full" name="email" [(ngModel)]="creds.email" placeholder="Email" />
-          <input
-            class="input register-input w-full"
-            name="displayName"
-            [(ngModel)]="creds.displayName"
-            placeholder="Display name"
-          />
-          <input
-            type="password"
-            class="input register-input w-full"
-            name="password"
-            [(ngModel)]="creds.password"
-            placeholder="Password"
-          />
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--civic-teal)]">Step {{ currentStep() }} of {{ steps.length }}</p>
+          <h3 class="civic-display mt-1 text-3xl font-semibold text-slate-800">{{ steps[currentStep() - 1] }}</h3>
+        </div>
+        <button type="button" class="btn register-cancel" [disabled]="loading()" (click)="cancel()">Cancel</button>
+      </div>
 
-          <div class="mt-2 flex items-center justify-end gap-3">
-            <button (click)="cancel()" type="button" class="btn register-cancel">Cancel</button>
-            <button class="btn register-submit" type="submit">Register</button>
+      <div class="mt-8">
+        @if (currentStep() === 1) {
+          <form [formGroup]="credentialsForm" class="grid gap-4">
+            <app-text-input label="Email" formControlName="email" />
+            <app-text-input label="Display name" formControlName="displayName" />
+            <app-text-input label="Password" type="password" formControlName="password" />
+            <app-text-input label="Confirm password" type="password" formControlName="confirmPassword" />
+          </form>
+        }
+
+        @if (currentStep() === 2) {
+          <form [formGroup]="profileForm" class="grid gap-4">
+            <div class="grid gap-4 md:grid-cols-2">
+              <app-text-input label="City" formControlName="city" />
+              <app-text-input label="Country code" placeholder="RO" formControlName="countryCode" />
+            </div>
+
+            <label class="form-control text-left">
+              <span class="label-text font-semibold text-slate-700">About</span>
+              <textarea
+                class="textarea register-input mt-2 min-h-28 w-full"
+                formControlName="about"
+                placeholder="A short note about how you like to exchange time"
+              ></textarea>
+              @if (profileForm.controls['about'].hasError('maxlength') && profileForm.controls['about'].touched) {
+                <span class="mt-1 text-xs text-error">About must be at most 1000 characters</span>
+              }
+            </label>
+
+            <label class="flex items-center gap-3 text-sm font-semibold text-slate-700">
+              <input type="checkbox" class="checkbox" formControlName="isProfilePublic" />
+              Show my profile in the community
+            </label>
+          </form>
+        }
+
+        @if (currentStep() === 3) {
+          <app-service-preference-editor
+            title="Can Help With"
+            description="Choose what you can offer. This will later help task filters and recommendations."
+            emptyText="No skills selected yet. You can continue and finish this later."
+            addButtonText="Add skill"
+            [categories]="serviceCategories()"
+            [items]="selectedSkills()"
+            (addItem)="addSkill($event)"
+            (removeItem)="removeSkill($event)"
+          />
+        }
+
+        @if (currentStep() === 4) {
+          <app-service-preference-editor
+            title="Needs Help With"
+            description="Choose what you may need help with. This gives the task hub better context."
+            emptyText="No needs selected yet. You can continue and finish this later."
+            addButtonText="Add need"
+            [categories]="serviceCategories()"
+            [items]="selectedNeeds()"
+            (addItem)="addNeed($event)"
+            (removeItem)="removeNeed($event)"
+          />
+        }
+
+        @if (currentStep() === 5) {
+          <app-availability-editor
+            title="Availability"
+            description="Add times when exchanges are realistic for you."
+            emptyText="No availability selected yet. You can continue and finish this later."
+            addButtonText="Add"
+            [slots]="selectedAvailabilitySlots()"
+            (addSlot)="addAvailabilitySlot($event)"
+            (removeSlot)="removeAvailabilitySlot($event)"
+          />
+        }
+
+        @if (currentStep() === 6) {
+          <div class="grid gap-4 text-sm text-slate-600">
+            <p>Review your setup. You can still edit everything later from your profile.</p>
+
+            <div class="rounded-2xl bg-white/70 p-4">
+              <span class="font-semibold text-slate-800">Location</span>
+              <p class="mt-1">{{ profileForm.value.city || 'City' }}, {{ profileForm.value.countryCode || 'Country code' }}</p>
+            </div>
+
+            <div class="grid gap-3 md:grid-cols-3">
+              <div class="rounded-2xl bg-white/70 p-4">
+                <span class="font-semibold text-slate-800">Skills</span>
+                <p class="mt-1">{{ selectedSkills().length }} selected</p>
+              </div>
+              <div class="rounded-2xl bg-white/70 p-4">
+                <span class="font-semibold text-slate-800">Needs</span>
+                <p class="mt-1">{{ selectedNeeds().length }} selected</p>
+              </div>
+              <div class="rounded-2xl bg-white/70 p-4">
+                <span class="font-semibold text-slate-800">Availability</span>
+                <p class="mt-1">{{ selectedAvailabilitySlots().length }} slots</p>
+              </div>
+            </div>
           </div>
-        </form>
+        }
+      </div>
+
+      @if (validationErrors().length > 0) {
+        <div class="mt-5 rounded-2xl bg-error/10 p-4 text-sm text-error">
+          @for (error of validationErrors(); track $index) {
+            <p>{{ error }}</p>
+          }
+        </div>
+      }
+
+      <div class="mt-8 flex items-center justify-between gap-3">
+        <button type="button" class="btn register-cancel" [disabled]="currentStep() === 1 || loading()" (click)="previousStep()">Back</button>
+
+        @if (currentStep() < steps.length) {
+          <button type="button" class="btn register-submit" [disabled]="!canContinue() || loading()" (click)="nextStep()">Continue</button>
+        } @else {
+          <button type="button" class="btn register-submit" [disabled]="loading()" (click)="register()">
+            @if (loading()) {
+              <span class="loading loading-spinner loading-sm"></span>
+            }
+            Create account
+          </button>
+        }
       </div>
     </section>
   </div>

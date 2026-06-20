@@ -1,0 +1,43 @@
+<div class="civic-card rounded-3xl p-6">
+  <h2 class="text-xl font-semibold text-slate-800">{{ title() }}</h2>
+  @if (description()) {
+    <p class="mt-2 text-sm text-slate-600">{{ description() }}</p>
+  }
+
+  @if (canEdit()) {
+    <form [formGroup]="form" class="mt-4 grid gap-3 rounded-2xl bg-white/50 p-3" (ngSubmit)="addPreference()">
+      <div class="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+        <select class="select w-full rounded-2xl" formControlName="serviceCategoryId">
+          <option [ngValue]="0">Choose a category</option>
+          @for (category of availableCategories(); track category.id) {
+            <option [ngValue]="category.id">{{ category.name }}</option>
+          }
+        </select>
+
+        <input class="input w-full rounded-2xl" formControlName="note" maxlength="250" placeholder="Optional note" />
+
+        <button type="submit" class="btn btn-sm rounded-full" [disabled]="!form.value.serviceCategoryId">
+          {{ addButtonText() }}
+        </button>
+      </div>
+    </form>
+  }
+
+  <div class="mt-4 space-y-3">
+    @for (item of items(); track item.id ?? item.serviceCategoryId) {
+      <div class="rounded-2xl bg-white/60 p-3">
+        <div class="flex items-start justify-between gap-3">
+          <div class="font-semibold text-slate-800">{{ categoryName(item) }}</div>
+          @if (canEdit()) {
+            <button type="button" class="btn btn-xs rounded-full" (click)="removeItem.emit(item)">Remove</button>
+          }
+        </div>
+        @if (item.note) {
+          <p class="text-sm text-slate-500">{{ item.note }}</p>
+        }
+      </div>
+    } @empty {
+      <p class="text-sm text-slate-600">{{ emptyText() }}</p>
+    }
+  </div>
+</div>

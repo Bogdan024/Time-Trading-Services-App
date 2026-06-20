@@ -157,6 +157,14 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
 
         if (member is null) return BadRequest("Could not get member");
 
+        if (member.AvailabilitySlots.Any(x =>
+            x.DayOfWeek == availabilitySlotEditDto.DayOfWeek &&
+            x.StartHour == availabilitySlotEditDto.StartHour &&
+            x.EndHour == availabilitySlotEditDto.EndHour))
+        {
+            return BadRequest("Availability slot already exists");
+        }
+
         member.AvailabilitySlots.Add(new MemberAvailabilitySlot
         {
             DayOfWeek = availabilitySlotEditDto.DayOfWeek,

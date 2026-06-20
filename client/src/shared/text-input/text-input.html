@@ -1,0 +1,40 @@
+<label class="form-control text-left">
+  <span class="label-text font-semibold text-slate-700">{{ label() }}</span>
+  <input
+    class="input register-input mt-2 w-full"
+    [type]="type()"
+    [attr.maxlength]="maxLength()"
+    [class.input-error]="control.invalid && control.touched"
+    [class.input-success]="control.valid && control.touched"
+    [formControl]="control"
+    [placeholder]="placeholder() || label()"
+  />
+
+  @if (control.hasError('required') && control.touched) {
+    <span class="mt-1 text-xs text-error">{{ label() }} is required</span>
+  }
+
+  @if (control.hasError('email') && control.touched) {
+    <span class="mt-1 text-xs text-error">Enter a valid email address</span>
+  }
+
+  @if (control.hasError('minlength') && control.touched) {
+    <span class="mt-1 text-xs text-error">
+      {{ label() }} must be at least {{ control.errors?.['minlength'].requiredLength }} characters
+    </span>
+  }
+
+  @if (control.hasError('maxlength') && control.touched) {
+    <span class="mt-1 text-xs text-error">
+      {{ label() }} must be at most {{ control.errors?.['maxlength'].requiredLength }} characters
+    </span>
+  }
+
+  @if (control.hasError('pattern') && control.touched) {
+    <span class="mt-1 text-xs text-error">Use a valid format for {{ label() }}</span>
+  }
+
+  @if (control.hasError('passwordMismatch') && control.touched) {
+    <span class="mt-1 text-xs text-error">Passwords do not match</span>
+  }
+</label>

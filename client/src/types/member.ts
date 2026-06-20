@@ -65,9 +65,24 @@ export type MemberServiceCategoryEdit = {
   note?: string;
 };
 
+export type ServicePreferenceItem = MemberServiceCategoryEdit & {
+  id?: number;
+  serviceCategory?: ServiceCategory;
+};
+
 export type MemberAvailabilitySlotEdit = {
   dayOfWeek: number;
   startHour: number;
   endHour: number;
   mode: number;
+};
+
+export type AvailabilitySlotItem = MemberAvailabilitySlotEdit & {
+  id?: number;
+};
+
+export type MemberProfileSetup = {
+  skills: MemberServiceCategoryEdit[];
+  needs: MemberServiceCategoryEdit[];
+  availabilitySlots: MemberAvailabilitySlotEdit[];
 };

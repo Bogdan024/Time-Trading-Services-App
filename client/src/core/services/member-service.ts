@@ -1,7 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
+import { forkJoin, of } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { EditableMember, Member, MemberAvailabilitySlotEdit, MemberServiceCategoryEdit } from '../../types/member';
+import {
+  EditableMember,
+  Member,
+  MemberAvailabilitySlotEdit,
+  MemberProfileSetup,
+  MemberServiceCategoryEdit,
+} from '../../types/member';
 
 @Injectable({
   providedIn: 'root',
@@ -44,6 +51,16 @@ export class MemberService {
 
   deleteAvailabilitySlot(slotId: number) {
     return this.http.delete<Member>(this.baseUrl + 'members/availability/' + slotId);
+  }
+
+  saveOnboardingProfileSetup(setup: MemberProfileSetup) {
+    const requests = [
+      ...setup.skills.map((skill) => this.addSkill(skill)),
+      ...setup.needs.map((need) => this.addNeed(need)),
+      ...setup.availabilitySlots.map((slot) => this.addAvailabilitySlot(slot)),
+    ];
+
+    return requests.length > 0 ? forkJoin(requests) : of([]);
   }
 
   uploadAvatar(file: File) {

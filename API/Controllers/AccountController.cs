@@ -15,7 +15,12 @@ public class AccountController(AppDbContext context, ITokenService tokenService)
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
     {
-        if (await EmailExists(registerDto.Email))
+        var email = registerDto.Email.Trim().ToLower();
+        var displayName = registerDto.DisplayName.Trim();
+        var city = registerDto.City.Trim();
+        var countryCode = registerDto.CountryCode.Trim().ToUpperInvariant();
+
+        if (await EmailExists(email))
         {
             return BadRequest("Email is already in use");
         }
@@ -24,13 +29,17 @@ public class AccountController(AppDbContext context, ITokenService tokenService)
 
         var user = new AppUser
         {
-            DisplayName = registerDto.DisplayName,
-            Email = registerDto.Email,
+            DisplayName = displayName,
+            Email = email,
             PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(registerDto.Password)),
             PasswordSalt = hmac.Key,
             Member = new Member
             {
-                DisplayName = registerDto.DisplayName
+                DisplayName = displayName,
+                About = registerDto.About?.Trim(),
+                City = city,
+                CountryCode = countryCode,
+                IsProfilePublic = registerDto.IsProfilePublic
             }
         };
 

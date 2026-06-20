@@ -14,13 +14,17 @@ import {
   MemberAvailabilitySlotEdit,
   MemberServiceCategoryEdit,
   ServiceCategory,
+  ServicePreferenceItem,
 } from '../../../types/member';
 import { TimeTransaction } from '../../../types/task';
 import { UploadModal } from '../../../shared/upload-modal/upload-modal';
+import { ServicePreferenceEditor } from '../../../shared/service-preference-editor/service-preference-editor';
+import { AvailabilityEditor, AvailabilitySlotRemove } from '../../../shared/availability-editor/availability-editor';
+import { dayName as formatDayName, modeName as formatModeName } from '../../../shared/member-profile-options';
 
 @Component({
   selector: 'app-member-detail',
-  imports: [DatePipe, FormsModule, RouterLink, UploadModal],
+  imports: [AvailabilityEditor, DatePipe, FormsModule, RouterLink, ServicePreferenceEditor, UploadModal],
   templateUrl: './member-detail.html',
   styleUrl: './member-detail.css',
 })
@@ -54,36 +58,6 @@ export class MemberDetail implements OnInit {
     countryCode: '',
     isProfilePublic: true,
   };
-  protected newSkill: MemberServiceCategoryEdit = {
-    serviceCategoryId: 0,
-    note: '',
-  };
-  protected newNeed: MemberServiceCategoryEdit = {
-    serviceCategoryId: 0,
-    note: '',
-  };
-  protected newAvailabilitySlot: MemberAvailabilitySlotEdit = {
-    dayOfWeek: 1,
-    startHour: 9,
-    endHour: 10,
-    mode: 3,
-  };
-  protected days = [
-    { value: 0, label: 'Sunday' },
-    { value: 1, label: 'Monday' },
-    { value: 2, label: 'Tuesday' },
-    { value: 3, label: 'Wednesday' },
-    { value: 4, label: 'Thursday' },
-    { value: 5, label: 'Friday' },
-    { value: 6, label: 'Saturday' },
-  ];
-  protected startHours = Array.from({ length: 24 }, (_, hour) => hour);
-  protected endHours = Array.from({ length: 24 }, (_, index) => index + 1);
-  protected availabilityModes = [
-    { value: 1, label: 'In person' },
-    { value: 2, label: 'Remote' },
-    { value: 3, label: 'Either' },
-  ];
 
   ngOnInit(): void {
     this.route.data.subscribe({
@@ -101,15 +75,11 @@ export class MemberDetail implements OnInit {
   }
 
   protected dayName(slot: MemberAvailabilitySlot) {
-    return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][slot.dayOfWeek] ?? 'Flexible';
+    return formatDayName(slot.dayOfWeek);
   }
 
   protected modeName(slot: MemberAvailabilitySlot) {
-    return {
-      1: 'In person',
-      2: 'Remote',
-      3: 'Either',
-    }[slot.mode] ?? 'Flexible';
+    return formatModeName(slot.mode);
   }
 
   protected isOwnProfile(member: Member) {
@@ -129,18 +99,6 @@ export class MemberDetail implements OnInit {
 
   protected transactionDirection(transaction: TimeTransaction) {
     return transaction.toMember.id === this.accountService.currentUser()?.id ? 'Earned' : 'Spent';
-  }
-
-  protected availableSkillCategories(member: Member) {
-    const selectedCategoryIds = new Set(member.offeredSkills.map((skill) => skill.serviceCategoryId));
-
-    return this.serviceCategories().filter((category) => !selectedCategoryIds.has(category.id));
-  }
-
-  protected availableNeedCategories(member: Member) {
-    const selectedCategoryIds = new Set(member.needsHelpWith.map((need) => need.serviceCategoryId));
-
-    return this.serviceCategories().filter((category) => !selectedCategoryIds.has(category.id));
   }
 
   protected startEdit(member: Member) {
@@ -190,20 +148,19 @@ export class MemberDetail implements OnInit {
     });
   }
 
-  protected addSkill() {
-    if (!this.newSkill.serviceCategoryId) return;
-
-    this.memberService.addSkill(this.newSkill).subscribe({
+  protected addSkill(skillToAdd: MemberServiceCategoryEdit) {
+    this.memberService.addSkill(skillToAdd).subscribe({
       next: (member) => {
         this.member.set(member);
-        this.newSkill = { serviceCategoryId: 0, note: '' };
         this.toast.success('Skill added');
       },
     });
   }
 
-  protected deleteSkill(skillId: number) {
-    this.memberService.deleteSkill(skillId).subscribe({
+  protected deleteSkill(skillToDelete: ServicePreferenceItem) {
+    if (!skillToDelete.id) return;
+
+    this.memberService.deleteSkill(skillToDelete.id).subscribe({
       next: (member) => {
         this.member.set(member);
         this.toast.success('Skill removed');
@@ -211,20 +168,19 @@ export class MemberDetail implements OnInit {
     });
   }
 
-  protected addNeed() {
-    if (!this.newNeed.serviceCategoryId) return;
-
-    this.memberService.addNeed(this.newNeed).subscribe({
+  protected addNeed(needToAdd: MemberServiceCategoryEdit) {
+    this.memberService.addNeed(needToAdd).subscribe({
       next: (member) => {
         this.member.set(member);
-        this.newNeed = { serviceCategoryId: 0, note: '' };
         this.toast.success('Need added');
       },
     });
   }
 
-  protected deleteNeed(needId: number) {
-    this.memberService.deleteNeed(needId).subscribe({
+  protected deleteNeed(needToDelete: ServicePreferenceItem) {
+    if (!needToDelete.id) return;
+
+    this.memberService.deleteNeed(needToDelete.id).subscribe({
       next: (member) => {
         this.member.set(member);
         this.toast.success('Need removed');
@@ -232,28 +188,19 @@ export class MemberDetail implements OnInit {
     });
   }
 
-  protected addAvailabilitySlot() {
-    if (this.newAvailabilitySlot.endHour <= this.newAvailabilitySlot.startHour) {
-      this.toast.error('End hour must be after start hour');
-      return;
-    }
-
-    this.memberService.addAvailabilitySlot(this.newAvailabilitySlot).subscribe({
+  protected addAvailabilitySlot(slot: MemberAvailabilitySlotEdit) {
+    this.memberService.addAvailabilitySlot(slot).subscribe({
       next: (member) => {
         this.member.set(member);
-        this.newAvailabilitySlot = {
-          dayOfWeek: this.newAvailabilitySlot.dayOfWeek,
-          startHour: 9,
-          endHour: 10,
-          mode: this.newAvailabilitySlot.mode,
-        };
         this.toast.success('Availability added');
       },
     });
   }
 
-  protected deleteAvailabilitySlot(slotId: number) {
-    this.memberService.deleteAvailabilitySlot(slotId).subscribe({
+  protected deleteAvailabilitySlot(slotToDelete: AvailabilitySlotRemove) {
+    if (!slotToDelete.slot.id) return;
+
+    this.memberService.deleteAvailabilitySlot(slotToDelete.slot.id).subscribe({
       next: (member) => {
         this.member.set(member);
         this.toast.success('Availability removed');

@@ -33,72 +33,38 @@
           </p>
         </div>
 
-        <div class="civic-card rounded-3xl p-5">
-          <div class="flex items-center justify-between gap-3">
-            <h2 class="font-semibold text-slate-800">Availability</h2>
-            @if (isOwnProfile(member)) {
-              <button type="button" class="btn btn-xs rounded-full" (click)="availabilityEditMode.set(!availabilityEditMode())">
-                {{ availabilityEditMode() ? 'Done' : 'Edit' }}
-              </button>
-            }
-          </div>
+        @if (availabilityEditMode()) {
+          <app-availability-editor
+            title="Availability"
+            emptyText="Flexible"
+            closeButtonText="Done"
+            layout="compact"
+            [slots]="member.availabilitySlots"
+            (addSlot)="addAvailabilitySlot($event)"
+            (removeSlot)="deleteAvailabilitySlot($event)"
+            (closeEditor)="availabilityEditMode.set(false)"
+          />
+        } @else {
+          <div class="civic-card rounded-3xl p-5">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="font-semibold text-slate-800">Availability</h2>
+              @if (isOwnProfile(member)) {
+                <button type="button" class="btn btn-xs rounded-full" (click)="availabilityEditMode.set(true)">Edit</button>
+              }
+            </div>
 
-          @if (availabilityEditMode()) {
-            <form (ngSubmit)="addAvailabilitySlot()" class="mt-4 grid gap-3 rounded-2xl bg-white/50 p-3">
-              <select class="select select-sm w-full rounded-2xl" name="availabilityDay" [(ngModel)]="newAvailabilitySlot.dayOfWeek">
-                @for (day of days; track day.value) {
-                  <option [ngValue]="day.value">{{ day.label }}</option>
-                }
-              </select>
-
-              <div class="grid grid-cols-2 gap-2">
-                <select class="select select-sm w-full rounded-2xl" name="availabilityStart" [(ngModel)]="newAvailabilitySlot.startHour">
-                  @for (hour of startHours; track hour) {
-                    <option [ngValue]="hour">{{ hour }}:00</option>
-                  }
-                </select>
-
-                <select class="select select-sm w-full rounded-2xl" name="availabilityEnd" [(ngModel)]="newAvailabilitySlot.endHour">
-                  @for (hour of endHours; track hour) {
-                    <option [ngValue]="hour">{{ hour }}:00</option>
-                  }
-                </select>
-              </div>
-
-              <select class="select select-sm w-full rounded-2xl" name="availabilityMode" [(ngModel)]="newAvailabilitySlot.mode">
-                @for (mode of availabilityModes; track mode.value) {
-                  <option [ngValue]="mode.value">{{ mode.label }}</option>
-                }
-              </select>
-
-              <button
-                type="submit"
-                class="btn btn-sm rounded-full"
-                [disabled]="newAvailabilitySlot.endHour <= newAvailabilitySlot.startHour"
-              >
-                Add availability
-              </button>
-            </form>
-          }
-
-          <div class="mt-3 space-y-2 text-sm text-slate-600">
-            @for (slot of member.availabilitySlots; track slot.id) {
-              <div class="rounded-2xl bg-white/60 p-3">
-                <div class="flex items-start justify-between gap-3">
-                  <div>
-                    {{ dayName(slot) }}, {{ slot.startHour }}:00-{{ slot.endHour }}:00
-                    <span class="block text-xs text-slate-500">{{ modeName(slot) }}</span>
-                  </div>
-                  @if (availabilityEditMode()) {
-                    <button type="button" class="btn btn-xs rounded-full" (click)="deleteAvailabilitySlot(slot.id)">Remove</button>
-                  }
+            <div class="mt-3 space-y-2 text-sm text-slate-600">
+              @for (slot of member.availabilitySlots; track slot.id) {
+                <div class="rounded-2xl bg-white/60 p-3">
+                  {{ dayName(slot) }}, {{ slot.startHour }}:00-{{ slot.endHour }}:00
+                  <span class="block text-xs text-slate-500">{{ modeName(slot) }}</span>
                 </div>
-              </div>
-            } @empty {
-              <p>Flexible</p>
-            }
+              } @empty {
+                <p>Flexible</p>
+              }
+            </div>
           </div>
-        </div>
+        }
       </aside>
 
       <div class="space-y-6">
@@ -207,89 +173,27 @@
         }
 
         <section class="grid gap-4 md:grid-cols-2">
-          <div class="civic-card rounded-3xl p-6">
-            <h2 class="text-xl font-semibold text-slate-800">Can Help With</h2>
-            @if (isOwnProfile(member)) {
-              <form (ngSubmit)="addSkill()" class="mt-4 grid gap-3 rounded-2xl bg-white/50 p-3">
-                <select class="select w-full rounded-2xl" name="skillCategory" [(ngModel)]="newSkill.serviceCategoryId">
-                  <option [ngValue]="0">Choose a skill category</option>
-                  @for (category of availableSkillCategories(member); track category.id) {
-                    <option [ngValue]="category.id">{{ category.name }}</option>
-                  }
-                </select>
+          <app-service-preference-editor
+            title="Can Help With"
+            emptyText="No skills added yet."
+            addButtonText="Add skill"
+            [canEdit]="isOwnProfile(member)"
+            [categories]="serviceCategories()"
+            [items]="member.offeredSkills"
+            (addItem)="addSkill($event)"
+            (removeItem)="deleteSkill($event)"
+          />
 
-                <input
-                  class="input w-full rounded-2xl"
-                  name="skillNote"
-                  maxlength="250"
-                  placeholder="Optional note"
-                  [(ngModel)]="newSkill.note"
-                />
-
-                <button type="submit" class="btn btn-sm rounded-full" [disabled]="!newSkill.serviceCategoryId">Add skill</button>
-              </form>
-            }
-
-            <div class="mt-4 space-y-3">
-              @for (skill of member.offeredSkills; track skill.id) {
-                <div class="rounded-2xl bg-white/60 p-3">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="font-semibold text-slate-800">{{ skill.serviceCategory.name }}</div>
-                    @if (isOwnProfile(member)) {
-                      <button type="button" class="btn btn-xs rounded-full" (click)="deleteSkill(skill.id)">Remove</button>
-                    }
-                  </div>
-                  @if (skill.note) {
-                    <p class="text-sm text-slate-500">{{ skill.note }}</p>
-                  }
-                </div>
-              } @empty {
-                <p class="text-sm text-slate-600">No skills added yet.</p>
-              }
-            </div>
-          </div>
-
-          <div class="civic-card rounded-3xl p-6">
-            <h2 class="text-xl font-semibold text-slate-800">Needs Help With</h2>
-            @if (isOwnProfile(member)) {
-              <form (ngSubmit)="addNeed()" class="mt-4 grid gap-3 rounded-2xl bg-white/50 p-3">
-                <select class="select w-full rounded-2xl" name="needCategory" [(ngModel)]="newNeed.serviceCategoryId">
-                  <option [ngValue]="0">Choose a need category</option>
-                  @for (category of availableNeedCategories(member); track category.id) {
-                    <option [ngValue]="category.id">{{ category.name }}</option>
-                  }
-                </select>
-
-                <input
-                  class="input w-full rounded-2xl"
-                  name="needNote"
-                  maxlength="250"
-                  placeholder="Optional note"
-                  [(ngModel)]="newNeed.note"
-                />
-
-                <button type="submit" class="btn btn-sm rounded-full" [disabled]="!newNeed.serviceCategoryId">Add need</button>
-              </form>
-            }
-
-            <div class="mt-4 space-y-3">
-              @for (need of member.needsHelpWith; track need.id) {
-                <div class="rounded-2xl bg-white/60 p-3">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="font-semibold text-slate-800">{{ need.serviceCategory.name }}</div>
-                    @if (isOwnProfile(member)) {
-                      <button type="button" class="btn btn-xs rounded-full" (click)="deleteNeed(need.id)">Remove</button>
-                    }
-                  </div>
-                  @if (need.note) {
-                    <p class="text-sm text-slate-500">{{ need.note }}</p>
-                  }
-                </div>
-              } @empty {
-                <p class="text-sm text-slate-600">No needs added yet.</p>
-              }
-            </div>
-          </div>
+          <app-service-preference-editor
+            title="Needs Help With"
+            emptyText="No needs added yet."
+            addButtonText="Add need"
+            [canEdit]="isOwnProfile(member)"
+            [categories]="serviceCategories()"
+            [items]="member.needsHelpWith"
+            (addItem)="addNeed($event)"
+            (removeItem)="deleteNeed($event)"
+          />
         </section>
 
         <section class="civic-card rounded-3xl p-6">

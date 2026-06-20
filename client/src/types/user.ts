@@ -15,4 +15,8 @@ export type RegisterCreds = {
   email: string;
   displayName: string;
   password: string;
+  city: string;
+  countryCode: string;
+  about?: string;
+  isProfilePublic: boolean;
 };
