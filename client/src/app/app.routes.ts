@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { Home } from '../features/home/home';
 import { TaskList } from '../features/tasks/task-list/task-list';
 import { TaskDetail } from '../features/tasks/task-detail/task-detail';
+import { TaskCreate } from '../features/tasks/task-create/task-create';
 import { MyTasks } from '../features/tasks/my-tasks/my-tasks';
 import { PostedTasks } from '../features/tasks/posted-tasks/posted-tasks';
 import { AcceptedTasks } from '../features/tasks/accepted-tasks/accepted-tasks';
@@ -26,6 +27,7 @@ export const routes: Routes = [
     canActivate: [authGuard],
     children: [
       { path: 'tasks', component: TaskList },
+      { path: 'tasks/create', component: TaskCreate },
       { path: 'tasks/:id', component: TaskDetail },
       {
         path: 'my-tasks',
@@ -54,3 +56,5 @@ export const routes: Routes = [
   { path: 'server-error', component: ServerError },
   { path: '**', component: NotFound },
 ];
+
+

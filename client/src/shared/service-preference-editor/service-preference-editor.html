@@ -6,7 +6,11 @@
 
   @if (canEdit()) {
     <form [formGroup]="form" class="mt-4 grid gap-3 rounded-2xl bg-white/50 p-3" (ngSubmit)="addPreference()">
-      <div class="grid gap-3 md:grid-cols-[1fr_1fr_auto]">
+      <div
+        class="grid gap-3"
+        [class.md:grid-cols-[1fr_1fr_auto]]="layout() === 'wide'"
+        [class.grid-cols-1]="layout() === 'compact'"
+      >
         <select class="select w-full rounded-2xl" formControlName="serviceCategoryId">
           <option [ngValue]="0">Choose a category</option>
           @for (category of availableCategories(); track category.id) {
@@ -16,7 +20,12 @@
 
         <input class="input w-full rounded-2xl" formControlName="note" maxlength="250" placeholder="Optional note" />
 
-        <button type="submit" class="btn btn-sm rounded-full" [disabled]="!form.value.serviceCategoryId">
+        <button
+          type="submit"
+          class="btn btn-sm rounded-full"
+          [class.w-full]="layout() === 'compact'"
+          [disabled]="!form.value.serviceCategoryId"
+        >
           {{ addButtonText() }}
         </button>
       </div>
@@ -41,3 +50,4 @@
     }
   </div>
 </div>
+

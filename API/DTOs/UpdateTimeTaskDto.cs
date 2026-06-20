@@ -16,17 +16,20 @@ public class UpdateTimeTaskDto
     [Range(1, int.MaxValue)]
     public int ServiceCategoryId { get; set; }
 
-    [Range(1, 24)]
+    [Range(1, 10)]
     public int EstimatedHours { get; set; }
 
     [EnumDataType(typeof(TaskLocationMode))]
     public TaskLocationMode LocationMode { get; set; }
 
+    [Required]
     [StringLength(80)]
-    public string? City { get; set; }
+    public required string City { get; set; }
 
+    [Required]
     [StringLength(2, MinimumLength = 2)]
-    public string? CountryCode { get; set; }
+    public required string CountryCode { get; set; }
 
     public DateTime? DueAtUtc { get; set; }
 }
+

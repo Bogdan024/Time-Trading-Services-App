@@ -1,0 +1,199 @@
+<section class="mx-auto max-w-5xl px-4 py-8">
+  <a routerLink="/tasks" class="btn btn-sm mb-6 rounded-full bg-white/70">Back to tasks</a>
+
+  <div class="mb-8 max-w-3xl">
+    <p class="text-xs font-semibold uppercase tracking-[0.25em] text-[--civic-teal]">Post a task</p>
+    <h1 class="civic-display mt-2 text-5xl font-semibold text-slate-800">Create a time exchange</h1>
+    <p class="mt-3 text-sm leading-7 text-slate-600">
+      Move step by step: describe the need, set the time credits, add location, then review before posting.
+    </p>
+  </div>
+
+  <form [formGroup]="form" class="civic-card rounded-4xl p-4 md:p-8" (ngSubmit)="createTask()">
+    <div class="grid gap-3 md:grid-cols-4">
+      @for (step of steps; track step; let index = $index) {
+        <div
+          class="rounded-2xl border px-4 py-3 text-sm font-semibold"
+          [class.border-[var(--civic-teal)]]="currentStep() === index + 1"
+          [class.bg-white]="currentStep() === index + 1"
+          [class.text-[var(--civic-teal)]]="currentStep() === index + 1"
+          [class.border-white\/70]="currentStep() !== index + 1"
+          [class.text-slate-500]="currentStep() !== index + 1"
+        >
+          {{ index + 1 }}. {{ step }}
+        </div>
+      }
+    </div>
+
+    <div class="mt-8 rounded-4xl bg-white/55 p-5 md:p-7">
+      @if (currentStep() === 1) {
+        <section>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[--civic-teal]">What do you need?</p>
+          <h2 class="civic-display mt-2 text-3xl font-semibold text-slate-800">Task details</h2>
+          <p class="mt-2 text-sm text-slate-600">Clear details help the right member understand and accept your task.</p>
+
+          <div class="mt-6 grid gap-5">
+            <app-text-input label="Title" placeholder="Example: Help move a small sofa" formControlName="title" />
+
+            <label class="form-control text-left">
+              <span class="label-text font-semibold text-slate-700">Service category</span>
+              <select class="select register-input mt-2 w-full" formControlName="serviceCategoryId">
+                <option [ngValue]="0">Choose a category</option>
+                @for (category of serviceCategories(); track category.id) {
+                  <option [ngValue]="category.id">{{ category.name }}</option>
+                }
+              </select>
+              @if (form.controls['serviceCategoryId'].invalid && form.controls['serviceCategoryId'].touched) {
+                <span class="mt-1 text-xs text-error">Choose a service category</span>
+              }
+            </label>
+
+            <label class="form-control text-left">
+              <span class="label-text font-semibold text-slate-700">Description</span>
+              <textarea
+                class="textarea register-input mt-2 min-h-52 w-full"
+                formControlName="description"
+                placeholder="Explain the task, expected outcome, tools needed, access details, and anything that helps someone decide."
+              ></textarea>
+              <span class="mt-1 text-xs text-slate-500">Minimum 20 characters. Good descriptions build trust and reduce back-and-forth.</span>
+              @if (form.controls['description'].hasError('required') && form.controls['description'].touched) {
+                <span class="mt-1 text-xs text-error">Description is required</span>
+              }
+              @if (form.controls['description'].hasError('minlength') && form.controls['description'].touched) {
+                <span class="mt-1 text-xs text-error">Description must be at least 20 characters</span>
+              }
+              @if (form.controls['description'].hasError('maxlength') && form.controls['description'].touched) {
+                <span class="mt-1 text-xs text-error">Description must be at most 2000 characters</span>
+              }
+            </label>
+          </div>
+        </section>
+      }
+
+      @if (currentStep() === 2) {
+        <section>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[--civic-teal]">Exchange context</p>
+          <h2 class="civic-display mt-2 text-3xl font-semibold text-slate-800">Credits and location</h2>
+          <p class="mt-2 text-sm text-slate-600">Time credits define the exchange. Location keeps tasks useful for filtering and trust.</p>
+
+          <div class="mt-6 grid gap-5 md:grid-cols-2">
+            <label class="form-control text-left">
+              <span class="label-text font-semibold text-slate-700">Time credits</span>
+              <select class="select register-input mt-2 w-full text-lg font-semibold" formControlName="estimatedHours">
+                @for (credits of creditOptions; track credits) {
+                  <option [ngValue]="credits">{{ credits }} {{ credits === 1 ? 'credit' : 'credits' }}</option>
+                }
+              </select>
+              <span class="mt-1 text-xs text-slate-500">Transferred to the helper when you complete the task.</span>
+            </label>
+
+            <label class="form-control text-left">
+              <span class="label-text font-semibold text-slate-700">Mode</span>
+              <select class="select register-input mt-2 w-full" formControlName="locationMode">
+                @for (mode of locationModes; track mode.value) {
+                  <option [ngValue]="mode.value">{{ mode.label }}</option>
+                }
+              </select>
+            </label>
+
+            <app-text-input label="City" formControlName="city" />
+            <app-text-input label="Country code" placeholder="RO" formControlName="countryCode" />
+          </div>
+        </section>
+      }
+
+      @if (currentStep() === 3) {
+        <section>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[--civic-teal]">When?</p>
+          <h2 class="civic-display mt-2 text-3xl font-semibold text-slate-800">Due window</h2>
+          <p class="mt-2 text-sm text-slate-600">Optional, but useful when timing matters. Choose both date and time, or leave both empty.</p>
+
+          <div class="mt-6 grid gap-5 md:grid-cols-2">
+            <label class="form-control text-left">
+              <span class="label-text font-semibold text-slate-700">Due date</span>
+              <input class="input register-input mt-2 w-full" type="date" formControlName="dueDate" />
+            </label>
+
+            <label class="form-control text-left">
+              <span class="label-text font-semibold text-slate-700">Due time</span>
+              <select class="select register-input mt-2 w-full" formControlName="dueTime">
+                <option value="">No specific time</option>
+                @for (time of timeOptions; track time) {
+                  <option [value]="time">{{ time }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          @if (form.hasError('incompleteDueDate') && (form.controls['dueDate'].touched || form.controls['dueTime'].touched)) {
+            <p class="mt-2 text-xs text-error">Choose both a due date and due time, or leave both empty.</p>
+          }
+          @if (form.hasError('dueDateInPast') && (form.controls['dueDate'].touched || form.controls['dueTime'].touched)) {
+            <p class="mt-2 text-xs text-error">Due date must be in the future.</p>
+          }
+        </section>
+      }
+
+      @if (currentStep() === 4) {
+        <section>
+          <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[--civic-teal]">Review</p>
+          <h2 class="civic-display mt-2 text-3xl font-semibold text-slate-800">Ready to post?</h2>
+          <p class="mt-2 text-sm text-slate-600">Check the exchange details before publishing the task to the community hub.</p>
+
+          <div class="mt-6 grid gap-4 md:grid-cols-2">
+            <div class="rounded-3xl bg-white/70 p-4">
+              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Task</p>
+              <h3 class="mt-2 text-xl font-semibold text-slate-800">{{ form.value.title || 'Task title' }}</h3>
+              <p class="mt-1 text-sm text-slate-600">{{ selectedCategoryName() }}</p>
+            </div>
+
+            <div class="rounded-3xl bg-white/70 p-4">
+              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Exchange</p>
+              <p class="mt-2 font-semibold text-slate-800">{{ form.value.estimatedHours || 1 }} time credits</p>
+              <p class="mt-1 text-sm text-slate-600">{{ selectedLocationModeName() }}</p>
+            </div>
+
+            <div class="rounded-3xl bg-white/70 p-4">
+              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Location</p>
+              <p class="mt-2 font-semibold text-slate-800">
+                {{ form.value.city || 'City' }}{{ form.value.countryCode ? ', ' + form.value.countryCode.toUpperCase() : ', country' }}
+              </p>
+            </div>
+
+            <div class="rounded-3xl bg-white/70 p-4">
+              <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Due</p>
+              @if (form.value.dueDate && form.value.dueTime) {
+                <p class="mt-2 font-semibold text-slate-800">{{ form.value.dueDate }} at {{ form.value.dueTime }}</p>
+              } @else {
+                <p class="mt-2 font-semibold text-slate-800">No due time set</p>
+              }
+            </div>
+          </div>
+        </section>
+      }
+    </div>
+
+    @if (validationErrors().length > 0) {
+      <div class="mt-5 rounded-2xl bg-error/10 p-4 text-sm text-error">
+        @for (error of validationErrors(); track $index) {
+          <p>{{ error }}</p>
+        }
+      </div>
+    }
+
+    <div class="mt-8 flex items-center justify-between gap-3">
+      <button type="button" class="btn rounded-full" [disabled]="currentStep() === 1 || loading()" (click)="previousStep()">Back</button>
+
+      @if (currentStep() < steps.length) {
+        <button type="button" class="btn btn-accent rounded-full" [disabled]="!canContinue() || loading()" (click)="nextStep()">Continue</button>
+      } @else {
+        <button type="submit" class="btn btn-accent rounded-full" [disabled]="loading()">
+          @if (loading()) {
+            <span class="loading loading-spinner loading-sm"></span>
+          }
+          Post task
+        </button>
+      }
+    </div>
+  </form>
+</section>

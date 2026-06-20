@@ -20,7 +20,7 @@
         </div>
 
         <div class="mt-4 flex flex-wrap gap-3 text-sm text-slate-600">
-          <span>{{ task.estimatedHours }} hours</span>
+          <span>{{ task.estimatedHours }} time credits</span>
           @if (task.dueAtUtc) {
             <span>Due {{ task.dueAtUtc | date: 'mediumDate' }}</span>
           }
@@ -35,3 +35,5 @@
     }
   </div>
 }
+
+

@@ -178,6 +178,7 @@
             emptyText="No skills added yet."
             addButtonText="Add skill"
             [canEdit]="isOwnProfile(member)"
+            layout="compact"
             [categories]="serviceCategories()"
             [items]="member.offeredSkills"
             (addItem)="addSkill($event)"
@@ -189,6 +190,7 @@
             emptyText="No needs added yet."
             addButtonText="Add need"
             [canEdit]="isOwnProfile(member)"
+            layout="compact"
             [categories]="serviceCategories()"
             [items]="member.needsHelpWith"
             (addItem)="addNeed($event)"
@@ -215,3 +217,5 @@
     }
   </section>
 }
+
+

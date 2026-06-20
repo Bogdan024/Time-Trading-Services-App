@@ -1,7 +1,11 @@
 <section class="mx-auto max-w-7xl px-4 py-8">
-  <div class="mb-6">
-    <h1 class="civic-display text-4xl font-semibold text-slate-800">Tasks</h1>
-    <p class="mt-2 text-sm text-slate-600">Open requests from the community.</p>
+  <div class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="civic-display text-4xl font-semibold text-slate-800">Tasks</h1>
+      <p class="mt-2 text-sm text-slate-600">Open requests from the community.</p>
+    </div>
+
+    <a routerLink="/tasks/create" class="btn btn-accent rounded-full">Post a task</a>
   </div>
 
   @if (tasks$ | async; as tasks) {
@@ -15,7 +19,7 @@
               </p>
               <h2 class="mt-2 text-xl font-semibold text-slate-800">{{ task.title }}</h2>
             </div>
-            <span class="civic-badge rounded-full px-3 py-1 text-sm font-semibold">{{ task.estimatedHours }}h</span>
+            <span class="civic-badge rounded-full px-3 py-1 text-sm font-semibold">{{ task.estimatedHours }} credits</span>
           </div>
 
           <p class="mt-4 line-clamp-3 text-sm text-slate-600">{{ task.description }}</p>
@@ -43,3 +47,6 @@
     </div>
   }
 </section>
+
+
+

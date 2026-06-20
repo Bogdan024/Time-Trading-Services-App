@@ -16,6 +16,7 @@ export class ServicePreferenceEditor {
   emptyText = input('No categories selected yet.');
   addButtonText = input('Add');
   canEdit = input(true);
+  layout = input<'compact' | 'wide'>('wide');
   categories = input<ServiceCategory[]>([]);
   items = input<ServicePreferenceItem[]>([]);
   addItem = output<MemberServiceCategoryEdit>();
@@ -49,3 +50,5 @@ export class ServicePreferenceEditor {
   }
 
 }
+
+
