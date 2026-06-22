@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class TasksController(ITimeTaskRepository taskRepository) : BaseApiController
+public class TasksController(ITimeTaskRepository taskRepository, IMessageRepository messageRepository) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<TimeTaskDto>>> GetTasks([FromQuery] TaskParams taskParams)
@@ -165,6 +165,7 @@ public class TasksController(ITimeTaskRepository taskRepository) : BaseApiContro
         task.Status = TimeTaskStatus.Cancelled;
         task.UpdatedAtUtc = DateTime.UtcNow;
 
+        await messageRepository.CloseTaskConversationAsync(task.Id);
         taskRepository.Update(task);
 
         if (await taskRepository.SaveAllAsync()) return NoContent();
@@ -195,6 +196,7 @@ public class TasksController(ITimeTaskRepository taskRepository) : BaseApiContro
         task.Status = TimeTaskStatus.InProgress;
         task.UpdatedAtUtc = DateTime.UtcNow;
 
+        await messageRepository.GetOrCreateTaskConversationAsync(task);
         taskRepository.Update(task);
 
         if (await taskRepository.SaveAllAsync()) return NoContent();
@@ -224,6 +226,7 @@ public class TasksController(ITimeTaskRepository taskRepository) : BaseApiContro
         task.Status = TimeTaskStatus.Completed;
         task.CompletedAtUtc = DateTime.UtcNow;
         task.UpdatedAtUtc = DateTime.UtcNow;
+        await messageRepository.CloseTaskConversationAsync(task.Id);
 
         var transaction = new TimeTransaction
         {
@@ -254,3 +257,4 @@ public class TasksController(ITimeTaskRepository taskRepository) : BaseApiContro
         return dueAtUtc.HasValue && dueAtUtc.Value <= DateTime.UtcNow;
     }
 }
+

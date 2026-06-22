@@ -1,0 +1,9 @@
+.message-own {
+  background: var(--civic-teal);
+  color: white;
+}
+
+.message-other {
+  background: rgba(255, 255, 255, 0.9);
+  color: rgb(51 65 85);
+}

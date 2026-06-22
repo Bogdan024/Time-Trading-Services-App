@@ -41,6 +41,14 @@ export class TaskDetail implements OnInit {
     return task.status === 1 && task.postedByMember.id !== this.accountService.currentUser()?.id;
   }
 
+  protected canViewConversation(task: TimeTask) {
+    const currentUserId = this.accountService.currentUser()?.id;
+
+    return !!task.acceptedByMember
+      && (task.postedByMember.id === currentUserId || task.acceptedByMember.id === currentUserId)
+      && task.status !== 1;
+  }
+
   protected backLink() {
     const from = this.route.snapshot.queryParamMap.get('from');
 

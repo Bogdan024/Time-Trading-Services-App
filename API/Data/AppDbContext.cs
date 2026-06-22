@@ -16,6 +16,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<TimeTask> TimeTasks { get; set; }
     public DbSet<TimeTransaction> TimeTransactions { get; set; }
     public DbSet<MemberReview> MemberReviews { get; set; }
+    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<MessageDeletion> MessageDeletions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,6 +85,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(x => x.ToMemberId)
             .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<MemberReview>()
             .HasIndex(x => new { x.ReviewerMemberId, x.TimeTaskId })
             .IsUnique();
@@ -108,6 +113,60 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(x => x.ReviewedMemberId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Conversation>()
+            .HasIndex(x => new { x.Type, x.TimeTaskId })
+            .IsUnique();
+
+        modelBuilder.Entity<Conversation>()
+            .HasOne(x => x.TimeTask)
+            .WithMany()
+            .HasForeignKey(x => x.TimeTaskId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ConversationParticipant>()
+            .HasKey(x => new { x.ConversationId, x.MemberId });
+
+        modelBuilder.Entity<ConversationParticipant>()
+            .HasOne(x => x.Conversation)
+            .WithMany(x => x.Participants)
+            .HasForeignKey(x => x.ConversationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ConversationParticipant>()
+            .HasOne(x => x.Member)
+            .WithMany()
+            .HasForeignKey(x => x.MemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Message>()
+            .HasIndex(x => x.ConversationId);
+
+        modelBuilder.Entity<Message>()
+            .HasOne(x => x.Conversation)
+            .WithMany(x => x.Messages)
+            .HasForeignKey(x => x.ConversationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Message>()
+            .HasOne(x => x.SenderMember)
+            .WithMany()
+            .HasForeignKey(x => x.SenderMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MessageDeletion>()
+            .HasKey(x => new { x.MessageId, x.MemberId });
+
+        modelBuilder.Entity<MessageDeletion>()
+            .HasOne(x => x.Message)
+            .WithMany(x => x.DeletedForMembers)
+            .HasForeignKey(x => x.MessageId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<MessageDeletion>()
+            .HasOne(x => x.Member)
+            .WithMany()
+            .HasForeignKey(x => x.MemberId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
-
