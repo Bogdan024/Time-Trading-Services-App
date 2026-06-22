@@ -4,6 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AccountService } from '../../../core/services/account-service';
 import { MemberService } from '../../../core/services/member-service';
+import { ReviewService } from '../../../core/services/review-service';
 import { ServiceCategoryService } from '../../../core/services/service-category-service';
 import { TaskService } from '../../../core/services/task-service';
 import { ToastService } from '../../../core/services/toast-service';
@@ -16,6 +17,7 @@ import {
   ServiceCategory,
   ServicePreferenceItem,
 } from '../../../types/member';
+import { MemberReview, ReviewSummary } from '../../../types/review';
 import { TimeTransaction } from '../../../types/task';
 import { UploadModal } from '../../../shared/upload-modal/upload-modal';
 import { ServicePreferenceEditor } from '../../../shared/service-preference-editor/service-preference-editor';
@@ -40,6 +42,7 @@ export class MemberDetail implements OnInit {
 
   private route = inject(ActivatedRoute);
   private memberService = inject(MemberService);
+  private reviewService = inject(ReviewService);
   private serviceCategoryService = inject(ServiceCategoryService);
   private taskService = inject(TaskService);
   private toast = inject(ToastService);
@@ -47,6 +50,9 @@ export class MemberDetail implements OnInit {
   protected member = signal<Member | undefined>(undefined);
   protected serviceCategories = signal<ServiceCategory[]>([]);
   protected transactions = signal<TimeTransaction[]>([]);
+  protected reviews = signal<MemberReview[]>([]);
+  protected reviewSummary = signal<ReviewSummary>({ averageRating: 0, reviewCount: 0 });
+  protected readonly reviewStars = [1, 2, 3, 4, 5];
   protected editMode = signal(false);
   protected availabilityEditMode = signal(false);
   protected avatarUploadMode = signal(false);
@@ -70,6 +76,7 @@ export class MemberDetail implements OnInit {
         this.setEditableMember(member);
         this.loadServiceCategoriesForOwnProfile(member);
         this.loadTransactionsForOwnProfile(member);
+        this.loadReviewsForProfile(member);
       },
     });
   }
@@ -252,6 +259,15 @@ export class MemberDetail implements OnInit {
     };
   }
 
+  private loadReviewsForProfile(member: Member) {
+    this.reviewService.getMemberReviewSummary(member.id).subscribe({
+      next: (summary) => this.reviewSummary.set(summary),
+    });
+
+    this.reviewService.getMemberReviews(member.id).subscribe({
+      next: (reviews) => this.reviews.set(reviews),
+    });
+  }
   private loadTransactionsForOwnProfile(member: Member) {
     if (!this.isOwnProfile(member)) {
       this.transactions.set([]);
@@ -271,3 +287,4 @@ export class MemberDetail implements OnInit {
     });
   }
 }
+

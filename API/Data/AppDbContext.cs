@@ -15,6 +15,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<MemberAvailabilitySlot> MemberAvailabilitySlots { get; set; }
     public DbSet<TimeTask> TimeTasks { get; set; }
     public DbSet<TimeTransaction> TimeTransactions { get; set; }
+    public DbSet<MemberReview> MemberReviews { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -80,5 +81,33 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany()
             .HasForeignKey(x => x.ToMemberId)
             .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<MemberReview>()
+            .HasIndex(x => new { x.ReviewerMemberId, x.TimeTaskId })
+            .IsUnique();
+
+        modelBuilder.Entity<MemberReview>()
+            .HasIndex(x => x.ReviewedMemberId);
+
+        modelBuilder.Entity<MemberReview>()
+            .HasIndex(x => x.TimeTaskId);
+
+        modelBuilder.Entity<MemberReview>()
+            .HasOne(x => x.TimeTask)
+            .WithMany()
+            .HasForeignKey(x => x.TimeTaskId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MemberReview>()
+            .HasOne(x => x.ReviewerMember)
+            .WithMany()
+            .HasForeignKey(x => x.ReviewerMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<MemberReview>()
+            .HasOne(x => x.ReviewedMember)
+            .WithMany()
+            .HasForeignKey(x => x.ReviewedMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
+

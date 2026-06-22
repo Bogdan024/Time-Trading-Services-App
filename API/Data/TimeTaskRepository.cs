@@ -85,6 +85,13 @@ public class TimeTaskRepository(AppDbContext context) : ITimeTaskRepository
             query = query.Where(x => x.DueAtUtc.HasValue && x.DueAtUtc <= dueSoonCutoff);
         }
 
+        if (taskParams.MinPosterRating.HasValue)
+        {
+            query = query.Where(task => context.MemberReviews
+                .Where(review => review.ReviewedMemberId == task.PostedByMemberId)
+                .Average(review => (double?)review.Rating) >= taskParams.MinPosterRating.Value);
+        }
+
         query = taskParams.OrderBy switch
         {
             "dueSoon" => query.OrderBy(x => x.DueAtUtc ?? DateTime.MaxValue),
@@ -141,3 +148,4 @@ public class TimeTaskRepository(AppDbContext context) : ITimeTaskRepository
         context.Entry(task).State = EntityState.Modified;
     }
 }
+

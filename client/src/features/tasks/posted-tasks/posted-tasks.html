@@ -43,4 +43,12 @@
   </div>
 }
 
-
+@if (reviewTarget(); as task) {
+  <app-review-form
+    [taskTitle]="task.title"
+    [targetName]="task.acceptedByMember?.displayName ?? 'the helper'"
+    [loading]="reviewLoading()"
+    (submitReview)="submitReview($event)"
+    (cancelReview)="closeReview()"
+  />
+}

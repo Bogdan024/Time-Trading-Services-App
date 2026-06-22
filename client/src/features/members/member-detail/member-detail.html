@@ -2,7 +2,7 @@
   <section class="mx-auto max-w-6xl px-4 py-8">
     <a routerLink="/members" class="btn btn-sm mb-6 rounded-full bg-white/70">Back</a>
 
-    <div class="grid gap-6 lg:grid-cols-[18rem_1fr]">
+    <div class="grid min-w-0 gap-6 lg:grid-cols-[18rem_minmax(0,1fr)]">
       <aside class="space-y-4">
         <div class="civic-card rounded-3xl p-5 text-center">
           <button
@@ -26,11 +26,30 @@
             }
           </button>
 
-          <h1 class="mt-4 text-2xl font-semibold text-slate-800">{{ member.displayName }}</h1>
-          <p class="text-sm text-slate-500">{{ member.city || 'Local' }}{{ member.countryCode ? ', ' + member.countryCode : '' }}</p>
+          <h1 class="safe-user-text mt-4 text-2xl font-semibold text-slate-800">{{ member.displayName }}</h1>
+          <p class="safe-user-text text-sm text-slate-500">{{ member.city || 'Local' }}{{ member.countryCode ? ', ' + member.countryCode : '' }}</p>
           <p class="mt-3 text-xs uppercase tracking-[0.2em] text-[var(--civic-teal)]">
             Active {{ member.lastActiveAtUtc | date: 'mediumDate' }}
           </p>
+
+          <div class="mt-4 rounded-2xl bg-white/60 p-3">
+            <div class="flex items-center justify-center gap-1 text-lg text-amber-500">
+              @for (star of reviewStars; track star) {
+                @if (star <= reviewSummary().averageRating) {
+                  <span>&#9733;</span>
+                } @else {
+                  <span>&#9734;</span>
+                }
+              }
+            </div>
+            <p class="mt-1 text-sm font-semibold text-slate-700">
+              @if (reviewSummary().reviewCount > 0) {
+                {{ reviewSummary().averageRating }} from {{ reviewSummary().reviewCount }} reviews
+              } @else {
+                No reviews yet
+              }
+            </p>
+          </div>
         </div>
 
         @if (availabilityEditMode()) {
@@ -67,8 +86,8 @@
         }
       </aside>
 
-      <div class="space-y-6">
-        <section class="civic-card rounded-3xl p-6">
+      <div class="min-w-0 space-y-6">
+        <section class="civic-card overflow-hidden rounded-3xl p-6">
           <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
             <div>
               <h2 class="civic-display text-3xl font-semibold text-slate-800">Profile</h2>
@@ -136,12 +155,51 @@
               </div>
             </form>
           } @else {
-            <p class="mt-4 text-slate-600">{{ member.about || 'No profile details yet.' }}</p>
+            <p class="safe-user-text mt-4 text-slate-600">{{ member.about || 'No profile details yet.' }}</p>
           }
         </section>
 
+        <section class="civic-card overflow-hidden rounded-3xl p-6">
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h2 class="text-xl font-semibold text-slate-800">Reviews</h2>
+              <p class="mt-1 text-sm text-slate-600">Reputation from completed time exchanges.</p>
+            </div>
+            <span class="civic-badge w-fit rounded-full px-4 py-2 text-sm font-semibold">
+              {{ reviewSummary().reviewCount }} reviews
+            </span>
+          </div>
+
+          <div class="mt-5 space-y-3">
+            @for (review of reviews(); track review.id) {
+              <article class="min-w-0 overflow-hidden rounded-2xl bg-white/60 p-4">
+                <div class="flex min-w-0 flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                  <div class="min-w-0">
+                    <div class="text-amber-500">
+                      @for (star of reviewStars; track star) {
+                        @if (star <= review.rating) {
+                          <span>&#9733;</span>
+                        } @else {
+                          <span>&#9734;</span>
+                        }
+                      }
+                    </div>
+                    <p class="safe-user-text mt-1 font-semibold text-slate-800">{{ review.taskTitle }}</p>
+                    <p class="safe-user-text text-sm text-slate-500">From {{ review.reviewer.displayName }} on {{ review.createdAtUtc | date: 'mediumDate' }}</p>
+                  </div>
+                </div>
+                @if (review.comment) {
+                  <p class="safe-user-text mt-3 text-sm leading-6 text-slate-600">{{ review.comment }}</p>
+                }
+              </article>
+            } @empty {
+              <p class="text-sm text-slate-600">Reviews will appear here after completed exchanges.</p>
+            }
+          </div>
+        </section>
+
         @if (isOwnProfile(member)) {
-          <section class="civic-card rounded-3xl p-6">
+          <section class="civic-card overflow-hidden rounded-3xl p-6">
             <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <h2 class="text-xl font-semibold text-slate-800">Time Ledger</h2>
@@ -154,10 +212,10 @@
 
             <div class="mt-5 space-y-3">
               @for (transaction of transactions(); track transaction.id) {
-                <div class="rounded-2xl bg-white/60 p-4">
-                  <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p class="font-semibold text-slate-800">{{ transaction.taskTitle }}</p>
+                <div class="min-w-0 overflow-hidden rounded-2xl bg-white/60 p-4">
+                  <div class="flex min-w-0 flex-col gap-2 md:flex-row md:items-center md:justify-between">
+                    <div class="min-w-0">
+                      <p class="safe-user-text font-semibold text-slate-800">{{ transaction.taskTitle }}</p>
                       <p class="text-sm text-slate-500">{{ transaction.createdAtUtc | date: 'mediumDate' }}</p>
                     </div>
                     <span class="text-sm font-semibold text-slate-800">
@@ -198,9 +256,9 @@
           />
         </section>
 
-        <section class="civic-card rounded-3xl p-6">
+        <section class="civic-card overflow-hidden rounded-3xl p-6">
           <h2 class="text-xl font-semibold text-slate-800">Tasks</h2>
-          <p class="mt-3 text-sm text-slate-600">Tasks from this member will appear here when task posting is connected.</p>
+          <p class="safe-user-text mt-3 text-sm text-slate-600">Tasks from this member will appear here when task posting is connected.</p>
         </section>
       </div>
     </div>
@@ -217,5 +275,4 @@
     }
   </section>
 }
-
 

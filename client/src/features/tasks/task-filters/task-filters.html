@@ -73,9 +73,20 @@
       </select>
     </label>
 
+    <label class="form-control">
+      <span class="label-text text-slate-600">Poster rating</span>
+      <select class="select rounded-2xl bg-white/80" [value]="taskParams().minPosterRating ?? ''" (change)="setNumberFilter('minPosterRating', $event.target)">
+        <option value="">Any rating</option>
+        @for (rating of [5, 4, 3, 2, 1]; track rating) {
+          <option [value]="rating">{{ rating }}+ stars</option>
+        }
+      </select>
+    </label>
+
     <label class="flex min-h-[4.5rem] items-center gap-3 rounded-2xl bg-white/60 px-4 text-sm text-slate-700">
       <input class="checkbox checkbox-sm" type="checkbox" [checked]="taskParams().dueSoon" (change)="setDueSoon($event.target)" />
       Show tasks due in the next 7 days
     </label>
   </div>
 </form>
+

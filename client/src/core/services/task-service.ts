@@ -24,6 +24,7 @@ export class TaskService {
     if (taskParams.minCredits) params = params.set('minCredits', taskParams.minCredits);
     if (taskParams.maxCredits) params = params.set('maxCredits', taskParams.maxCredits);
     if (taskParams.dueSoon) params = params.set('dueSoon', taskParams.dueSoon);
+    if (taskParams.minPosterRating) params = params.set('minPosterRating', taskParams.minPosterRating);
 
     return this.http.get<PaginatedResult<TimeTask>>(this.baseUrl + 'tasks', { params });
   }
@@ -64,3 +65,4 @@ export class TaskService {
     return this.http.patch<void>(this.baseUrl + 'tasks/' + id + '/cancel', {});
   }
 }
+

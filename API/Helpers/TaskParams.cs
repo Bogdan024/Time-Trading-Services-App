@@ -12,5 +12,7 @@ public class TaskParams : PagingParams
     public int? MinCredits { get; set; }
     public int? MaxCredits { get; set; }
     public bool DueSoon { get; set; }
+    public int? MinPosterRating { get; set; }
     public string OrderBy { get; set; } = "newest";
 }
+

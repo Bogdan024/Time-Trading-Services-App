@@ -1,0 +1,62 @@
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-8 backdrop-blur-sm">
+  <form class="review-shell civic-card w-full max-w-xl overflow-hidden rounded-[2rem] shadow-2xl" (submit)="$event.preventDefault(); submit()">
+    <div class="review-hero px-6 py-6 text-slate-800 sm:px-8">
+      <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[var(--civic-teal)]">Exchange complete</p>
+      <h2 class="civic-display mt-2 text-3xl font-semibold">Review {{ targetName() }}</h2>
+      <p class="mt-2 text-sm text-slate-600">Help the community understand how this time exchange went.</p>
+    </div>
+
+    <div class="review-body grid gap-4 px-6 pb-6 pt-1 sm:px-8">
+      <div class="rounded-[1.5rem] bg-white/70 p-4">
+        <p class="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Completed task</p>
+        <p class="mt-1 font-semibold text-slate-800">{{ taskTitle() }}</p>
+      </div>
+
+      <div class="rounded-[1.5rem] border border-white/70 bg-white/55 p-5 text-center">
+        <p class="text-sm font-semibold text-slate-700">How was the exchange?</p>
+
+        <div class="mt-2 flex items-center justify-center gap-1.5 sm:gap-2" (mouseleave)="clearPreview()">
+          @for (star of stars; track star) {
+            <button
+              type="button"
+              class="star-button"
+              [class.star-button-active]="star <= displayRating()"
+              [disabled]="loading()"
+              [attr.aria-label]="star + ' star rating'"
+              (mouseenter)="previewRating(star)"
+              (focus)="previewRating(star)"
+              (blur)="clearPreview()"
+              (click)="selectRating(star)"
+            >
+              &#9733;
+            </button>
+          }
+        </div>
+
+        <div class="mt-2 flex flex-wrap items-center justify-center gap-2 text-sm">
+          <span class="rounded-full bg-amber-100 px-3 py-1 font-semibold text-amber-700">{{ displayRating() }}/5</span>
+          <span class="font-semibold text-slate-700">{{ ratingLabel() }}</span>
+        </div>
+      </div>
+
+      <label class="grid gap-2">
+        <span class="text-sm font-semibold text-slate-700">Comment</span>
+        <textarea
+          class="textarea min-h-32 w-full resize-y rounded-2xl bg-white/80"
+          name="comment"
+          maxlength="500"
+          placeholder="Optional note about communication, reliability, clarity, or quality of help."
+          [(ngModel)]="comment"
+          [disabled]="loading()"
+        ></textarea>
+      </label>
+
+      <div class="flex flex-col-reverse gap-2 pt-1 sm:flex-row sm:justify-end">
+        <button type="button" class="btn rounded-full bg-white/80 sm:min-w-36" [disabled]="loading()" (click)="cancelReview.emit()">Skip for now</button>
+        <button type="submit" class="btn btn-accent rounded-full sm:min-w-40" [disabled]="loading()">
+          {{ loading() ? 'Saving review...' : 'Submit review' }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

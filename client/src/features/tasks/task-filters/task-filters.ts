@@ -21,7 +21,7 @@ export class TaskFilters {
     { value: 3, label: 'Either' },
   ];
 
-  protected setNumberFilter(field: 'serviceCategoryId' | 'minCredits' | 'maxCredits', target: EventTarget | null) {
+  protected setNumberFilter(field: 'serviceCategoryId' | 'minCredits' | 'maxCredits' | 'minPosterRating', target: EventTarget | null) {
     const value = this.getTargetValue(target);
     this.taskParams()[field] = value ? Number(value) : undefined;
   }
@@ -59,3 +59,4 @@ export class TaskFilters {
     return target instanceof HTMLInputElement || target instanceof HTMLSelectElement ? target.value : '';
   }
 }
+

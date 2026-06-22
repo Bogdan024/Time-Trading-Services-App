@@ -1,0 +1,42 @@
+.review-shell {
+  background:
+    radial-gradient(circle at 15% 0%, rgba(244, 190, 92, 0.2), transparent 30%),
+    linear-gradient(145deg, rgba(255, 252, 244, 0.98), rgba(235, 241, 231, 0.96));
+}
+
+.review-hero {
+  background:
+    radial-gradient(circle at 85% 10%, rgba(20, 112, 108, 0.14), transparent 28%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.18));
+}
+
+.review-body {
+  margin-top: -0.25rem;
+}
+
+.star-button {
+  cursor: pointer;
+  font-size: clamp(2rem, 6vw, 3rem);
+  line-height: 1;
+  color: rgba(100, 116, 139, 0.28);
+  text-shadow: 0 6px 18px rgba(15, 23, 42, 0.07);
+  transition: color 160ms ease, transform 160ms ease, text-shadow 160ms ease;
+}
+
+.star-button:hover,
+.star-button:focus-visible,
+.star-button-active {
+  color: #d99a26;
+  text-shadow: 0 10px 22px rgba(217, 154, 38, 0.2);
+}
+
+.star-button:hover,
+.star-button:focus-visible {
+  transform: translateY(-2px) scale(1.05);
+  outline: none;
+}
+
+.star-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}

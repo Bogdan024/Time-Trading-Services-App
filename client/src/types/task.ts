@@ -61,7 +61,9 @@ export class TaskParams {
   minCredits?: number;
   maxCredits?: number;
   dueSoon = false;
+  minPosterRating?: number;
   orderBy = 'newest';
   pageNumber = 1;
   pageSize = 9;
 }
+
