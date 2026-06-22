@@ -69,6 +69,29 @@ export class TaskDetail implements OnInit {
     }[mode] ?? 'Flexible';
   }
 
+  protected creditLabel(hours: number) {
+    return hours === 1 ? '1 credit' : `${hours} credits`;
+  }
+
+  protected initial(name?: string) {
+    return (name?.trim()?.[0] ?? '?').toUpperCase();
+  }
+
+  private readonly categoryColors: Record<string, string> = {
+    moving: '#b5703f',
+    repair: '#8a6d4b',
+    tutoring: '#5f7355',
+    gardening: '#6f8a4f',
+    tech: '#4f7a8a',
+    cooking: '#b5654a',
+    pets: '#8a5a7a',
+    errands: '#7a6a9a',
+  };
+
+  protected categoryColor(key?: string) {
+    return (key && this.categoryColors[key]) || '#8a8178';
+  }
+
   protected statusName(status: number) {
     return {
       1: 'Open',

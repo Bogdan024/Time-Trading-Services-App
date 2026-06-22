@@ -1,5 +1,59 @@
-<section class="mx-auto max-w-5xl px-4 py-10">
-  <div class="civic-card rounded-4xl p-8">
-    <h1 class="civic-display text-4xl font-semibold text-slate-800">Messages</h1>
+<section class="mx-auto max-w-[1180px] px-6 py-9">
+  <h1 class="civic-display mb-6 text-4xl font-semibold text-[var(--hearth-ink)] md:text-5xl">Messages</h1>
+
+  <div class="civic-card flex min-h-[560px] flex-wrap overflow-hidden rounded-[1.1rem] p-0">
+    <div class="min-w-0 flex-1 basis-64 border-b border-[var(--hearth-line)] md:max-w-[340px] md:border-b-0 md:border-r">
+      <div class="tt-eyebrow border-b border-[var(--hearth-line)] px-5 py-4">Conversations</div>
+      @for (conv of conversations(); track conv.id) {
+        <button
+          type="button"
+          class="flex w-full items-start gap-3 border-b border-[var(--hearth-line)] px-4 py-4 text-left transition"
+          [class.bg-[var(--hearth-secondary-soft)]]="conv.id === selectedId()"
+          (click)="select(conv.id)"
+        >
+          <span class="tt-avatar size-10 flex-shrink-0 text-sm">{{ initial(conv.name) }}</span>
+          <span class="min-w-0 flex-1">
+            <span class="flex justify-between gap-2">
+              <span class="font-bold text-[var(--hearth-ink)]">{{ conv.name }}</span>
+              <span class="flex-shrink-0 text-xs text-hearth-muted">{{ conv.time }}</span>
+            </span>
+            <span class="mt-0.5 block truncate text-sm text-hearth-muted">{{ lastMessage(conv) }}</span>
+          </span>
+        </button>
+      }
+    </div>
+
+    <div class="flex min-w-0 flex-[2] basis-96 flex-col">
+      <div class="border-b border-[var(--hearth-line)] px-6 py-4">
+        <div class="font-bold text-[var(--hearth-ink)]">{{ selectedConv().name }}</div>
+        <div class="text-sm text-hearth-muted">{{ selectedConv().topic }}</div>
+      </div>
+
+      <div class="tt-surface-2 flex-1 space-y-3 overflow-y-auto px-6 py-5">
+        @for (msg of selectedConv().messages; track $index) {
+          <div class="flex" [class.justify-end]="msg.from === 'me'">
+            <div
+              class="max-w-[74%] rounded-2xl px-4 py-3 text-sm leading-snug"
+              [class.bg-[var(--hearth-accent)]]="msg.from === 'me'"
+              [class.text-white]="msg.from === 'me'"
+              [class.civic-card]="msg.from !== 'me'"
+            >
+              {{ msg.text }}
+              <div class="mt-1 text-right text-[10px] opacity-65">{{ msg.time }}</div>
+            </div>
+          </div>
+        }
+      </div>
+
+      <form class="flex gap-2 border-t border-[var(--hearth-line)] p-4" (ngSubmit)="send()">
+        <input
+          class="input tt-surface-2 flex-1 rounded-full"
+          name="draft"
+          [(ngModel)]="draft"
+          placeholder="Write a message…"
+        />
+        <button type="submit" class="btn btn-primary rounded-full px-6">Send</button>
+      </form>
+    </div>
   </div>
 </section>

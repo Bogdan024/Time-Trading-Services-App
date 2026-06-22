@@ -1,5 +1,5 @@
 <div class="register-shell civic-card mx-auto flex w-full max-w-5xl flex-col rounded-[2rem] p-3 shadow-lg">
-  <div class="register-frame grid gap-8 rounded-[1.6rem] bg-white/60 p-5 lg:grid-cols-[0.75fr_1.25fr] md:p-8">
+  <div class="register-frame tt-surface-2 grid gap-8 rounded-[1.6rem] p-5 lg:grid-cols-[0.75fr_1.25fr] md:p-8">
     <section class="register-aside">
       <p class="note-label">Time banking setup</p>
       <h2 class="civic-display mt-5 text-4xl font-semibold text-slate-800">Join the exchange</h2>
@@ -110,21 +110,21 @@
           <div class="grid gap-4 text-sm text-slate-600">
             <p>Review your setup. You can still edit everything later from your profile.</p>
 
-            <div class="rounded-2xl bg-white/70 p-4">
+            <div class="civic-card rounded-2xl p-4">
               <span class="font-semibold text-slate-800">Location</span>
               <p class="mt-1">{{ profileForm.value.city || 'City' }}, {{ profileForm.value.countryCode || 'Country code' }}</p>
             </div>
 
             <div class="grid gap-3 md:grid-cols-3">
-              <div class="rounded-2xl bg-white/70 p-4">
+              <div class="civic-card rounded-2xl p-4">
                 <span class="font-semibold text-slate-800">Skills</span>
                 <p class="mt-1">{{ selectedSkills().length }} selected</p>
               </div>
-              <div class="rounded-2xl bg-white/70 p-4">
+              <div class="civic-card rounded-2xl p-4">
                 <span class="font-semibold text-slate-800">Needs</span>
                 <p class="mt-1">{{ selectedNeeds().length }} selected</p>
               </div>
-              <div class="rounded-2xl bg-white/70 p-4">
+              <div class="civic-card rounded-2xl p-4">
                 <span class="font-semibold text-slate-800">Availability</span>
                 <p class="mt-1">{{ selectedAvailabilitySlots().length }} slots</p>
               </div>

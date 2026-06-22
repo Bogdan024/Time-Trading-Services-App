@@ -18,21 +18,11 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes, withViewTransitions()),
     provideHttpClient(withInterceptors([errorInterceptor, jwtInterceptor, loadingInterceptor])),
-    provideAppInitializer(async () => {
+    provideAppInitializer(() => {
       const initService = inject(InitService);
 
-      return new Promise<void>((resolve) => {
-        setTimeout(async () => {
-          try {
-            return firstValueFrom(initService.init());
-          } finally {
-            const splash = document.getElementById('initial-splash');
-            if (splash) {
-              splash.remove();
-            }
-            resolve();
-          }
-        }, 500);
+      return firstValueFrom(initService.init()).finally(() => {
+        document.getElementById('initial-splash')?.remove();
       });
     }),
   ],

@@ -1,10 +1,12 @@
 <section class="mx-auto max-w-7xl px-4 py-8">
   <div class="mb-6">
-    <h1 class="civic-display text-4xl font-semibold text-slate-800">Community</h1>
+    <p class="tt-eyebrow">Neighbours</p>
+    <h1 class="civic-display mt-2 text-4xl font-semibold text-[var(--hearth-ink)] md:text-5xl">Community</h1>
+    <p class="mt-2 text-hearth-muted">Meet the people trading time and skills around you.</p>
   </div>
 
   @if (members$ | async; as members) {
-    <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+    <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
       @for (member of members; track member.id) {
         <app-member-card [member]="member" />
       }

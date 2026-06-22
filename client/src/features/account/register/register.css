@@ -1,10 +1,10 @@
 .register-note {
-  border: 1px solid rgba(15, 76, 92, 0.1);
-  background: linear-gradient(180deg, rgba(15, 76, 92, 0.08), rgba(255, 255, 255, 0.65));
+  border: 1px solid var(--hearth-line);
+  background: var(--hearth-secondary-soft);
 }
 
 .note-label {
-  color: var(--civic-teal);
+  color: var(--hearth-accent);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -13,35 +13,35 @@
 
 .register-note p {
   margin: 0.75rem 0 0;
-  color: rgba(31, 41, 55, 0.72);
+  color: var(--hearth-muted);
   line-height: 1.8;
 }
 
 .register-form-panel {
-  border: 1px solid rgba(15, 76, 92, 0.12);
+  border: 1px solid var(--hearth-line);
   border-radius: 1.5rem;
-  background: rgba(255, 255, 255, 0.72);
+  background: var(--hearth-surface);
   padding: 1.25rem 1.25rem 0.5rem;
 }
 
 .register-input {
   min-height: 3.25rem;
-  border-color: rgba(15, 76, 92, 0.12);
-  border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.85);
+  border-color: var(--hearth-line);
+  border-radius: 0.85rem;
+  background: var(--hearth-surface-2);
 }
 
 .register-submit {
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--civic-teal), var(--civic-teal-deep));
-  color: white;
+  background: var(--hearth-accent);
+  color: var(--hearth-accent-ink);
   padding-inline: 1.4rem;
 }
 
 .register-cancel {
   border-radius: 999px;
-  border-color: rgba(15, 76, 92, 0.16);
-  background: rgba(255, 255, 255, 0.76);
-  color: var(--civic-teal);
+  border-color: var(--hearth-line);
+  background: var(--hearth-surface-2);
+  color: var(--hearth-ink);
 }

@@ -1,5 +1,36 @@
-<section class="mx-auto max-w-5xl px-4 py-10">
-  <div class="civic-card rounded-4xl p-8">
-    <h1 class="civic-display text-4xl font-semibold text-slate-800">Groups</h1>
+<section class="mx-auto max-w-[1180px] px-6 py-9">
+  <div class="mb-7">
+    <p class="tt-eyebrow">Neighbourhoods</p>
+    <h1 class="civic-display mt-2 text-4xl font-semibold text-[var(--hearth-ink)] md:text-5xl">Community groups</h1>
+    <p class="mt-2 max-w-xl text-hearth-muted">
+      Join a circle to pool tools, skills and time with people close to you.
+    </p>
+  </div>
+
+  <div class="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+    @for (group of groups(); track group.id) {
+      <article class="civic-card flex flex-col gap-4 rounded-[1.1rem] p-5">
+        <div class="flex items-center gap-3">
+          <span
+            class="civic-display grid size-12 place-items-center rounded-2xl text-lg font-semibold text-white"
+            [style.background]="group.color"
+          >
+            {{ initial(group.name) }}
+          </span>
+          <div>
+            <div class="civic-display text-lg font-semibold leading-tight text-[var(--hearth-ink)]">{{ group.name }}</div>
+            <div class="text-sm text-hearth-muted">{{ group.members }} members</div>
+          </div>
+        </div>
+
+        <p class="flex-1 text-sm text-hearth-muted">{{ group.description }}</p>
+
+        @if (group.joined) {
+          <button type="button" class="tt-pill w-full justify-center py-2.5" (click)="toggleJoin(group)">Joined ✓</button>
+        } @else {
+          <button type="button" class="btn btn-primary w-full rounded-full" (click)="toggleJoin(group)">Join group</button>
+        }
+      </article>
+    }
   </div>
 </section>

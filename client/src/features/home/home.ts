@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { Register } from '../account/register/register';
 
 @Component({
   selector: 'app-home',
-  imports: [Register],
+  imports: [Register, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

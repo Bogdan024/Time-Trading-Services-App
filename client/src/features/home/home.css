@@ -10,8 +10,8 @@
   height: min(34rem, 40vw);
   border-radius: 999px;
   background:
-    radial-gradient(circle at center, rgba(217, 164, 65, 0.14), transparent 58%),
-    radial-gradient(circle at center, rgba(15, 76, 92, 0.1), transparent 76%);
+    radial-gradient(circle at center, rgba(189, 82, 57, 0.12), transparent 58%),
+    radial-gradient(circle at center, rgba(95, 115, 85, 0.1), transparent 76%);
   pointer-events: none;
 }
 
@@ -24,9 +24,9 @@
 .home-primary {
   border: none;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--civic-teal), var(--civic-teal-deep));
-  color: white;
-  box-shadow: 0 18px 34px rgba(15, 76, 92, 0.2);
+  background: var(--hearth-accent);
+  color: var(--hearth-accent-ink);
+  box-shadow: 0 18px 34px rgba(189, 82, 57, 0.22);
 }
 
 .home-primary:hover {
@@ -35,13 +35,13 @@
 
 .home-secondary {
   border-radius: 999px;
-  border-color: rgba(15, 76, 92, 0.18);
-  background: rgba(255, 255, 255, 0.64);
-  color: var(--civic-teal);
+  border: 1px solid var(--hearth-line);
+  background: var(--hearth-surface);
+  color: var(--hearth-ink);
 }
 
 .metric-label {
-  color: var(--civic-teal);
+  color: var(--hearth-muted);
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -49,11 +49,10 @@
 }
 
 .metric-value {
-  margin-top: 0.7rem;
-  color: var(--civic-slate);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 2rem;
-  font-weight: 700;
+  color: var(--hearth-ink);
+  font-family: var(--serif);
+  font-size: 2.2rem;
+  font-weight: 600;
 }
 
 .home-metrics p {
@@ -75,30 +74,26 @@
 }
 
 .panel-kicker {
-  color: var(--civic-teal);
+  color: var(--hearth-muted);
   font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
 .panel-coin {
-  background:
-    radial-gradient(circle at center, rgba(217, 164, 65, 0.18), transparent 60%),
-    linear-gradient(145deg, rgba(255, 255, 255, 0.8), rgba(15, 76, 92, 0.08));
-  color: var(--civic-teal);
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: 1.8rem;
-  font-weight: 700;
+  background: var(--hearth-credit-bg);
+  color: var(--hearth-credit-ink);
+  font-size: 1.6rem;
 }
 
 .flow-step {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 1rem;
-  border: 1px solid rgba(15, 76, 92, 0.1);
-  background: rgba(255, 255, 255, 0.68);
-  border-radius: 1.4rem;
+  border: 1px solid var(--hearth-line);
+  background: var(--hearth-surface-2);
+  border-radius: 1.1rem;
   padding: 1rem 1.1rem;
 }
 
@@ -109,8 +104,8 @@
   width: 3rem;
   height: 3rem;
   border-radius: 999px;
-  background: rgba(15, 76, 92, 0.1);
-  color: var(--civic-teal);
+  background: var(--hearth-secondary-soft);
+  color: var(--hearth-secondary);
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -118,15 +113,16 @@
 
 .flow-step h3 {
   margin: 0;
+  font-family: var(--serif);
   font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--civic-slate);
+  font-weight: 600;
+  color: var(--hearth-ink);
 }
 
 .flow-step p {
   margin: 0.35rem 0 0;
-  color: rgba(31, 41, 55, 0.7);
-  line-height: 1.7;
+  color: var(--hearth-muted);
+  line-height: 1.6;
 }
 
 @media (max-width: 1024px) {

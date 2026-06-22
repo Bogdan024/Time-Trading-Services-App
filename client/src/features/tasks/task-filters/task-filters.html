@@ -1,20 +1,22 @@
-<form class="civic-card rounded-[2rem] p-5" (submit)="$event.preventDefault(); apply()">
-  <div class="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+<form class="civic-card rounded-[1.1rem] p-6" (submit)="$event.preventDefault(); apply()">
+  <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
     <div>
-      <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[var(--civic-teal)]">Find the right exchange</p>
-      <h2 class="civic-display text-2xl font-semibold text-slate-800">Filter open tasks</h2>
+      <p class="tt-eyebrow">Find the right exchange</p>
+      <h2 class="civic-display mt-1 text-xl font-semibold text-[var(--hearth-ink)]">Filter open tasks</h2>
     </div>
 
     <div class="flex gap-2">
-      <button type="button" class="btn rounded-full bg-white/80" (click)="resetFilters.emit()">Reset</button>
-      <button type="submit" class="btn btn-accent rounded-full">Apply filters</button>
+      <button type="button" class="btn btn-ghost rounded-full border border-[var(--hearth-line)]" (click)="resetFilters.emit()">
+        Reset filters
+      </button>
+      <button type="submit" class="btn btn-primary rounded-full">Apply filters</button>
     </div>
   </div>
 
   <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
     <label class="form-control">
-      <span class="label-text text-slate-600">Category</span>
-      <select class="select rounded-2xl bg-white/80" [value]="taskParams().serviceCategoryId ?? ''" (change)="setNumberFilter('serviceCategoryId', $event.target)">
+      <span class="label-text mb-1.5 block text-xs font-semibold text-hearth-muted">Category</span>
+      <select class="select tt-surface-2 w-full rounded-xl" [value]="taskParams().serviceCategoryId ?? ''" (change)="setNumberFilter('serviceCategoryId', $event.target)">
         <option value="">Any category</option>
         @for (category of categories(); track category.id) {
           <option [value]="category.id">{{ category.name }}</option>
@@ -23,8 +25,8 @@
     </label>
 
     <label class="form-control">
-      <span class="label-text text-slate-600">Location mode</span>
-      <select class="select rounded-2xl bg-white/80" [value]="taskParams().locationMode ?? ''" (change)="setLocationMode($event.target)">
+      <span class="label-text mb-1.5 block text-xs font-semibold text-hearth-muted">Location mode</span>
+      <select class="select tt-surface-2 w-full rounded-xl" [value]="taskParams().locationMode ?? ''" (change)="setLocationMode($event.target)">
         <option value="">Any mode</option>
         @for (mode of locationModes; track mode.value) {
           <option [value]="mode.value">{{ mode.label }}</option>
@@ -33,20 +35,18 @@
     </label>
 
     <label class="form-control">
-      <span class="label-text text-slate-600">City</span>
-      <input class="input rounded-2xl bg-white/80" type="text" placeholder="Any city" [value]="taskParams().city ?? ''" (input)="setTextFilter('city', $event.target)" />
+      <span class="label-text mb-1.5 block text-xs font-semibold text-hearth-muted">City</span>
+      <input class="input tt-surface-2 w-full rounded-xl" type="text" placeholder="Any city" [value]="taskParams().city ?? ''" (input)="setTextFilter('city', $event.target)" />
     </label>
 
     <label class="form-control">
-      <span class="label-text text-slate-600">Country code</span>
-      <input class="input rounded-2xl bg-white/80 uppercase" type="text" maxlength="2" placeholder="Any country" [value]="taskParams().countryCode ?? ''" (input)="setTextFilter('countryCode', $event.target)" />
+      <span class="label-text mb-1.5 block text-xs font-semibold text-hearth-muted">Country code</span>
+      <input class="input tt-surface-2 w-full rounded-xl uppercase" type="text" maxlength="2" placeholder="Any country" [value]="taskParams().countryCode ?? ''" (input)="setTextFilter('countryCode', $event.target)" />
     </label>
-  </div>
 
-  <div class="mt-3 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
     <label class="form-control">
-      <span class="label-text text-slate-600">Minimum credits</span>
-      <select class="select rounded-2xl bg-white/80" [value]="taskParams().minCredits ?? ''" (change)="setNumberFilter('minCredits', $event.target)">
+      <span class="label-text mb-1.5 block text-xs font-semibold text-hearth-muted">Minimum credits</span>
+      <select class="select tt-surface-2 w-full rounded-xl" [value]="taskParams().minCredits ?? ''" (change)="setNumberFilter('minCredits', $event.target)">
         <option value="">No minimum</option>
         @for (credit of creditOptions; track credit) {
           <option [value]="credit">{{ credit }}</option>
@@ -55,8 +55,8 @@
     </label>
 
     <label class="form-control">
-      <span class="label-text text-slate-600">Maximum credits</span>
-      <select class="select rounded-2xl bg-white/80" [value]="taskParams().maxCredits ?? ''" (change)="setNumberFilter('maxCredits', $event.target)">
+      <span class="label-text mb-1.5 block text-xs font-semibold text-hearth-muted">Maximum credits</span>
+      <select class="select tt-surface-2 w-full rounded-xl" [value]="taskParams().maxCredits ?? ''" (change)="setNumberFilter('maxCredits', $event.target)">
         <option value="">No maximum</option>
         @for (credit of creditOptions; track credit) {
           <option [value]="credit">{{ credit }}</option>
@@ -65,8 +65,8 @@
     </label>
 
     <label class="form-control">
-      <span class="label-text text-slate-600">Sort by</span>
-      <select class="select rounded-2xl bg-white/80" [value]="taskParams().orderBy" (change)="setOrderBy($event.target)">
+      <span class="label-text mb-1.5 block text-xs font-semibold text-hearth-muted">Sort by</span>
+      <select class="select tt-surface-2 w-full rounded-xl" [value]="taskParams().orderBy" (change)="setOrderBy($event.target)">
         <option value="newest">Newest first</option>
         <option value="dueSoon">Due soon</option>
         <option value="credits">Most credits</option>
@@ -74,19 +74,18 @@
     </label>
 
     <label class="form-control">
-      <span class="label-text text-slate-600">Poster rating</span>
-      <select class="select rounded-2xl bg-white/80" [value]="taskParams().minPosterRating ?? ''" (change)="setNumberFilter('minPosterRating', $event.target)">
+      <span class="label-text mb-1.5 block text-xs font-semibold text-hearth-muted">Poster rating</span>
+      <select class="select tt-surface-2 w-full rounded-xl" [value]="taskParams().minPosterRating ?? ''" (change)="setNumberFilter('minPosterRating', $event.target)">
         <option value="">Any rating</option>
         @for (rating of [5, 4, 3, 2, 1]; track rating) {
           <option [value]="rating">{{ rating }}+ stars</option>
         }
       </select>
     </label>
-
-    <label class="flex min-h-[4.5rem] items-center gap-3 rounded-2xl bg-white/60 px-4 text-sm text-slate-700">
-      <input class="checkbox checkbox-sm" type="checkbox" [checked]="taskParams().dueSoon" (change)="setDueSoon($event.target)" />
-      Show tasks due in the next 7 days
-    </label>
   </div>
-</form>
 
+  <label class="mt-4 inline-flex cursor-pointer items-center gap-3 text-sm text-[var(--hearth-ink)]">
+    <input class="checkbox checkbox-sm checkbox-primary" type="checkbox" [checked]="taskParams().dueSoon" (change)="setDueSoon($event.target)" />
+    Show only tasks due in the next 7 days
+  </label>
+</form>

@@ -1,18 +1,15 @@
-<section class="mx-auto max-w-6xl px-4 py-8">
-  <div class="civic-card rounded-4xl p-6">
-    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-      <div>
-        <h1 class="civic-display text-4xl font-semibold text-slate-800">My Tasks</h1>
-        <p class="mt-2 text-sm text-slate-600">Manage requests you posted and commitments you accepted.</p>
-      </div>
-
-      <nav class="flex flex-wrap gap-2">
-        <a routerLink="posted" routerLinkActive="btn-accent" class="btn rounded-full">Posted by me</a>
-        <a routerLink="accepted" routerLinkActive="btn-accent" class="btn rounded-full">Accepted by me</a>
-        <a routerLink="history" routerLinkActive="btn-accent" class="btn rounded-full">Task History</a>
-      </nav>
-    </div>
+<section class="mx-auto max-w-[1180px] px-6 py-9">
+  <div class="mb-6">
+    <p class="tt-eyebrow">Your dashboard</p>
+    <h1 class="civic-display mt-2 text-4xl font-semibold text-[var(--hearth-ink)] md:text-5xl">My time</h1>
+    <p class="mt-2 text-hearth-muted">Manage requests you posted and commitments you accepted.</p>
   </div>
+
+  <nav class="flex flex-wrap gap-2">
+    <a routerLink="posted" routerLinkActive="tt-tab-active" class="tt-tab">Posted by me</a>
+    <a routerLink="accepted" routerLinkActive="tt-tab-active" class="tt-tab">Accepted by me</a>
+    <a routerLink="history" routerLinkActive="tt-tab-active" class="tt-tab">Task history</a>
+  </nav>
 
   <div class="mt-6">
     <router-outlet />

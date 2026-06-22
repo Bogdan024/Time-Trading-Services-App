@@ -1,6 +1,6 @@
 @if (member(); as member) {
   <article
-    class="civic-card flex h-full flex-col gap-5 rounded-3xl p-5 transition duration-200 hover:-translate-y-1"
+    class="tt-card-link civic-card h-full cursor-pointer gap-5 rounded-[1.1rem] p-5"
     [routerLink]="['/members', member.id]"
   >
     <div class="flex items-start gap-4">
@@ -10,16 +10,16 @@
         class="h-16 w-16 rounded-full object-cover"
       />
       <div class="min-w-0">
-        <h2 class="text-xl font-semibold text-slate-800">{{ member.displayName }}</h2>
-        <p class="text-sm text-slate-500">{{ member.city || 'Local' }}{{ member.countryCode ? ', ' + member.countryCode : '' }}</p>
+        <h2 class="civic-display text-xl font-semibold text-[var(--hearth-ink)]">{{ member.displayName }}</h2>
+        <p class="text-sm text-hearth-muted">{{ member.city || 'Local' }}{{ member.countryCode ? ', ' + member.countryCode : '' }}</p>
       </div>
     </div>
 
-    <p class="line-clamp-2 text-sm text-slate-600">{{ member.about || 'Community member' }}</p>
+    <p class="line-clamp-2 text-sm text-hearth-muted">{{ member.about || 'Community member' }}</p>
 
-    <div class="flex flex-wrap gap-2">
+    <div class="mt-auto flex flex-wrap gap-2">
       @for (category of categories(member); track category) {
-        <span class="civic-badge rounded-full px-3 py-1 text-xs font-semibold">{{ category }}</span>
+        <span class="tt-pill">{{ category }}</span>
       }
     </div>
   </article>
