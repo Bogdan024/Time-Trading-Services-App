@@ -7,6 +7,7 @@ public class ConversationDto
     public int Id { get; set; }
     public ConversationType Type { get; set; }
     public int? TimeTaskId { get; set; }
+    public int? GroupId { get; set; }
     public string? TaskTitle { get; set; }
     public string? Title { get; set; }
     public DateTime CreatedAtUtc { get; set; }
@@ -17,3 +18,5 @@ public class ConversationDto
     public DateTime? LatestMessageAtUtc { get; set; }
     public TaskMemberDto? OtherMember { get; set; }
 }
+
+

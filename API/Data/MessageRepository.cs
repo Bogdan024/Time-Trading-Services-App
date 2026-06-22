@@ -1,4 +1,5 @@
 using API.Entities;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,6 +42,29 @@ public class MessageRepository(AppDbContext context) : IMessageRepository
         return conversation;
     }
 
+    public async Task<Conversation> GetOrCreateGroupConversationAsync(CommunityGroup group)
+    {
+        var conversation = await context.Conversations
+            .Include(x => x.Participants)
+            .SingleOrDefaultAsync(x => x.Type == ConversationType.Group && x.GroupId == group.Id);
+
+        if (conversation is not null) return conversation;
+
+        conversation = new Conversation
+        {
+            Type = ConversationType.Group,
+            Group = group,
+            Title = group.Name,
+            Participants = group.Members
+                .Select(member => new ConversationParticipant { MemberId = member.MemberId })
+                .ToList()
+        };
+
+        context.Conversations.Add(conversation);
+
+        return conversation;
+    }
+
     public async Task CloseTaskConversationAsync(int taskId)
     {
         var conversation = await context.Conversations
@@ -64,42 +88,53 @@ public class MessageRepository(AppDbContext context) : IMessageRepository
             .SingleOrDefaultAsync(x => x.Id == conversationId);
     }
 
-    public async Task<IReadOnlyList<Conversation>> GetConversationsForMemberAsync(string memberId)
+    public async Task<PaginatedResult<Conversation>> GetConversationsForMemberAsync(string memberId, ConversationParams conversationParams)
     {
-        var conversations = await ConversationQuery(memberId)
-            .ToListAsync();
+        var query = ConversationQuery(memberId);
 
-        return conversations
-            .OrderByDescending(x => x.Messages
-                .Where(message => message.DeletedForMembers.All(deletion => deletion.MemberId != memberId))
-                .Select(message => (DateTime?)message.CreatedAtUtc)
-                .DefaultIfEmpty(x.CreatedAtUtc)
-                .Max())
-            .ToList();
+        if (conversationParams.Type.HasValue)
+        {
+            query = query.Where(x => x.Type == conversationParams.Type.Value);
+        }
+
+        query = query.OrderByDescending(x => x.Messages
+            .Where(message => message.DeletedForMembers.All(deletion => deletion.MemberId != memberId))
+            .Select(message => (DateTime?)message.CreatedAtUtc)
+            .Max() ?? x.CreatedAtUtc);
+
+        return await PaginationHelper.CreateAsync(query, conversationParams.PageNumber, conversationParams.PageSize);
     }
 
-    public async Task<IReadOnlyList<Message>> GetMessagesForConversationAsync(int conversationId, string memberId)
+    public async Task<PaginatedResult<Message>> GetMessagesForConversationAsync(int conversationId, string memberId, MessageParams messageParams)
     {
         var isParticipant = await context.ConversationParticipants
             .AnyAsync(x => x.ConversationId == conversationId && x.MemberId == memberId);
 
-        if (!isParticipant) return [];
+        if (!isParticipant)
+        {
+            return EmptyMessagesResult(messageParams);
+        }
 
         await context.ConversationParticipants
             .Where(x => x.ConversationId == conversationId && x.MemberId == memberId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.LastReadAtUtc, DateTime.UtcNow));
 
-        return await context.Messages
+        var query = context.Messages
             .Include(x => x.SenderMember)
             .Include(x => x.DeletedForMembers)
             .Where(x => x.ConversationId == conversationId && x.DeletedForMembers.All(deletion => deletion.MemberId != memberId))
-            .OrderBy(x => x.CreatedAtUtc)
-            .ToListAsync();
+            .OrderByDescending(x => x.CreatedAtUtc);
+
+        var messages = await PaginationHelper.CreateAsync(query, messageParams.PageNumber, messageParams.PageSize);
+        messages.Items = messages.Items.OrderBy(x => x.CreatedAtUtc).ToList();
+
+        return messages;
     }
 
     public async Task<Message?> GetMessageForMemberAsync(string messageId, string memberId)
     {
         return await context.Messages
+            .Include(x => x.SenderMember)
             .Include(x => x.Conversation)
                 .ThenInclude(x => x.Participants)
             .Include(x => x.DeletedForMembers)
@@ -125,7 +160,9 @@ public class MessageRepository(AppDbContext context) : IMessageRepository
     private IQueryable<Conversation> ConversationQuery(string memberId)
     {
         return context.Conversations
+            .AsSplitQuery()
             .Include(x => x.TimeTask)
+            .Include(x => x.Group)
             .Include(x => x.Participants)
                 .ThenInclude(x => x.Member)
             .Include(x => x.Messages)
@@ -134,5 +171,19 @@ public class MessageRepository(AppDbContext context) : IMessageRepository
                 .ThenInclude(x => x.DeletedForMembers)
             .Where(x => x.Participants.Any(participant => participant.MemberId == memberId));
     }
-}
 
+    private static PaginatedResult<Message> EmptyMessagesResult(MessageParams messageParams)
+    {
+        return new PaginatedResult<Message>
+        {
+            Metadata = new PaginationMetadata
+            {
+                CurrentPage = messageParams.PageNumber,
+                PageSize = messageParams.PageSize,
+                TotalCount = 0,
+                TotalPages = 0
+            },
+            Items = []
+        };
+    }
+}

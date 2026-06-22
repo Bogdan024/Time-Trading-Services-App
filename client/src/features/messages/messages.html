@@ -1,50 +1,90 @@
 <section class="mx-auto max-w-7xl px-4 py-10">
   <div class="mb-6">
     <h1 class="civic-display text-4xl font-semibold text-slate-800">Messages</h1>
-    <p class="mt-2 text-sm text-slate-600">Task conversations stay visible after an exchange closes, but sending is only available while work is in progress.</p>
+    <p class="mt-2 text-sm text-slate-600">{{ inboxDescription() }}</p>
   </div>
 
   <div class="grid min-w-0 gap-5 lg:grid-cols-[22rem_minmax(0,1fr)]">
     <aside class="civic-card overflow-hidden rounded-4xl p-4">
-      <h2 class="px-2 text-lg font-semibold text-slate-800">Conversations</h2>
-
-      <div class="mt-4 space-y-2">
-        @for (conversation of conversations(); track conversation.id) {
-          <button
-            type="button"
-            class="w-full rounded-3xl p-4 text-left transition hover:bg-white/70"
-            [class.bg-white]="selectedConversation()?.id === conversation.id"
-            (click)="selectConversation(conversation)"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="min-w-0">
-                <p class="safe-user-text font-semibold text-slate-800">{{ conversationTitle(conversation) }}</p>
-                <p class="safe-user-text mt-1 text-sm text-slate-500">
-                  {{ conversation.otherMember?.displayName || 'Group conversation' }}
-                </p>
-              </div>
-              @if (conversation.unreadCount > 0) {
-                <span class="rounded-full bg-[var(--civic-teal)] px-2 py-1 text-xs font-semibold text-white">{{ conversation.unreadCount }}</span>
-              }
-            </div>
-
-            @if (conversation.latestMessage) {
-              <p class="safe-user-text mt-3 line-clamp-2 text-sm text-slate-600">{{ conversation.latestMessage }}</p>
-            } @else {
-              <p class="mt-3 text-sm text-slate-500">No messages yet.</p>
-            }
-
-            <div class="mt-3 flex items-center justify-between gap-2 text-xs text-slate-500">
-              <span>{{ statusLabel(conversation) }}</span>
-              @if (conversation.latestMessageAtUtc) {
-                <span>{{ conversation.latestMessageAtUtc | date: 'short' }}</span>
-              }
-            </div>
-          </button>
-        } @empty {
-          <p class="rounded-3xl bg-white/60 p-4 text-sm text-slate-600">No conversations yet.</p>
+      <div class="flex items-center justify-between gap-3 px-2">
+        <h2 class="text-lg font-semibold text-slate-800">Conversations</h2>
+        @if (conversationPagination(); as pagination) {
+          <span class="text-xs text-slate-500">{{ pagination.totalCount }} total</span>
         }
       </div>
+
+      <div class="mt-4 grid grid-cols-2 gap-2 rounded-full bg-white/55 p-1">
+        <button
+          type="button"
+          class="rounded-full px-3 py-2 text-sm font-semibold transition"
+          [class.inbox-tab-active]="selectedInbox() === 'TaskDirect'"
+          (click)="changeInbox('TaskDirect')"
+        >
+          Task chats
+        </button>
+        <button
+          type="button"
+          class="rounded-full px-3 py-2 text-sm font-semibold transition"
+          [class.inbox-tab-active]="selectedInbox() === 'Group'"
+          (click)="changeInbox('Group')"
+        >
+          Group chats
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-2">
+        @if (loadingConversations()) {
+          <p class="rounded-3xl bg-white/60 p-4 text-sm text-slate-600">Loading conversations...</p>
+        } @else {
+          @for (conversation of conversations(); track conversation.id) {
+            <button
+              type="button"
+              class="w-full rounded-3xl p-4 text-left transition hover:bg-white/70"
+              [class.bg-white]="selectedConversation()?.id === conversation.id"
+              (click)="selectConversation(conversation)"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="safe-user-text font-semibold text-slate-800">{{ conversationTitle(conversation) }}</p>
+                  <p class="safe-user-text mt-1 text-sm text-slate-500">
+                    {{ conversation.otherMember?.displayName || 'Group conversation' }}
+                  </p>
+                </div>
+                @if (conversation.unreadCount > 0) {
+                  <span class="rounded-full bg-[var(--civic-teal)] px-2 py-1 text-xs font-semibold text-white">{{ conversation.unreadCount }}</span>
+                }
+              </div>
+
+              @if (conversation.latestMessage) {
+                <p class="safe-user-text mt-3 line-clamp-2 text-sm text-slate-600">{{ conversation.latestMessage }}</p>
+              } @else {
+                <p class="mt-3 text-sm text-slate-500">No messages yet.</p>
+              }
+
+              <div class="mt-3 flex items-center justify-between gap-2 text-xs text-slate-500">
+                <span>{{ statusLabel(conversation) }}</span>
+                @if (conversation.latestMessageAtUtc) {
+                  <span>{{ conversation.latestMessageAtUtc | date: 'short' }}</span>
+                }
+              </div>
+            </button>
+          } @empty {
+            <p class="rounded-3xl bg-white/60 p-4 text-sm text-slate-600">
+              {{ selectedInbox() === 'Group' ? 'No group conversations yet.' : 'No task conversations yet.' }}
+            </p>
+          }
+        }
+      </div>
+
+      @if (conversationPagination(); as pagination) {
+        @if (pagination.totalPages > 1) {
+          <div class="mt-4 flex items-center justify-between gap-3 px-2 text-sm text-slate-600">
+            <button type="button" class="btn btn-sm rounded-full" [disabled]="!canGoPreviousConversationPage()" (click)="previousConversationPage()">Previous</button>
+            <span>Page {{ pagination.currentPage }} / {{ pagination.totalPages }}</span>
+            <button type="button" class="btn btn-sm rounded-full" [disabled]="!canGoNextConversationPage()" (click)="nextConversationPage()">Next</button>
+          </div>
+        }
+      }
     </aside>
 
     <section class="civic-card min-w-0 overflow-hidden rounded-4xl p-5">
@@ -55,11 +95,19 @@
             <h2 class="safe-user-text mt-1 text-2xl font-semibold text-slate-800">{{ conversationTitle(conversation) }}</h2>
             @if (conversation.timeTaskId) {
               <a [routerLink]="['/tasks', conversation.timeTaskId]" class="mt-2 inline-block text-sm font-semibold text-[var(--civic-teal)]">Open task</a>
+            } @else if (conversation.groupId) {
+              <a [routerLink]="['/groups', conversation.groupId]" class="mt-2 inline-block text-sm font-semibold text-[var(--civic-teal)]">Open group</a>
             }
           </div>
         </div>
 
         <div class="mt-5 flex max-h-[32rem] min-h-96 flex-col gap-3 overflow-y-auto rounded-3xl bg-white/55 p-4">
+          @if (canLoadOlderMessages()) {
+            <button type="button" class="btn btn-sm mx-auto rounded-full" [disabled]="loadingOlderMessages()" (click)="loadOlderMessages()">
+              {{ loadingOlderMessages() ? 'Loading...' : 'Load older messages' }}
+            </button>
+          }
+
           @for (message of messages(); track message.id) {
             <div class="flex" [class.justify-end]="message.currentUserSender">
               <article

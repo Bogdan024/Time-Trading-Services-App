@@ -1,6 +1,7 @@
 using API.DTOs;
 using API.Entities;
 using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,25 +12,27 @@ namespace API.Controllers;
 public class MessagesController(IMessageRepository messageRepository) : BaseApiController
 {
     [HttpGet("conversations")]
-    public async Task<ActionResult<IReadOnlyList<ConversationDto>>> GetConversations()
+    public async Task<ActionResult<PaginatedResult<ConversationDto>>> GetConversations([FromQuery] ConversationParams conversationParams)
     {
         var memberId = User.GetMemberId();
-        var conversations = await messageRepository.GetConversationsForMemberAsync(memberId);
+        var conversations = await messageRepository.GetConversationsForMemberAsync(memberId, conversationParams);
 
-        return Ok(conversations.Select(x => x.ToDto(memberId)));
+        return Ok(new PaginatedResult<ConversationDto>
+        {
+            Metadata = conversations.Metadata,
+            Items = conversations.Items.Select(x => x.ToDto(memberId)).ToList()
+        });
     }
 
     [HttpGet("conversations/{conversationId:int}")]
-    public async Task<ActionResult<IReadOnlyList<MessageDto>>> GetConversationThread(int conversationId)
+    public async Task<ActionResult<PaginatedResult<MessageDto>>> GetConversationThread(int conversationId, [FromQuery] MessageParams messageParams)
     {
         var memberId = User.GetMemberId();
         var conversation = await messageRepository.GetConversationForMemberAsync(conversationId, memberId);
 
         if (conversation is null) return NotFound();
 
-        var messages = await messageRepository.GetMessagesForConversationAsync(conversationId, memberId);
-
-        return Ok(messages.Select(x => x.ToDto(memberId)));
+        return await GetConversationMessages(conversation.Id, memberId, messageParams);
     }
 
     [HttpGet("tasks/{taskId:int}")]
@@ -44,16 +47,14 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     }
 
     [HttpGet("tasks/{taskId:int}/thread")]
-    public async Task<ActionResult<IReadOnlyList<MessageDto>>> GetTaskConversationThread(int taskId)
+    public async Task<ActionResult<PaginatedResult<MessageDto>>> GetTaskConversationThread(int taskId, [FromQuery] MessageParams messageParams)
     {
         var memberId = User.GetMemberId();
         var conversation = await messageRepository.GetConversationForTaskAsync(taskId, memberId);
 
         if (conversation is null) return NotFound();
 
-        var messages = await messageRepository.GetMessagesForConversationAsync(conversation.Id, memberId);
-
-        return Ok(messages.Select(x => x.ToDto(memberId)));
+        return await GetConversationMessages(conversation.Id, memberId, messageParams);
     }
 
     [HttpPost("conversations/{conversationId:int}")]
@@ -61,9 +62,6 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     {
         var memberId = User.GetMemberId();
         var conversation = await messageRepository.GetConversationForMemberAsync(conversationId, memberId);
-
-        if (conversation is null) return NotFound();
-        if (!CanSendMessage(conversation)) return BadRequest("This conversation is closed");
 
         return await SendMessage(conversation, memberId, createMessageDto);
     }
@@ -73,9 +71,6 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     {
         var memberId = User.GetMemberId();
         var conversation = await messageRepository.GetConversationForTaskAsync(taskId, memberId);
-
-        if (conversation is null) return NotFound();
-        if (!CanSendMessage(conversation)) return BadRequest("This conversation is closed");
 
         return await SendMessage(conversation, memberId, createMessageDto);
     }
@@ -95,8 +90,22 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
         return BadRequest("Failed to delete message");
     }
 
-    private async Task<ActionResult<MessageDto>> SendMessage(Conversation conversation, string memberId, CreateMessageDto createMessageDto)
+    private async Task<ActionResult<PaginatedResult<MessageDto>>> GetConversationMessages(int conversationId, string memberId, MessageParams messageParams)
     {
+        var messages = await messageRepository.GetMessagesForConversationAsync(conversationId, memberId, messageParams);
+
+        return Ok(new PaginatedResult<MessageDto>
+        {
+            Metadata = messages.Metadata,
+            Items = messages.Items.Select(x => x.ToDto(memberId)).ToList()
+        });
+    }
+
+    private async Task<ActionResult<MessageDto>> SendMessage(Conversation? conversation, string memberId, CreateMessageDto createMessageDto)
+    {
+        if (conversation is null) return NotFound();
+        if (!conversation.CanSendMessages()) return BadRequest("This conversation is closed");
+
         var content = createMessageDto.Content.Trim();
 
         if (string.IsNullOrWhiteSpace(content)) return BadRequest("Message cannot be empty");
@@ -112,23 +121,10 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
 
         if (!await messageRepository.SaveAllAsync()) return BadRequest("Failed to send message");
 
-        var messages = await messageRepository.GetMessagesForConversationAsync(conversation.Id, memberId);
-        var createdMessage = messages.SingleOrDefault(x => x.Id == message.Id);
+        var createdMessage = await messageRepository.GetMessageForMemberAsync(message.Id, memberId);
 
         if (createdMessage is null) return BadRequest("Failed to load created message");
 
         return Ok(createdMessage.ToDto(memberId));
-    }
-
-    private static bool CanSendMessage(Conversation conversation)
-    {
-        if (conversation.ClosedAtUtc is not null) return false;
-
-        return conversation.Type switch
-        {
-            ConversationType.TaskDirect => conversation.TimeTask?.Status == TimeTaskStatus.InProgress,
-            ConversationType.Group => true,
-            _ => false
-        };
     }
 }

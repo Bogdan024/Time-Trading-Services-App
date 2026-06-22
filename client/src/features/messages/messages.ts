@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MessageService } from '../../core/services/message-service';
 import { ToastService } from '../../core/services/toast-service';
-import { Conversation, Message, conversationStatusLabel } from '../../types/message';
+import { Conversation, ConversationInboxType, Message, conversationStatusLabel } from '../../types/message';
+import { Pagination } from '../../types/pagination';
 
 @Component({
   selector: 'app-messages',
@@ -18,21 +19,45 @@ export class Messages implements OnInit {
   private toast = inject(ToastService);
 
   protected conversations = signal<Conversation[]>([]);
+  protected conversationPagination = signal<Pagination | null>(null);
   protected selectedConversation = signal<Conversation | null>(null);
   protected messages = signal<Message[]>([]);
+  protected messagePagination = signal<Pagination | null>(null);
+  protected selectedInbox = signal<ConversationInboxType>('TaskDirect');
   protected messageContent = '';
   protected loading = signal(false);
+  protected loadingConversations = signal(false);
+  protected loadingOlderMessages = signal(false);
+
+  private conversationPage = 1;
+  private readonly conversationPageSize = 9;
+  private readonly messagePageSize = 20;
 
   ngOnInit() {
     const conversationId = Number(this.route.snapshot.queryParamMap.get('conversationId')) || undefined;
     const taskId = Number(this.route.snapshot.queryParamMap.get('taskId')) || undefined;
+    const groupId = Number(this.route.snapshot.queryParamMap.get('groupId')) || undefined;
 
-    this.loadConversations(conversationId, taskId);
+    this.selectedInbox.set(groupId ? 'Group' : 'TaskDirect');
+    this.loadConversations({ selectedConversationId: conversationId, selectedTaskId: taskId, selectedGroupId: groupId });
+  }
+
+  protected changeInbox(type: ConversationInboxType) {
+    if (this.selectedInbox() === type) return;
+
+    this.selectedInbox.set(type);
+    this.conversationPage = 1;
+    this.selectedConversation.set(null);
+    this.messages.set([]);
+    this.messagePagination.set(null);
+    this.loadConversations();
   }
 
   protected selectConversation(conversation: Conversation) {
     this.selectedConversation.set(conversation);
-    this.loadMessages(conversation.id);
+    this.messages.set([]);
+    this.messagePagination.set(null);
+    this.loadMessages(conversation.id, 1);
   }
 
   protected sendMessage() {
@@ -47,7 +72,8 @@ export class Messages implements OnInit {
         this.messages.update((messages) => [...messages, message]);
         this.messageContent = '';
         this.loading.set(false);
-        this.loadConversations(conversation.id);
+        this.conversationPage = 1;
+        this.loadConversations({ selectedConversationId: conversation.id });
       },
       error: () => this.loading.set(false),
     });
@@ -58,9 +84,54 @@ export class Messages implements OnInit {
       next: () => {
         this.messages.update((messages) => messages.filter((x) => x.id !== message.id));
         this.toast.success('Message deleted');
-        this.loadConversations(this.selectedConversation()?.id);
+        this.loadConversations({ selectedConversationId: this.selectedConversation()?.id });
       },
     });
+  }
+
+  protected loadOlderMessages() {
+    const conversation = this.selectedConversation();
+    const pagination = this.messagePagination();
+
+    if (!conversation || !pagination || pagination.currentPage >= pagination.totalPages) return;
+
+    this.loadMessages(conversation.id, pagination.currentPage + 1, true);
+  }
+
+  protected nextConversationPage() {
+    const pagination = this.conversationPagination();
+
+    if (!pagination || pagination.currentPage >= pagination.totalPages) return;
+
+    this.conversationPage = pagination.currentPage + 1;
+    this.loadConversations({ selectedConversationId: this.selectedConversation()?.id });
+  }
+
+  protected previousConversationPage() {
+    const pagination = this.conversationPagination();
+
+    if (!pagination || pagination.currentPage <= 1) return;
+
+    this.conversationPage = pagination.currentPage - 1;
+    this.loadConversations({ selectedConversationId: this.selectedConversation()?.id });
+  }
+
+  protected canLoadOlderMessages() {
+    const pagination = this.messagePagination();
+
+    return !!pagination && pagination.currentPage < pagination.totalPages;
+  }
+
+  protected canGoPreviousConversationPage() {
+    const pagination = this.conversationPagination();
+
+    return !!pagination && pagination.currentPage > 1;
+  }
+
+  protected canGoNextConversationPage() {
+    const pagination = this.conversationPagination();
+
+    return !!pagination && pagination.currentPage < pagination.totalPages;
   }
 
   protected conversationTitle(conversation: Conversation) {
@@ -71,30 +142,84 @@ export class Messages implements OnInit {
     return conversationStatusLabel(conversation);
   }
 
-  private loadConversations(selectedConversationId?: number, selectedTaskId?: number) {
-    this.messageService.getConversations().subscribe({
-      next: (conversations) => {
-        this.conversations.set(conversations);
+  protected inboxDescription() {
+    return this.selectedInbox() === 'Group'
+      ? 'Group conversations stay open while you are part of the community space.'
+      : 'Task conversations stay visible after an exchange closes, but sending is only available while work is in progress.';
+  }
 
-        const selectedConversation = selectedConversationId
-          ? conversations.find((x) => x.id === selectedConversationId)
-          : selectedTaskId
-            ? conversations.find((x) => x.timeTaskId === selectedTaskId)
-            : null;
+  private loadConversations(options: ConversationSelectionOptions = {}) {
+    this.loadingConversations.set(true);
+    this.messageService.getConversations(this.selectedInbox(), this.conversationPage, this.conversationPageSize).subscribe({
+      next: (result) => {
+        this.conversations.set(result.items);
+        this.conversationPagination.set(result.metadata);
+        this.loadingConversations.set(false);
+
+        const selectedConversation = this.findSelectedConversation(result.items, options);
 
         if (selectedConversation) {
-          this.selectConversation(selectedConversation);
-        } else if (selectedConversationId || selectedTaskId) {
+          this.selectedConversation.set(selectedConversation);
+
+          if (!this.messages().length || this.messages()[0]?.conversationId !== selectedConversation.id) {
+            this.loadMessages(selectedConversation.id, 1);
+          }
+        } else if (options.selectedTaskId) {
+          this.loadTaskConversation(options.selectedTaskId);
+        } else if (options.selectedConversationId || options.selectedGroupId) {
           this.selectedConversation.set(null);
           this.messages.set([]);
+          this.messagePagination.set(null);
         }
+      },
+      error: () => this.loadingConversations.set(false),
+    });
+  }
+
+  private loadTaskConversation(taskId: number) {
+    this.messageService.getTaskConversation(taskId).subscribe({
+      next: (conversation) => {
+        this.selectedConversation.set(conversation);
+        this.loadMessages(conversation.id, 1);
       },
     });
   }
 
-  private loadMessages(conversationId: number) {
-    this.messageService.getConversationThread(conversationId).subscribe({
-      next: (messages) => this.messages.set(messages),
+  private loadMessages(conversationId: number, pageNumber: number, prepend = false) {
+    if (prepend) {
+      this.loadingOlderMessages.set(true);
+    }
+
+    this.messageService.getConversationThread(conversationId, pageNumber, this.messagePageSize).subscribe({
+      next: (result) => {
+        this.messagePagination.set(result.metadata);
+        this.messages.update((messages) => (prepend ? [...result.items, ...messages] : result.items));
+        this.loadingOlderMessages.set(false);
+      },
+      error: () => this.loadingOlderMessages.set(false),
     });
   }
+
+  private findSelectedConversation(conversations: Conversation[], options: ConversationSelectionOptions) {
+    if (options.selectedConversationId) {
+      return conversations.find((x) => x.id === options.selectedConversationId);
+    }
+
+    if (options.selectedTaskId) {
+      return conversations.find((x) => x.timeTaskId === options.selectedTaskId);
+    }
+
+    if (options.selectedGroupId) {
+      return conversations.find((x) => x.groupId === options.selectedGroupId);
+    }
+
+    return null;
+  }
 }
+
+type ConversationSelectionOptions = {
+  selectedConversationId?: number;
+  selectedTaskId?: number;
+  selectedGroupId?: number;
+};
+

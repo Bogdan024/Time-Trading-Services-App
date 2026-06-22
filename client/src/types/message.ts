@@ -1,11 +1,13 @@
 import { TaskMember } from './task';
 
 export type ConversationType = 1 | 2;
+export type ConversationInboxType = 'TaskDirect' | 'Group';
 
 export type Conversation = {
   id: number;
   type: ConversationType;
   timeTaskId?: number;
+  groupId?: number;
   taskTitle?: string;
   title?: string;
   createdAtUtc: string;
@@ -35,4 +37,6 @@ export function conversationStatusLabel(conversation: Conversation) {
   if (conversation.closedAtUtc) return 'Read-only';
   return 'Closed';
 }
+
+
 

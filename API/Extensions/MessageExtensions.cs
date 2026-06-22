@@ -33,11 +33,12 @@ public static class MessageExtensions
             Id = conversation.Id,
             Type = conversation.Type,
             TimeTaskId = conversation.TimeTaskId,
+            GroupId = conversation.GroupId,
             TaskTitle = conversation.TimeTask?.Title,
-            Title = conversation.Title,
+            Title = conversation.Group?.Name ?? conversation.Title,
             CreatedAtUtc = conversation.CreatedAtUtc,
             ClosedAtUtc = conversation.ClosedAtUtc,
-            CanSendMessages = conversation.ClosedAtUtc is null && (conversation.Type != ConversationType.TaskDirect || conversation.TimeTask?.Status == TimeTaskStatus.InProgress),
+            CanSendMessages = conversation.CanSendMessages(),
             LatestMessage = latestMessage?.Content,
             LatestMessageAtUtc = latestMessage?.CreatedAtUtc,
             UnreadCount = visibleMessages.Count(message =>
@@ -47,4 +48,7 @@ public static class MessageExtensions
         };
     }
 }
+
+
+
 

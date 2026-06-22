@@ -16,8 +16,13 @@ public class Conversation
     public TimeTask? TimeTask { get; set; }
 
     [JsonIgnore]
+    public CommunityGroup? Group { get; set; }
+
+    [JsonIgnore]
     public List<ConversationParticipant> Participants { get; set; } = [];
 
     [JsonIgnore]
     public List<Message> Messages { get; set; } = [];
 }
+
+
