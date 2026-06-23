@@ -1,14 +1,15 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AccountService } from '../../../core/services/account-service';
 import { TaskService } from '../../../core/services/task-service';
 import { ToastService } from '../../../core/services/toast-service';
-import { TimeTask } from '../../../types/task';
+import { TaskApplication, TimeTask } from '../../../types/task';
 
 @Component({
   selector: 'app-task-detail',
-  imports: [DatePipe, RouterLink],
+  imports: [DatePipe, FormsModule, RouterLink],
   templateUrl: './task-detail.html',
   styleUrl: './task-detail.css',
 })
@@ -19,26 +20,79 @@ export class TaskDetail implements OnInit {
   private toast = inject(ToastService);
   protected accountService = inject(AccountService);
   protected task = signal<TimeTask | undefined>(undefined);
+  protected applications = signal<TaskApplication[]>([]);
+  protected applicationMessage = '';
+  protected applying = signal(false);
+  protected loadingApplications = signal(false);
+  protected acceptingApplicationId = signal<number | null>(null);
+  protected selectedApplication = signal<TaskApplication | null>(null);
 
   ngOnInit(): void {
     this.loadTask();
   }
 
-  protected acceptTask() {
+  protected applyForTask() {
     const task = this.task();
 
-    if (!task) return;
+    if (!task || !this.canApply(task)) return;
 
-    this.taskService.acceptTask(task.id).subscribe({
+    this.applying.set(true);
+    this.taskService.applyForTask(task.id, { message: this.applicationMessage.trim() || undefined }).subscribe({
       next: () => {
-        this.toast.success('Task accepted');
-        this.router.navigateByUrl('/my-tasks/accepted');
+        this.toast.success('Application sent');
+        this.applicationMessage = '';
+        this.applying.set(false);
+        this.loadTask();
       },
+      error: () => this.applying.set(false),
     });
   }
 
-  protected canAccept(task: TimeTask) {
-    return task.status === 1 && task.postedByMember.id !== this.accountService.currentUser()?.id;
+  protected openAcceptApplicationConfirmation(application: TaskApplication) {
+    this.selectedApplication.set(application);
+  }
+
+  protected closeAcceptApplicationConfirmation() {
+    if (this.acceptingApplicationId()) return;
+
+    this.selectedApplication.set(null);
+  }
+
+  protected acceptSelectedApplication() {
+    const task = this.task();
+    const application = this.selectedApplication();
+
+    if (!task || !application) return;
+
+    this.acceptingApplicationId.set(application.id);
+    this.taskService.acceptApplication(task.id, application.id).subscribe({
+      next: () => {
+        this.toast.success('Application accepted');
+        this.acceptingApplicationId.set(null);
+        this.selectedApplication.set(null);
+        this.loadTask();
+      },
+      error: () => this.acceptingApplicationId.set(null),
+    });
+  }
+
+  protected canApply(task: TimeTask) {
+    return task.status === 1
+      && task.postedByMember.id !== this.accountService.currentUser()?.id
+      && !task.hasCurrentUserApplied;
+  }
+
+  protected canViewApplications(task: TimeTask) {
+    return task.postedByMember.id === this.accountService.currentUser()?.id && task.status === 1;
+  }
+
+  protected applicationStatusName(status: number) {
+    return {
+      1: 'Pending',
+      2: 'Accepted',
+      3: 'Rejected',
+      4: 'Withdrawn',
+    }[status] ?? 'Unknown';
   }
 
   protected canViewConversation(task: TimeTask) {
@@ -95,7 +149,28 @@ export class TaskDetail implements OnInit {
     }
 
     this.taskService.getTask(id).subscribe({
-      next: (task) => this.task.set(task),
+      next: (task) => {
+        this.task.set(task);
+
+        if (this.canViewApplications(task)) {
+          this.loadApplications(task.id);
+        } else {
+          this.applications.set([]);
+        }
+      },
+    });
+  }
+
+  private loadApplications(taskId: number) {
+    this.loadingApplications.set(true);
+    this.taskService.getTaskApplications(taskId).subscribe({
+      next: (applications) => {
+        this.applications.set(applications);
+        this.loadingApplications.set(false);
+      },
+      error: () => this.loadingApplications.set(false),
     });
   }
 }
+
+

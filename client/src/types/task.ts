@@ -2,6 +2,7 @@ import { ServiceCategory } from './member';
 
 export type TaskLocationMode = 1 | 2 | 3;
 export type TimeTaskStatus = 1 | 2 | 3 | 4;
+export type TaskApplicationStatus = 1 | 2 | 3 | 4;
 
 export type TaskMember = {
   id: string;
@@ -9,6 +10,19 @@ export type TaskMember = {
   avatarUrl?: string;
   city?: string;
   countryCode?: string;
+};
+
+export type TaskApplication = {
+  id: number;
+  timeTaskId: number;
+  status: TaskApplicationStatus;
+  message?: string;
+  createdAtUtc: string;
+  updatedAtUtc?: string;
+  matchesTaskCategory: boolean;
+  applicantAverageRating?: number;
+  applicantReviewCount: number;
+  applicant: TaskMember;
 };
 
 export type TimeTask = {
@@ -27,6 +41,9 @@ export type TimeTask = {
   serviceCategory: ServiceCategory;
   postedByMember: TaskMember;
   acceptedByMember?: TaskMember;
+  applicationCount: number;
+  hasCurrentUserApplied: boolean;
+  currentUserApplicationStatus?: TaskApplicationStatus;
 };
 
 export type CreateTimeTask = {
@@ -41,6 +58,10 @@ export type CreateTimeTask = {
 };
 
 export type UpdateTimeTask = CreateTimeTask;
+
+export type CreateTaskApplication = {
+  message?: string;
+};
 
 export type TimeTransaction = {
   id: number;

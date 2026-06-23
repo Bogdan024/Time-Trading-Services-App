@@ -14,30 +14,33 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<TimeTaskDto>>> GetTasks([FromQuery] TaskParams taskParams)
     {
-        taskParams.CurrentMemberId = User.GetMemberId();
+        var memberId = User.GetMemberId();
+        taskParams.CurrentMemberId = memberId;
         var tasks = await taskRepository.GetTasksAsync(taskParams);
 
         return Ok(new PaginatedResult<TimeTaskDto>
         {
             Metadata = tasks.Metadata,
-            Items = tasks.Items.Select(x => x.ToDto()).ToList()
+            Items = tasks.Items.Select(x => x.ToDto(memberId)).ToList()
         });
     }
 
     [HttpGet("mine")]
     public async Task<ActionResult<IReadOnlyList<TimeTaskDto>>> GetMyTasks()
     {
-        var tasks = await taskRepository.GetTasksForMemberAsync(User.GetMemberId());
+        var memberId = User.GetMemberId();
+        var tasks = await taskRepository.GetTasksForMemberAsync(memberId);
 
-        return Ok(tasks.Select(x => x.ToDto()));
+        return Ok(tasks.Select(x => x.ToDto(memberId)));
     }
 
     [HttpGet("accepted")]
     public async Task<ActionResult<IReadOnlyList<TimeTaskDto>>> GetAcceptedTasks()
     {
-        var tasks = await taskRepository.GetAcceptedTasksForMemberAsync(User.GetMemberId());
+        var memberId = User.GetMemberId();
+        var tasks = await taskRepository.GetAcceptedTasksForMemberAsync(memberId);
 
-        return Ok(tasks.Select(x => x.ToDto()));
+        return Ok(tasks.Select(x => x.ToDto(memberId)));
     }
 
     [HttpGet("transactions")]
@@ -64,7 +67,26 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
             return NotFound();
         }
 
-        return task.ToDto();
+        return task.ToDto(memberId);
+    }
+
+    [HttpGet("{id:int}/applications")]
+    public async Task<ActionResult<IReadOnlyList<TaskApplicationDto>>> GetTaskApplications(int id)
+    {
+        var task = await taskRepository.GetTaskByIdAsync(id);
+
+        if (task is null) return NotFound();
+        if (task.PostedByMemberId != User.GetMemberId()) return Forbid();
+
+        var applications = await taskRepository.GetApplicationsForTaskAsync(id);
+        var ratingSummaries = await taskRepository.GetRatingSummariesForMembersAsync(applications.Select(x => x.ApplicantMemberId));
+
+        return Ok(applications.Select(application =>
+        {
+            ratingSummaries.TryGetValue(application.ApplicantMemberId, out var ratingSummary);
+
+            return application.ToDto(ratingSummary?.AverageRating, ratingSummary?.ReviewCount ?? 0);
+        }));
     }
 
     [HttpPost]
@@ -80,6 +102,7 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
             return BadRequest("Due date must be in the future");
         }
 
+        var memberId = User.GetMemberId();
         var task = new TimeTask
         {
             Title = createTaskDto.Title,
@@ -90,7 +113,7 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
             City = createTaskDto.City,
             CountryCode = createTaskDto.CountryCode,
             DueAtUtc = createTaskDto.DueAtUtc,
-            PostedByMemberId = User.GetMemberId()
+            PostedByMemberId = memberId
         };
 
         taskRepository.Add(task);
@@ -104,7 +127,107 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
 
         if (createdTask is null) return BadRequest("Failed to load created task");
 
-        return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask.ToDto());
+        return CreatedAtAction(nameof(GetTask), new { id = createdTask.Id }, createdTask.ToDto(memberId));
+    }
+
+    [HttpPost("{id:int}/applications")]
+    public async Task<ActionResult<TaskApplicationDto>> ApplyForTask(int id, CreateTaskApplicationDto createApplicationDto)
+    {
+        var task = await taskRepository.GetTaskByIdAsync(id);
+
+        if (task is null) return NotFound();
+
+        var memberId = User.GetMemberId();
+
+        if (task.PostedByMemberId == memberId) return BadRequest("You cannot apply to your own task");
+        if (task.Status != TimeTaskStatus.Open) return BadRequest("Only open tasks accept applications");
+
+        var message = string.IsNullOrWhiteSpace(createApplicationDto.Message) ? null : createApplicationDto.Message.Trim();
+        var existingApplication = task.Applications.FirstOrDefault(x => x.ApplicantMemberId == memberId);
+
+        if (existingApplication is not null && existingApplication.Status != TaskApplicationStatus.Withdrawn)
+        {
+            return BadRequest("You have already applied to this task");
+        }
+
+        if (existingApplication is not null)
+        {
+            existingApplication.Status = TaskApplicationStatus.Pending;
+            existingApplication.Message = message;
+            existingApplication.UpdatedAtUtc = DateTime.UtcNow;
+        }
+        else
+        {
+            taskRepository.AddApplication(new TaskApplication
+            {
+                TimeTaskId = task.Id,
+                ApplicantMemberId = memberId,
+                Message = message
+            });
+        }
+
+        if (!await taskRepository.SaveAllAsync()) return BadRequest("Failed to apply for task");
+
+        var applications = await taskRepository.GetApplicationsForTaskAsync(task.Id);
+        var application = applications.SingleOrDefault(x => x.ApplicantMemberId == memberId);
+
+        if (application is null) return BadRequest("Failed to load application");
+
+        var ratingSummaries = await taskRepository.GetRatingSummariesForMembersAsync([memberId]);
+        ratingSummaries.TryGetValue(memberId, out var ratingSummary);
+
+        return Ok(application.ToDto(ratingSummary?.AverageRating, ratingSummary?.ReviewCount ?? 0));
+    }
+
+    [HttpPost("{id:int}/applications/{applicationId:int}/accept")]
+    public async Task<ActionResult> AcceptApplication(int id, int applicationId)
+    {
+        var application = await taskRepository.GetApplicationForTaskAsync(id, applicationId);
+
+        if (application is null) return NotFound();
+
+        var task = application.TimeTask;
+
+        if (task.PostedByMemberId != User.GetMemberId()) return Forbid();
+        if (task.Status != TimeTaskStatus.Open) return BadRequest("Only open tasks can accept an application");
+        if (application.Status != TaskApplicationStatus.Pending) return BadRequest("Only pending applications can be accepted");
+
+        task.AcceptedByMemberId = application.ApplicantMemberId;
+        task.Status = TimeTaskStatus.InProgress;
+        task.UpdatedAtUtc = DateTime.UtcNow;
+        application.Status = TaskApplicationStatus.Accepted;
+        application.UpdatedAtUtc = DateTime.UtcNow;
+
+        foreach (var pendingApplication in task.Applications.Where(x => x.Id != application.Id && x.Status == TaskApplicationStatus.Pending))
+        {
+            pendingApplication.Status = TaskApplicationStatus.Rejected;
+            pendingApplication.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        await messageRepository.GetOrCreateTaskConversationAsync(task);
+        taskRepository.Update(task);
+
+        if (await taskRepository.SaveAllAsync()) return NoContent();
+
+        return BadRequest("Failed to accept application");
+    }
+
+    [HttpPost("{id:int}/applications/{applicationId:int}/withdraw")]
+    public async Task<ActionResult> WithdrawApplication(int id, int applicationId)
+    {
+        var application = await taskRepository.GetApplicationForTaskAsync(id, applicationId);
+
+        if (application is null) return NotFound();
+        if (application.ApplicantMemberId != User.GetMemberId()) return Forbid();
+        if (application.TimeTask.Status != TimeTaskStatus.Open) return BadRequest("Only applications for open tasks can be withdrawn");
+        if (application.Status != TaskApplicationStatus.Pending) return BadRequest("Only pending applications can be withdrawn");
+
+        application.Status = TaskApplicationStatus.Withdrawn;
+        application.UpdatedAtUtc = DateTime.UtcNow;
+
+        if (await taskRepository.SaveAllAsync()) return NoContent();
+
+        return BadRequest("Failed to withdraw application");
     }
 
     [HttpPut("{id:int}")]
@@ -165,43 +288,18 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
         task.Status = TimeTaskStatus.Cancelled;
         task.UpdatedAtUtc = DateTime.UtcNow;
 
+        foreach (var pendingApplication in task.Applications.Where(x => x.Status == TaskApplicationStatus.Pending))
+        {
+            pendingApplication.Status = TaskApplicationStatus.Rejected;
+            pendingApplication.UpdatedAtUtc = DateTime.UtcNow;
+        }
+
         await messageRepository.CloseTaskConversationAsync(task.Id);
         taskRepository.Update(task);
 
         if (await taskRepository.SaveAllAsync()) return NoContent();
 
         return BadRequest("Failed to cancel task");
-    }
-
-    [HttpPatch("{id:int}/accept")]
-    public async Task<ActionResult> AcceptTask(int id)
-    {
-        var task = await taskRepository.GetTaskByIdAsync(id);
-
-        if (task is null) return NotFound();
-
-        var memberId = User.GetMemberId();
-
-        if (task.PostedByMemberId == memberId)
-        {
-            return BadRequest("You cannot accept your own task");
-        }
-
-        if (task.Status != TimeTaskStatus.Open)
-        {
-            return BadRequest("Only open tasks can be accepted");
-        }
-
-        task.AcceptedByMemberId = memberId;
-        task.Status = TimeTaskStatus.InProgress;
-        task.UpdatedAtUtc = DateTime.UtcNow;
-
-        await messageRepository.GetOrCreateTaskConversationAsync(task);
-        taskRepository.Update(task);
-
-        if (await taskRepository.SaveAllAsync()) return NoContent();
-
-        return BadRequest("Failed to accept task");
     }
 
     [HttpPatch("{id:int}/complete")]

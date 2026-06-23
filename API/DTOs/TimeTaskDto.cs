@@ -19,4 +19,8 @@ public class TimeTaskDto
     public required ServiceCategoryDto ServiceCategory { get; set; }
     public required TaskMemberDto PostedByMember { get; set; }
     public TaskMemberDto? AcceptedByMember { get; set; }
+    public int ApplicationCount { get; set; }
+    public bool HasCurrentUserApplied { get; set; }
+    public TaskApplicationStatus? CurrentUserApplicationStatus { get; set; }
 }
+

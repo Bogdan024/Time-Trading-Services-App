@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MessageService } from '../../core/services/message-service';
@@ -28,6 +28,8 @@ export class Messages implements OnInit {
   protected loading = signal(false);
   protected loadingConversations = signal(false);
   protected loadingOlderMessages = signal(false);
+
+  @ViewChild('messageThread') private messageThread?: ElementRef<HTMLElement>;
 
   private conversationPage = 1;
   private readonly conversationPageSize = 9;
@@ -73,6 +75,7 @@ export class Messages implements OnInit {
         this.messageContent = '';
         this.loading.set(false);
         this.conversationPage = 1;
+        this.scrollThreadToBottom();
         this.loadConversations({ selectedConversationId: conversation.id });
       },
       error: () => this.loading.set(false),
@@ -186,6 +189,8 @@ export class Messages implements OnInit {
   }
 
   private loadMessages(conversationId: number, pageNumber: number, prepend = false) {
+    const previousScrollHeight = prepend ? this.messageThread?.nativeElement.scrollHeight : 0;
+
     if (prepend) {
       this.loadingOlderMessages.set(true);
     }
@@ -195,6 +200,12 @@ export class Messages implements OnInit {
         this.messagePagination.set(result.metadata);
         this.messages.update((messages) => (prepend ? [...result.items, ...messages] : result.items));
         this.loadingOlderMessages.set(false);
+
+        if (prepend) {
+          this.preserveThreadScrollPosition(previousScrollHeight ?? 0);
+        } else {
+          this.scrollThreadToBottom();
+        }
       },
       error: () => this.loadingOlderMessages.set(false),
     });
@@ -215,6 +226,25 @@ export class Messages implements OnInit {
 
     return null;
   }
+  private scrollThreadToBottom() {
+    setTimeout(() => {
+      const thread = this.messageThread?.nativeElement;
+
+      if (!thread) return;
+
+      thread.scrollTop = thread.scrollHeight;
+    });
+  }
+
+  private preserveThreadScrollPosition(previousScrollHeight: number) {
+    setTimeout(() => {
+      const thread = this.messageThread?.nativeElement;
+
+      if (!thread) return;
+
+      thread.scrollTop = thread.scrollHeight - previousScrollHeight;
+    });
+  }
 }
 
 type ConversationSelectionOptions = {
@@ -222,4 +252,5 @@ type ConversationSelectionOptions = {
   selectedTaskId?: number;
   selectedGroupId?: number;
 };
+
 

@@ -5,8 +5,12 @@ namespace API.Extensions;
 
 public static class TimeTaskExtensions
 {
-    public static TimeTaskDto ToDto(this TimeTask task)
+    public static TimeTaskDto ToDto(this TimeTask task, string? currentMemberId = null)
     {
+        var currentUserApplication = currentMemberId is null
+            ? null
+            : task.Applications.FirstOrDefault(x => x.ApplicantMemberId == currentMemberId);
+
         return new TimeTaskDto
         {
             Id = task.Id,
@@ -28,7 +32,10 @@ public static class TimeTaskExtensions
                 Name = task.ServiceCategory.Name
             },
             PostedByMember = task.PostedByMember.ToTaskMemberDto(),
-            AcceptedByMember = task.AcceptedByMember?.ToTaskMemberDto()
+            AcceptedByMember = task.AcceptedByMember?.ToTaskMemberDto(),
+            ApplicationCount = task.Applications.Count(x => x.Status == TaskApplicationStatus.Pending),
+            HasCurrentUserApplied = currentUserApplication is not null && currentUserApplication.Status != TaskApplicationStatus.Withdrawn,
+            CurrentUserApplicationStatus = currentUserApplication?.Status
         };
     }
 }

@@ -101,7 +101,7 @@
           </div>
         </div>
 
-        <div class="mt-5 flex max-h-[32rem] min-h-96 flex-col gap-3 overflow-y-auto rounded-3xl bg-white/55 p-4">
+        <div #messageThread class="mt-5 flex max-h-[32rem] min-h-96 flex-col gap-3 overflow-y-auto rounded-3xl bg-white/55 p-4">
           @if (canLoadOlderMessages()) {
             <button type="button" class="btn btn-sm mx-auto rounded-full" [disabled]="loadingOlderMessages()" (click)="loadOlderMessages()">
               {{ loadingOlderMessages() ? 'Loading...' : 'Load older messages' }}
@@ -151,3 +151,4 @@
     </section>
   </div>
 </section>
+

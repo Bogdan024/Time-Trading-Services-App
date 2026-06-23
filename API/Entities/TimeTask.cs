@@ -45,4 +45,8 @@ public class TimeTask
 
     [JsonIgnore]
     public TimeTransaction? TimeTransaction { get; set; }
+
+    [JsonIgnore]
+    public List<TaskApplication> Applications { get; set; } = [];
 }
+

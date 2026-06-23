@@ -15,6 +15,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<MemberAvailabilitySlot> MemberAvailabilitySlots { get; set; }
     public DbSet<TimeTask> TimeTasks { get; set; }
     public DbSet<TimeTransaction> TimeTransactions { get; set; }
+    public DbSet<TaskApplication> TaskApplications { get; set; }
     public DbSet<MemberReview> MemberReviews { get; set; }
     public DbSet<CommunityGroup> CommunityGroups { get; set; }
     public DbSet<CommunityGroupMember> CommunityGroupMembers { get; set; }
@@ -60,6 +61,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .HasForeignKey(x => x.AcceptedByMemberId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<TaskApplication>()
+            .HasIndex(x => new { x.TimeTaskId, x.ApplicantMemberId })
+            .IsUnique();
+
+        modelBuilder.Entity<TaskApplication>()
+            .HasIndex(x => x.ApplicantMemberId);
+
+        modelBuilder.Entity<TaskApplication>()
+            .HasOne(x => x.TimeTask)
+            .WithMany(x => x.Applications)
+            .HasForeignKey(x => x.TimeTaskId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TaskApplication>()
+            .HasOne(x => x.ApplicantMember)
+            .WithMany()
+            .HasForeignKey(x => x.ApplicantMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<TimeTransaction>()
             .HasIndex(x => x.TimeTaskId)
             .IsUnique();
@@ -207,5 +226,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+
 
 

@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { PaginatedResult } from '../../types/pagination';
-import { CreateTimeTask, TaskParams, TimeTask, TimeTransaction, UpdateTimeTask } from '../../types/task';
+import { CreateTaskApplication, CreateTimeTask, TaskApplication, TaskParams, TimeTask, TimeTransaction, UpdateTimeTask } from '../../types/task';
 
 @Injectable({
   providedIn: 'root',
@@ -41,6 +41,10 @@ export class TaskService {
     return this.http.get<TimeTask[]>(this.baseUrl + 'tasks/accepted');
   }
 
+  getTaskApplications(taskId: number) {
+    return this.http.get<TaskApplication[]>(this.baseUrl + 'tasks/' + taskId + '/applications');
+  }
+
   getTransactions() {
     return this.http.get<TimeTransaction[]>(this.baseUrl + 'tasks/transactions');
   }
@@ -49,12 +53,20 @@ export class TaskService {
     return this.http.post<TimeTask>(this.baseUrl + 'tasks', task);
   }
 
-  updateTask(id: number, task: UpdateTimeTask) {
-    return this.http.put<void>(this.baseUrl + 'tasks/' + id, task);
+  applyForTask(taskId: number, application: CreateTaskApplication) {
+    return this.http.post<TaskApplication>(this.baseUrl + 'tasks/' + taskId + '/applications', application);
   }
 
-  acceptTask(id: number) {
-    return this.http.patch<void>(this.baseUrl + 'tasks/' + id + '/accept', {});
+  acceptApplication(taskId: number, applicationId: number) {
+    return this.http.post<void>(this.baseUrl + 'tasks/' + taskId + '/applications/' + applicationId + '/accept', {});
+  }
+
+  withdrawApplication(taskId: number, applicationId: number) {
+    return this.http.post<void>(this.baseUrl + 'tasks/' + taskId + '/applications/' + applicationId + '/withdraw', {});
+  }
+
+  updateTask(id: number, task: UpdateTimeTask) {
+    return this.http.put<void>(this.baseUrl + 'tasks/' + id, task);
   }
 
   completeTask(id: number) {
@@ -65,4 +77,3 @@ export class TaskService {
     return this.http.patch<void>(this.baseUrl + 'tasks/' + id + '/cancel', {});
   }
 }
-
