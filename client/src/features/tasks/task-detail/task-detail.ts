@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AccountService } from '../../../core/services/account-service';
 import { TaskService } from '../../../core/services/task-service';
+import { ReportService } from '../../../core/services/report-service';
 import { ToastService } from '../../../core/services/toast-service';
 import { TaskApplication, TimeTask } from '../../../types/task';
+import { ReportReason, ReportTargetType } from '../../../types/moderation';
 
 @Component({
   selector: 'app-task-detail',
@@ -17,6 +19,7 @@ export class TaskDetail implements OnInit {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private taskService = inject(TaskService);
+  private reportService = inject(ReportService);
   private toast = inject(ToastService);
   protected accountService = inject(AccountService);
   protected task = signal<TimeTask | undefined>(undefined);
@@ -26,6 +29,8 @@ export class TaskDetail implements OnInit {
   protected loadingApplications = signal(false);
   protected acceptingApplicationId = signal<number | null>(null);
   protected selectedApplication = signal<TaskApplication | null>(null);
+  protected reportDetails = '';
+  protected reporting = signal(false);
 
   ngOnInit(): void {
     this.loadTask();
@@ -74,6 +79,27 @@ export class TaskDetail implements OnInit {
       },
       error: () => this.acceptingApplicationId.set(null),
     });
+  }
+
+  protected reportTask(task: TimeTask) {
+    this.reporting.set(true);
+    this.reportService.createReport({
+      targetType: ReportTargetType.Task,
+      targetIntId: task.id,
+      reason: ReportReason.Inappropriate,
+      details: this.reportDetails.trim() || undefined,
+    }).subscribe({
+      next: () => {
+        this.toast.success('Report submitted for review');
+        this.reportDetails = '';
+        this.reporting.set(false);
+      },
+      error: () => this.reporting.set(false),
+    });
+  }
+
+  protected canReportTask(task: TimeTask) {
+    return task.postedByMember.id !== this.accountService.currentUser()?.id;
   }
 
   protected canApply(task: TimeTask) {
@@ -172,5 +198,6 @@ export class TaskDetail implements OnInit {
     });
   }
 }
+
 
 

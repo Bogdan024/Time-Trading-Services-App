@@ -142,6 +142,22 @@
         </div>
       }
 
+      @if (canReportTask(task)) {
+        <div class="mt-8 rounded-3xl bg-white/50 p-5">
+          <h2 class="text-base font-semibold text-slate-800">Report this task</h2>
+          <p class="mt-1 text-sm text-slate-600">Send this task to moderators if it looks unsafe, abusive, spammy, or outside community rules.</p>
+          <textarea
+            class="textarea mt-4 min-h-24 w-full rounded-3xl bg-white/80"
+            maxlength="1000"
+            placeholder="Optional details for moderators"
+            [(ngModel)]="reportDetails"
+          ></textarea>
+          <button type="button" class="btn btn-outline mt-4 rounded-full" [disabled]="reporting()" (click)="reportTask(task)">
+            {{ reporting() ? 'Reporting...' : 'Report task' }}
+          </button>
+        </div>
+      }
+
       <div class="mt-8 flex flex-wrap gap-2">
         @if (canViewConversation(task)) {
           <a [routerLink]="['/messages']" [queryParams]="{ taskId: task.id }" class="btn btn-accent rounded-full">
@@ -193,3 +209,4 @@
     </section>
   </div>
 }
+

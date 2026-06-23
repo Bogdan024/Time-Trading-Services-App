@@ -20,6 +20,4 @@ public class CreateGroupDto
 
     [StringLength(2, MinimumLength = 2)]
     public string? CountryCode { get; set; }
-
-    public bool IsPublic { get; set; } = true;
 }

@@ -19,9 +19,27 @@ public class GroupRepository(AppDbContext context) : IGroupRepository
             .ToListAsync();
     }
 
+    public async Task<IReadOnlyList<CommunityGroup>> GetPendingGroupsAsync()
+    {
+        return await context.CommunityGroups
+            .Include(x => x.OwnerMember)
+            .Include(x => x.Members)
+            .Where(x => x.ModerationStatus == ModerationStatus.PendingApproval)
+            .OrderBy(x => x.CreatedAtUtc)
+            .ToListAsync();
+    }
+
     public async Task<CommunityGroup?> GetGroupByIdAsync(int id, string currentMemberId)
     {
         return await GroupQuery(currentMemberId).SingleOrDefaultAsync(x => x.Id == id);
+    }
+
+    public async Task<CommunityGroup?> GetGroupForModerationAsync(int id)
+    {
+        return await context.CommunityGroups
+            .Include(x => x.OwnerMember)
+            .Include(x => x.Members)
+            .SingleOrDefaultAsync(x => x.Id == id);
     }
 
     public async Task<bool> GroupNameExistsAsync(string name)
@@ -85,6 +103,8 @@ public class GroupRepository(AppDbContext context) : IGroupRepository
             .Include(x => x.Members)
             .Include(x => x.Conversation)
                 .ThenInclude(x => x!.Participants)
-            .Where(x => x.IsPublic || x.Members.Any(member => member.MemberId == currentMemberId));
+            .Where(x => x.ModerationStatus == ModerationStatus.Approved || x.OwnerMemberId == currentMemberId);
     }
 }
+
+

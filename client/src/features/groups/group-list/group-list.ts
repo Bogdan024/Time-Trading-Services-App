@@ -70,7 +70,6 @@ export class GroupList implements OnInit {
       theme: this.groupForm.theme?.trim() || undefined,
       city: this.groupForm.city?.trim() || undefined,
       countryCode: this.groupForm.countryCode?.trim().toUpperCase() || undefined,
-      isPublic: this.groupForm.isPublic,
     };
   }
 
@@ -81,8 +80,8 @@ export class GroupList implements OnInit {
       theme: '',
       city: '',
       countryCode: '',
-      isPublic: true,
     };
   }
 }
+
 

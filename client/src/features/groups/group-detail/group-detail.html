@@ -15,9 +15,19 @@
 
           <div class="flex flex-wrap gap-2">
             <span class="rounded-full bg-white/75 px-4 py-2 text-sm font-semibold text-slate-700">{{ group.memberCount }} members</span>
-            <span class="rounded-full bg-white/75 px-4 py-2 text-sm font-semibold text-slate-700">{{ group.isPublic ? 'Public' : 'Private' }}</span>
+            <span class="rounded-full bg-white/75 px-4 py-2 text-sm font-semibold text-slate-700">{{ group.moderationStatus }}</span>
           </div>
         </div>
+
+        @if (group.moderationStatus === 'PendingApproval') {
+          <div class="mt-6 rounded-3xl bg-amber-100/80 p-4 text-sm text-amber-900">
+            This group is waiting for moderator approval. It will be public after approval.
+          </div>
+        } @else if (group.moderationStatus === 'Rejected') {
+          <div class="mt-6 rounded-3xl bg-rose-100/80 p-4 text-sm text-rose-900">
+            This group was rejected. {{ group.rejectionReason || 'No reason was provided.' }}
+          </div>
+        }
 
         <p class="safe-user-text mt-8 rounded-3xl bg-white/60 p-5 text-sm leading-7 text-slate-700">{{ group.description }}</p>
 
@@ -34,6 +44,22 @@
             <p class="mt-2 text-sm text-slate-600">Members can use the shared conversation for coordination and community updates.</p>
           </div>
         </div>
+
+        @if (!group.isOwner) {
+          <div class="mt-8 rounded-3xl bg-white/50 p-5">
+            <h2 class="text-base font-semibold text-slate-800">Report this group</h2>
+            <p class="mt-1 text-sm text-slate-600">Send this group to moderators if it looks unsafe, abusive, spammy, or outside community rules.</p>
+            <textarea
+              class="textarea mt-4 min-h-24 w-full rounded-3xl bg-white/80"
+              maxlength="1000"
+              placeholder="Optional details for moderators"
+              [(ngModel)]="reportDetails"
+            ></textarea>
+            <button type="button" class="btn btn-outline mt-4 rounded-full" [disabled]="reporting()" (click)="reportGroup(group)">
+              {{ reporting() ? 'Reporting...' : 'Report group' }}
+            </button>
+          </div>
+        }
 
         <div class="mt-8 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <div>
@@ -64,3 +90,7 @@
     <div class="civic-card rounded-4xl p-8 text-center text-sm text-slate-600">Loading group...</div>
   }
 </section>
+
+
+
+

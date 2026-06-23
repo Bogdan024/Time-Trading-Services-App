@@ -32,19 +32,7 @@ export class AccountService {
 
   setCurrentUser(user: User) {
     user.roles = user.roles?.length ? user.roles : this.getDecodedRoles(user.token);
-    localStorage.setItem('user', JSON.stringify(user));
     this.currentUser.set(user);
-  }
-
-  restoreUser() {
-    const userString = localStorage.getItem('user');
-
-    if (!userString) {
-      return;
-    }
-
-    const user = JSON.parse(userString) as User;
-    this.setCurrentUser(user);
   }
 
   hasRole(roles: string[]) {
@@ -57,7 +45,6 @@ export class AccountService {
   }
 
   clearCurrentUser() {
-    localStorage.removeItem('user');
     localStorage.removeItem('taskFilters');
     this.currentUser.set(null);
   }

@@ -13,82 +13,77 @@
 
   @if (showCreate()) {
     <form class="civic-card mb-6 rounded-4xl p-6" (ngSubmit)="createGroup()">
-      <div class="grid gap-4 md:grid-cols-2">
-        <label class="form-control">
-          <span class="label-text font-semibold text-slate-700">Group name</span>
-          <input class="input rounded-2xl bg-white/80" name="name" maxlength="80" required [(ngModel)]="groupForm.name" />
+      <div class="grid gap-5 md:grid-cols-2">
+        <label class="form-control w-full">
+          <span class="label-text mb-2 font-semibold text-slate-700">Group name</span>
+          <input class="input w-full rounded-2xl bg-white/80" name="name" maxlength="80" required [(ngModel)]="groupForm.name" />
         </label>
 
-        <label class="form-control">
-          <span class="label-text font-semibold text-slate-700">Theme</span>
-          <input class="input rounded-2xl bg-white/80" name="theme" maxlength="60" placeholder="Gardening, repairs, language exchange" [(ngModel)]="groupForm.theme" />
+        <label class="form-control w-full">
+          <span class="label-text mb-2 font-semibold text-slate-700">Theme</span>
+          <input class="input w-full rounded-2xl bg-white/80" name="theme" maxlength="60" placeholder="Gardening, repairs, language exchange" [(ngModel)]="groupForm.theme" />
         </label>
 
-        <label class="form-control md:col-span-2">
-          <span class="label-text font-semibold text-slate-700">Description</span>
-          <textarea class="textarea min-h-28 rounded-3xl bg-white/80" name="description" maxlength="1000" required [(ngModel)]="groupForm.description"></textarea>
+        <label class="form-control w-full md:col-span-2">
+          <span class="label-text mb-2 font-semibold text-slate-700">Description</span>
+          <textarea class="textarea min-h-32 w-full rounded-3xl bg-white/80" name="description" maxlength="1000" required [(ngModel)]="groupForm.description"></textarea>
         </label>
 
-        <label class="form-control">
-          <span class="label-text font-semibold text-slate-700">City</span>
-          <input class="input rounded-2xl bg-white/80" name="city" maxlength="80" [(ngModel)]="groupForm.city" />
+        <label class="form-control w-full">
+          <span class="label-text mb-2 font-semibold text-slate-700">City</span>
+          <input class="input w-full rounded-2xl bg-white/80" name="city" maxlength="80" [(ngModel)]="groupForm.city" />
         </label>
 
-        <label class="form-control">
-          <span class="label-text font-semibold text-slate-700">Country code</span>
-          <input class="input rounded-2xl bg-white/80 uppercase" name="countryCode" minlength="2" maxlength="2" placeholder="RO" [(ngModel)]="groupForm.countryCode" />
+        <label class="form-control w-full">
+          <span class="label-text mb-2 font-semibold text-slate-700">Country code</span>
+          <input class="input w-full rounded-2xl bg-white/80 uppercase" name="countryCode" minlength="2" maxlength="2" placeholder="RO" [(ngModel)]="groupForm.countryCode" />
         </label>
       </div>
 
-      <div class="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <label class="flex items-center gap-3 text-sm text-slate-700">
-          <input type="checkbox" class="toggle toggle-accent" name="isPublic" [(ngModel)]="groupForm.isPublic" />
-          Public group
-        </label>
-
+      <div class="mt-5 flex justify-end">
         <button type="submit" class="btn btn-accent rounded-full" [disabled]="loading() || !canCreateGroup()">Create</button>
       </div>
     </form>
-  }
+  } @else {
+    <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+      @for (group of groups(); track group.id) {
+        <article class="civic-card flex min-w-0 flex-col rounded-4xl p-6">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="safe-user-text text-xs font-semibold uppercase tracking-[0.18em] text-[var(--civic-teal)]">{{ group.theme || 'Community' }}</p>
+              <h2 class="safe-user-text mt-2 text-2xl font-semibold text-slate-800">{{ group.name }}</h2>
+            </div>
 
-  <div class="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
-    @for (group of groups(); track group.id) {
-      <article class="civic-card flex min-w-0 flex-col rounded-4xl p-6">
-        <div class="flex items-start justify-between gap-3">
-          <div class="min-w-0">
-            <p class="safe-user-text text-xs font-semibold uppercase tracking-[0.18em] text-[var(--civic-teal)]">{{ group.theme || 'Community' }}</p>
-            <h2 class="safe-user-text mt-2 text-2xl font-semibold text-slate-800">{{ group.name }}</h2>
+            @if (group.isMember) {
+              <span class="rounded-full bg-[var(--civic-teal)] px-3 py-1 text-xs font-semibold text-white">Joined</span>
+            }
           </div>
 
-          @if (group.isMember) {
-            <span class="rounded-full bg-[var(--civic-teal)] px-3 py-1 text-xs font-semibold text-white">Joined</span>
-          }
+          <p class="safe-user-text mt-4 line-clamp-3 text-sm leading-6 text-slate-600">{{ group.description }}</p>
+
+          <div class="mt-5 flex flex-wrap gap-2 text-xs text-slate-600">
+            <span class="rounded-full bg-white/70 px-3 py-1">{{ group.memberCount }} members</span>
+            @if (group.city || group.countryCode) {
+              <span class="safe-user-text rounded-full bg-white/70 px-3 py-1">{{ group.city || 'Anywhere' }}{{ group.countryCode ? ', ' + group.countryCode : '' }}</span>
+            }
+            <span class="rounded-full bg-white/70 px-3 py-1">{{ group.moderationStatus }}</span>
+          </div>
+
+          <div class="mt-6 flex items-center justify-between gap-3">
+            <a [routerLink]="['/groups', group.id]" class="btn btn-ghost rounded-full">View</a>
+
+            @if (!group.isMember && group.moderationStatus === 'Approved') {
+              <button type="button" class="btn btn-accent rounded-full" (click)="joinGroup(group)">Join</button>
+            } @else if (group.isMember && group.conversationId) {
+              <a [routerLink]="['/messages']" [queryParams]="{ groupId: group.id }" class="btn btn-outline rounded-full">Chat</a>
+            }
+          </div>
+        </article>
+      } @empty {
+        <div class="civic-card rounded-4xl p-8 text-center text-sm text-slate-600 md:col-span-2 xl:col-span-3">
+          No groups yet. Create the first community space.
         </div>
-
-        <p class="safe-user-text mt-4 line-clamp-3 text-sm leading-6 text-slate-600">{{ group.description }}</p>
-
-        <div class="mt-5 flex flex-wrap gap-2 text-xs text-slate-600">
-          <span class="rounded-full bg-white/70 px-3 py-1">{{ group.memberCount }} members</span>
-          @if (group.city || group.countryCode) {
-            <span class="safe-user-text rounded-full bg-white/70 px-3 py-1">{{ group.city || 'Anywhere' }}{{ group.countryCode ? ', ' + group.countryCode : '' }}</span>
-          }
-          <span class="rounded-full bg-white/70 px-3 py-1">{{ group.isPublic ? 'Public' : 'Private' }}</span>
-        </div>
-
-        <div class="mt-6 flex items-center justify-between gap-3">
-          <a [routerLink]="['/groups', group.id]" class="btn btn-ghost rounded-full">View</a>
-
-          @if (!group.isMember) {
-            <button type="button" class="btn btn-accent rounded-full" (click)="joinGroup(group)">Join</button>
-          } @else if (group.conversationId) {
-            <a [routerLink]="['/messages']" [queryParams]="{ groupId: group.id }" class="btn btn-outline rounded-full">Chat</a>
-          }
-        </div>
-      </article>
-    } @empty {
-      <div class="civic-card rounded-4xl p-8 text-center text-sm text-slate-600 md:col-span-2 xl:col-span-3">
-        No groups yet. Create the first community space.
-      </div>
-    }
-  </div>
+      }
+    </div>
+  }
 </section>

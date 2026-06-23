@@ -22,12 +22,20 @@ public class CommunityGroup
     [MaxLength(2)]
     public string? CountryCode { get; set; }
 
-    public bool IsPublic { get; set; } = true;
+    public ModerationStatus ModerationStatus { get; set; } = ModerationStatus.PendingApproval;
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public string OwnerMemberId { get; set; } = null!;
+    public string? ReviewedByMemberId { get; set; }
+    public DateTime? ReviewedAtUtc { get; set; }
+
+    [MaxLength(1000)]
+    public string? RejectionReason { get; set; }
 
     [JsonIgnore]
     public Member OwnerMember { get; set; } = null!;
+
+    [JsonIgnore]
+    public Member? ReviewedByMember { get; set; }
 
     [JsonIgnore]
     public List<CommunityGroupMember> Members { get; set; } = [];

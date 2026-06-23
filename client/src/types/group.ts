@@ -7,7 +7,8 @@ export type CommunityGroup = {
   theme?: string;
   city?: string;
   countryCode?: string;
-  isPublic: boolean;
+  moderationStatus: string;
+  rejectionReason?: string;
   createdAtUtc: string;
   memberCount: number;
   isMember: boolean;
@@ -22,5 +23,16 @@ export type CreateGroup = {
   theme?: string;
   city?: string;
   countryCode?: string;
-  isPublic: boolean;
+};
+
+export type PendingGroup = {
+  id: number;
+  name: string;
+  description: string;
+  theme?: string;
+  city?: string;
+  countryCode?: string;
+  moderationStatus: string;
+  createdAtUtc: string;
+  owner?: TaskMember;
 };

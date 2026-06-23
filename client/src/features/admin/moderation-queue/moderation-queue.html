@@ -1,0 +1,107 @@
+<section class="civic-card rounded-[2rem] p-6 shadow-sm">
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <p class="civic-kicker text-xs uppercase tracking-[0.28em] text-teal-800">Moderation</p>
+      <h2 class="civic-display mt-1 text-3xl font-semibold text-slate-900">Trust queue</h2>
+      <p class="mt-2 text-slate-600">Approve new groups and review reports from the community.</p>
+    </div>
+    <span class="civic-badge self-start rounded-full px-4 py-2 text-sm font-semibold text-teal-900 sm:self-auto">
+      {{ pendingGroups().length + pendingReports().length }} pending
+    </span>
+  </div>
+
+  <div class="grid gap-5 lg:grid-cols-2">
+    <article class="moderation-panel rounded-[1.5rem] p-5">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 class="text-xl font-bold text-slate-900">Group approvals</h3>
+        <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-600">
+          {{ pendingGroups().length }} waiting
+        </span>
+      </div>
+
+      @for (group of pendingGroups(); track group.id) {
+        <div class="queue-card rounded-3xl p-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h4 class="text-lg font-bold text-slate-900">{{ group.name }}</h4>
+              <p class="mt-1 text-sm text-slate-500">
+                {{ group.city || 'Remote/unspecified' }} @if (group.countryCode) { <span>, {{ group.countryCode }}</span> }
+              </p>
+            </div>
+            <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-amber-800">
+              {{ group.moderationStatus }}
+            </span>
+          </div>
+
+          <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{{ group.description }}</p>
+          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Owner: {{ group.owner?.displayName || 'Unknown' }}
+          </p>
+
+          <textarea
+            [(ngModel)]="rejectionReason"
+            class="textarea mt-4 min-h-20 w-full rounded-3xl bg-white/80"
+            placeholder="Optional rejection reason"
+          ></textarea>
+
+          <div class="mt-4 flex flex-wrap justify-end gap-3">
+            <button type="button" class="btn civic-button-secondary rounded-full" (click)="rejectGroup(group)">Reject</button>
+            <button type="button" class="btn civic-button rounded-full" (click)="approveGroup(group)">Approve</button>
+          </div>
+        </div>
+      } @empty {
+        <p class="rounded-3xl bg-white/65 p-5 text-slate-600">No groups waiting for approval.</p>
+      }
+    </article>
+
+    <article class="moderation-panel rounded-[1.5rem] p-5">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <h3 class="text-xl font-bold text-slate-900">Reports</h3>
+        <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-600">
+          {{ pendingReports().length }} pending
+        </span>
+      </div>
+
+      @for (report of pendingReports(); track report.id) {
+        <div class="queue-card rounded-3xl p-4">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h4 class="text-lg font-bold text-slate-900">{{ report.targetTitle || report.targetType }}</h4>
+              <p class="mt-1 text-sm text-slate-500">
+                {{ report.targetType }} reported for {{ report.reason }}
+              </p>
+            </div>
+            <span class="rounded-full bg-rose-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-rose-800">
+              {{ report.status }}
+            </span>
+          </div>
+
+          @if (report.targetSummary) {
+            <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{{ report.targetSummary }}</p>
+          }
+
+          @if (report.details) {
+            <p class="mt-3 rounded-2xl bg-white/70 p-3 text-sm leading-6 text-slate-700">{{ report.details }}</p>
+          }
+
+          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+            Reporter: {{ report.reporter?.displayName || 'Unknown' }}
+          </p>
+
+          <textarea
+            [(ngModel)]="reportNotes"
+            class="textarea mt-4 min-h-20 w-full rounded-3xl bg-white/80"
+            placeholder="Moderator notes"
+          ></textarea>
+
+          <div class="mt-4 flex flex-wrap justify-end gap-3">
+            <button type="button" class="btn civic-button-secondary rounded-full" (click)="dismissReport(report)">Dismiss</button>
+            <button type="button" class="btn civic-button rounded-full" (click)="markActioned(report)">Mark actioned</button>
+          </div>
+        </div>
+      } @empty {
+        <p class="rounded-3xl bg-white/65 p-5 text-slate-600">No pending reports.</p>
+      }
+    </article>
+  </div>
+</section>

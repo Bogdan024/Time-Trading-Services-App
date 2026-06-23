@@ -48,7 +48,7 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
             Theme = string.IsNullOrWhiteSpace(createGroupDto.Theme) ? null : createGroupDto.Theme.Trim(),
             City = string.IsNullOrWhiteSpace(createGroupDto.City) ? null : createGroupDto.City.Trim(),
             CountryCode = string.IsNullOrWhiteSpace(createGroupDto.CountryCode) ? null : createGroupDto.CountryCode.Trim().ToUpper(),
-            IsPublic = createGroupDto.IsPublic,
+            ModerationStatus = ModerationStatus.PendingApproval,
             OwnerMemberId = memberId,
             Members =
             [
@@ -61,7 +61,6 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
         };
 
         groupRepository.AddGroup(group);
-        await messageRepository.GetOrCreateGroupConversationAsync(group);
 
         if (!await groupRepository.SaveAllAsync()) return BadRequest("Failed to create group");
 
@@ -79,6 +78,7 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
         var group = await groupRepository.GetGroupByIdAsync(id, memberId);
 
         if (group is null) return NotFound();
+        if (group.ModerationStatus != ModerationStatus.Approved) return BadRequest("Group must be approved before members can join");
 
         await messageRepository.GetOrCreateGroupConversationAsync(group);
         groupRepository.JoinGroup(group, memberId);
@@ -109,4 +109,5 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
         return BadRequest("Failed to leave group");
     }
 }
+
 

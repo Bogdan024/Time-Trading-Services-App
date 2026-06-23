@@ -1,6 +1,6 @@
 namespace API.DTOs;
 
-public class GroupDto
+public class PendingGroupDto
 {
     public int Id { get; set; }
     public required string Name { get; set; }
@@ -9,11 +9,6 @@ public class GroupDto
     public string? City { get; set; }
     public string? CountryCode { get; set; }
     public required string ModerationStatus { get; set; }
-    public string? RejectionReason { get; set; }
     public DateTime CreatedAtUtc { get; set; }
-    public int MemberCount { get; set; }
-    public bool IsMember { get; set; }
-    public bool IsOwner { get; set; }
-    public int? ConversationId { get; set; }
     public TaskMemberDto? Owner { get; set; }
 }

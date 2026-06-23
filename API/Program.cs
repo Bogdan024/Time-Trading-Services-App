@@ -36,6 +36,7 @@ builder.Services.AddScoped<ITimeTaskRepository, TimeTaskRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+builder.Services.AddScoped<IModerationRepository, ModerationRepository>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
 builder.Services.AddScoped<LogUserActivity>();
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("CloudinarySettings"));
@@ -89,6 +90,8 @@ catch (Exception ex)
 }
 
 app.Run();
+
+
 
 
 

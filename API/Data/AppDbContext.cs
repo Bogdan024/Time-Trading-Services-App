@@ -25,6 +25,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<Message> Messages { get; set; }
     public DbSet<MessageDeletion> MessageDeletions { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
+    public DbSet<ModerationReport> ModerationReports { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -191,6 +192,33 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             .IsUnique();
 
         modelBuilder.Entity<CommunityGroup>()
+            .HasIndex(x => x.ModerationStatus);
+
+        modelBuilder.Entity<CommunityGroup>()
+            .HasOne(x => x.ReviewedByMember)
+            .WithMany()
+            .HasForeignKey(x => x.ReviewedByMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ModerationReport>()
+            .HasIndex(x => x.Status);
+
+        modelBuilder.Entity<ModerationReport>()
+            .HasIndex(x => new { x.TargetType, x.TargetIntId, x.TargetStringId });
+
+        modelBuilder.Entity<ModerationReport>()
+            .HasOne(x => x.ReporterMember)
+            .WithMany()
+            .HasForeignKey(x => x.ReporterMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<ModerationReport>()
+            .HasOne(x => x.ReviewedByMember)
+            .WithMany()
+            .HasForeignKey(x => x.ReviewedByMemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CommunityGroup>()
             .HasOne(x => x.OwnerMember)
             .WithMany()
             .HasForeignKey(x => x.OwnerMemberId)
@@ -263,6 +291,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+
 
 
 
