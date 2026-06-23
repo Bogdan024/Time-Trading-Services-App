@@ -1,0 +1,73 @@
+<section class="civic-card rounded-[2rem] p-6 shadow-sm">
+  <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+    <div>
+      <h2 class="civic-display text-3xl font-semibold text-slate-900">User roles</h2>
+      <p class="mt-2 text-slate-600">Assign platform roles while keeping everyday members as regular time-bank users.</p>
+    </div>
+    <span class="civic-badge self-start rounded-full px-4 py-2 text-sm font-semibold text-teal-900 sm:self-auto">
+      {{ users().length }} users
+    </span>
+  </div>
+
+  <div class="overflow-hidden rounded-[1.5rem] border border-white/70 bg-white/65">
+    <div class="hidden grid-cols-[1.5fr_1.5fr_1fr_auto] gap-4 border-b border-slate-200/70 px-5 py-4 text-xs font-bold uppercase tracking-[0.2em] text-slate-500 md:grid">
+      <span>User</span>
+      <span>Email</span>
+      <span>Roles</span>
+      <span></span>
+    </div>
+
+    @for (user of users(); track user.id) {
+      <article class="admin-user-row grid gap-4 px-5 py-5 md:grid-cols-[1.5fr_1.5fr_1fr_auto] md:items-center">
+        <div class="flex items-center gap-3">
+          <img [src]="user.imageUrl || '/user.png'" alt="user avatar" class="size-12 rounded-full object-cover" />
+          <div>
+            <h3 class="font-semibold text-slate-900">{{ user.displayName }}</h3>
+            <p class="text-sm text-slate-500 md:hidden">{{ user.email }}</p>
+          </div>
+        </div>
+
+        <p class="hidden text-sm text-slate-600 md:block">{{ user.email }}</p>
+
+        <div class="flex flex-wrap gap-2">
+          @for (role of user.roles; track role) {
+            <span class="role-chip rounded-full px-3 py-1 text-xs font-bold uppercase tracking-[0.16em]">{{ role }}</span>
+          }
+        </div>
+
+        <button type="button" class="btn civic-button-secondary rounded-full" (click)="openRoleEditor(user)">Edit roles</button>
+      </article>
+    } @empty {
+      <p class="px-5 py-8 text-slate-600">No users found.</p>
+    }
+  </div>
+</section>
+
+@if (selectedUser(); as user) {
+  <div class="admin-modal fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/45 px-4">
+    <section class="civic-card w-full max-w-md rounded-[2rem] p-7 shadow-xl">
+      <p class="civic-kicker text-xs uppercase tracking-[0.28em] text-teal-800">Role editor</p>
+      <h3 class="civic-display mt-2 text-3xl font-semibold text-slate-900">{{ user.displayName }}</h3>
+      <p class="mt-2 text-sm text-slate-600">Choose the platform roles this user should have.</p>
+
+      <div class="mt-6 grid gap-3">
+        @for (role of availableRoles; track role) {
+          <label class="role-option flex cursor-pointer items-center justify-between rounded-2xl px-4 py-3">
+            <span class="font-semibold text-slate-800">{{ role }}</span>
+            <input
+              type="checkbox"
+              class="checkbox checkbox-accent"
+              [checked]="selectedRoles().includes(role)"
+              (change)="toggleRole(role, $any($event.target).checked)"
+            />
+          </label>
+        }
+      </div>
+
+      <div class="mt-7 flex justify-end gap-3">
+        <button type="button" class="btn civic-button-secondary rounded-full" (click)="closeRoleEditor()">Cancel</button>
+        <button type="button" class="btn civic-button rounded-full" (click)="updateRoles()">Save roles</button>
+      </div>
+    </section>
+  </div>
+}

@@ -14,17 +14,24 @@ export class AccountService {
 
   register(creds: RegisterCreds) {
     return this.http
-      .post<User>(this.baseUrl + 'account/register', creds)
+      .post<User>(this.baseUrl + 'account/register', creds, { withCredentials: true })
       .pipe(tap((user) => user && this.setCurrentUser(user)));
   }
 
   login(creds: LoginCreds) {
     return this.http
-      .post<User>(this.baseUrl + 'account/login', creds)
+      .post<User>(this.baseUrl + 'account/login', creds, { withCredentials: true })
+      .pipe(tap((user) => user && this.setCurrentUser(user)));
+  }
+
+  refreshToken() {
+    return this.http
+      .post<User>(this.baseUrl + 'account/refresh-token', {}, { withCredentials: true })
       .pipe(tap((user) => user && this.setCurrentUser(user)));
   }
 
   setCurrentUser(user: User) {
+    user.roles = user.roles?.length ? user.roles : this.getDecodedRoles(user.token);
     localStorage.setItem('user', JSON.stringify(user));
     this.currentUser.set(user);
   }
@@ -36,13 +43,33 @@ export class AccountService {
       return;
     }
 
-    this.currentUser.set(JSON.parse(userString));
+    const user = JSON.parse(userString) as User;
+    this.setCurrentUser(user);
+  }
+
+  hasRole(roles: string[]) {
+    return this.currentUser()?.roles?.some((role) => roles.includes(role)) ?? false;
   }
 
   logout() {
+    this.http.post(this.baseUrl + 'account/revoke-token', {}, { withCredentials: true }).subscribe();
+    this.clearCurrentUser();
+  }
+
+  clearCurrentUser() {
     localStorage.removeItem('user');
     localStorage.removeItem('taskFilters');
     this.currentUser.set(null);
   }
-}
 
+  private getDecodedRoles(token: string) {
+    try {
+      const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+      const roles = tokenPayload.role ?? tokenPayload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] ?? [];
+
+      return Array.isArray(roles) ? roles : [roles];
+    } catch {
+      return [];
+    }
+  }
+}

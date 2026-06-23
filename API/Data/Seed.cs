@@ -1,18 +1,21 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using API.DTOs;
 using API.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace API.Data;
 
 public class Seed
 {
-    public static async Task SeedUsers(AppDbContext context)
+    public static async Task SeedUsers(UserManager<AppUser> userManager, AppDbContext context)
     {
-        if (await context.Users.AnyAsync()) return;
+        if (await userManager.Users.AnyAsync())
+        {
+            await EnsureAdminUser(userManager);
+            return;
+        }
 
         var memberData = await File.ReadAllTextAsync("Data/UserSeedData.json");
         var options = new JsonSerializerOptions();
@@ -41,7 +44,6 @@ public class Seed
 
         foreach (var member in members)
         {
-            using var hmac = new HMACSHA512();
             var memberProfile = new Member
             {
                 Id = member.Id,
@@ -86,11 +88,10 @@ public class Seed
             var user = new AppUser
             {
                 Id = member.Id,
-                Email = member.Email,
+                Email = member.Email.ToLowerInvariant(),
+                UserName = member.Email.ToLowerInvariant(),
                 ImageUrl = member.AvatarUrl,
                 DisplayName = member.DisplayName,
-                PasswordHash = hmac.ComputeHash(Encoding.UTF8.GetBytes("Pa$$w0rd")),
-                PasswordSalt = hmac.Key,
                 Member = memberProfile
             };
 
@@ -103,9 +104,58 @@ public class Seed
                 });
             }
 
-            context.Users.Add(user);
+            var result = await userManager.CreateAsync(user, "Pa$$w0rd");
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Failed to seed user '{member.Email}': {string.Join(", ", result.Errors.Select(x => x.Description))}");
+            }
+
+            await userManager.AddToRoleAsync(user, "Member");
         }
 
-        await context.SaveChangesAsync();
+        await EnsureAdminUser(userManager);
+    }
+
+    private static async Task EnsureAdminUser(UserManager<AppUser> userManager)
+    {
+        const string adminEmail = "admin@test.com";
+        var admin = await userManager.FindByEmailAsync(adminEmail);
+
+        if (admin is null)
+        {
+            admin = new AppUser
+            {
+                Id = "admin-user-id",
+                DisplayName = "Admin",
+                Email = adminEmail,
+                UserName = adminEmail,
+                Member = new Member
+                {
+                    Id = "admin-user-id",
+                    DisplayName = "Admin",
+                    City = "Bucharest",
+                    CountryCode = "RO",
+                    About = "Platform administrator profile.",
+                    IsProfilePublic = false
+                }
+            };
+
+            var result = await userManager.CreateAsync(admin, "Pa$$w0rd");
+
+            if (!result.Succeeded)
+            {
+                throw new InvalidOperationException($"Failed to seed admin user: {string.Join(", ", result.Errors.Select(x => x.Description))}");
+            }
+        }
+
+        var roles = new[] { "Member", "Moderator", "Admin" };
+        var currentRoles = await userManager.GetRolesAsync(admin);
+        var missingRoles = roles.Except(currentRoles).ToArray();
+
+        if (missingRoles.Length > 0)
+        {
+            await userManager.AddToRolesAsync(admin, missingRoles);
+        }
     }
 }

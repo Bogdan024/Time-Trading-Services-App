@@ -1,0 +1,21 @@
+.admin-user-row + .admin-user-row {
+  border-top: 1px solid rgb(226 232 240 / 0.7);
+}
+
+.role-chip {
+  background: rgb(20 184 166 / 0.12);
+  color: rgb(15 81 90);
+}
+
+.role-option {
+  background: rgb(255 255 255 / 0.72);
+  border: 1px solid rgb(226 232 240 / 0.9);
+}
+
+.role-option:hover {
+  border-color: rgb(20 184 166 / 0.45);
+}
+
+.admin-modal {
+  backdrop-filter: blur(10px);
+}

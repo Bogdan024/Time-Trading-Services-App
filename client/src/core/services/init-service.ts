@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { of } from 'rxjs';
+import { catchError, of } from 'rxjs';
 import { AccountService } from './account-service';
 
 @Injectable({
@@ -9,7 +9,11 @@ export class InitService {
   private accountService = inject(AccountService);
 
   init() {
-    this.accountService.restoreUser();
-    return of(null);
+    return this.accountService.refreshToken().pipe(
+      catchError(() => {
+        this.accountService.clearCurrentUser();
+        return of(null);
+      }),
+    );
   }
 }

@@ -4,10 +4,11 @@ import { AccountService } from '../../core/services/account-service';
 import { LoginCreds } from '../../types/user';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { ToastService } from '../../core/services/toast-service';
+import { HasRole } from '../../shared/directives/has-role';
 
 @Component({
   selector: 'app-nav',
-  imports: [FormsModule, RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink, RouterLinkActive, HasRole],
   templateUrl: './nav.html',
   styleUrl: './nav.css',
 })
@@ -41,3 +42,4 @@ export class Nav {
     this.router.navigateByUrl('/');
   }
 }
+

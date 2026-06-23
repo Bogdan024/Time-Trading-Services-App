@@ -3,6 +3,7 @@ export type User = {
   displayName: string;
   email: string;
   token: string;
+  roles: string[];
   imageUrl?: string;
 };
 

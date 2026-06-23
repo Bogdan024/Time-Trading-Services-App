@@ -1,10 +1,12 @@
 using System.Text;
 using API.Data;
+using API.Entities;
 using API.Helpers;
 using API.Interfaces;
 using API.Middleware;
 using API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,6 +20,16 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 builder.Services.AddCors();
+builder.Services.AddIdentityCore<AppUser>(options =>
+{
+    options.Password.RequireNonAlphanumeric = false;
+    options.User.RequireUniqueEmail = true;
+})
+.AddRoles<IdentityRole>()
+.AddEntityFrameworkStores<AppDbContext>();
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
+    .AddPolicy("ModeratePlatformRole", policy => policy.RequireRole("Admin", "Moderator"));
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<ITimeTaskRepository, TimeTaskRepository>();
@@ -49,6 +61,7 @@ var app = builder.Build();
 app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod()
+    .AllowCredentials()
     .WithOrigins("http://localhost:4200", "https://localhost:4200"));
 
 app.UseHttpsRedirection();
@@ -66,7 +79,8 @@ try
     var context = services.GetRequiredService<AppDbContext>();
     await context.Database.MigrateAsync();
     await ReferenceDataSeeder.SeedServiceCategories(context);
-    await Seed.SeedUsers(context);
+    var userManager = services.GetRequiredService<UserManager<AppUser>>();
+    await Seed.SeedUsers(userManager, context);
 }
 catch (Exception ex)
 {
@@ -75,6 +89,9 @@ catch (Exception ex)
 }
 
 app.Run();
+
+
+
 
 
 

@@ -14,10 +14,12 @@ import { MemberList } from '../features/members/member-list/member-list';
 import { MemberDetail } from '../features/members/member-detail/member-detail';
 import { memberResolver } from '../features/members/member-resolver';
 import { authGuard } from '../core/guards/auth-guard';
+import { adminGuard } from '../core/guards/admin-guard';
 import { preventUnsavedChangesGuard } from '../core/guards/prevent-unsaved-changes-guard';
 import { TestErrors } from '../features/test-errors/test-errors';
 import { NotFound } from '../shared/errors/not-found/not-found';
 import { ServerError } from '../shared/errors/server-error/server-error';
+import { Admin } from '../features/admin/admin';
 
 export const routes: Routes = [
   { path: '', component: Home },
@@ -49,6 +51,7 @@ export const routes: Routes = [
       { path: 'groups', component: GroupList },
       { path: 'groups/:id', component: GroupDetail },
       { path: 'messages', component: Messages },
+      { path: 'admin', component: Admin, canActivate: [adminGuard] },
     ],
   },
   { path: 'errors', component: TestErrors },
@@ -56,5 +59,6 @@ export const routes: Routes = [
   { path: 'server-error', component: ServerError },
   { path: '**', component: NotFound },
 ];
+
 
 

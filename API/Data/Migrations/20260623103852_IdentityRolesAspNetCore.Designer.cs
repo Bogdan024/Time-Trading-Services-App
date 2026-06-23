@@ -3,6 +3,7 @@ using System;
 using API.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260623103852_IdentityRolesAspNetCore")]
+    partial class IdentityRolesAspNetCore
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.9");
@@ -442,51 +445,6 @@ namespace API.Data.Migrations
                     b.HasIndex("MemberId");
 
                     b.ToTable("Photos");
-                });
-
-            modelBuilder.Entity("API.Entities.RefreshToken", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("AppUserId")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("CreatedByIp")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("ExpiresAtUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReasonRevoked")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("ReplacedByToken")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("RevokedAtUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("RevokedByIp")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AppUserId");
-
-                    b.HasIndex("Token")
-                        .IsUnique();
-
-                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("API.Entities.ServiceCategory", b =>
@@ -1007,17 +965,6 @@ namespace API.Data.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("API.Entities.RefreshToken", b =>
-                {
-                    b.HasOne("API.Entities.AppUser", "AppUser")
-                        .WithMany("RefreshTokens")
-                        .HasForeignKey("AppUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AppUser");
-                });
-
             modelBuilder.Entity("API.Entities.TaskApplication", b =>
                 {
                     b.HasOne("API.Entities.Member", "ApplicantMember")
@@ -1145,8 +1092,6 @@ namespace API.Data.Migrations
                 {
                     b.Navigation("Member")
                         .IsRequired();
-
-                    b.Navigation("RefreshTokens");
                 });
 
             modelBuilder.Entity("API.Entities.CommunityGroup", b =>

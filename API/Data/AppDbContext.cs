@@ -1,12 +1,13 @@
 using API.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbContext<AppUser>(options)
 {
-    public DbSet<AppUser> Users { get; set; }
     public DbSet<Member> Members { get; set; }
     public DbSet<Photo> Photos { get; set; }
     public DbSet<ServiceCategory> ServiceCategories { get; set; }
@@ -23,10 +24,46 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<MessageDeletion> MessageDeletions { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<AppUser>().ToTable("Users");
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasIndex(x => x.Token)
+            .IsUnique();
+
+        modelBuilder.Entity<RefreshToken>()
+            .HasOne(x => x.AppUser)
+            .WithMany(x => x.RefreshTokens)
+            .HasForeignKey(x => x.AppUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole
+            {
+                Id = "member-role-id",
+                ConcurrencyStamp = "23182e80-42f1-4460-a438-86d441f4fc12",
+                Name = "Member",
+                NormalizedName = "MEMBER"
+            },
+            new IdentityRole
+            {
+                Id = "moderator-role-id",
+                ConcurrencyStamp = "f71b9079-287d-4bea-a5b7-a7f86947a271",
+                Name = "Moderator",
+                NormalizedName = "MODERATOR"
+            },
+            new IdentityRole
+            {
+                Id = "admin-role-id",
+                ConcurrencyStamp = "00857cc5-3fce-4f07-bf06-346ef2266c2b",
+                Name = "Admin",
+                NormalizedName = "ADMIN"
+            });
 
         modelBuilder.Entity<ServiceCategory>()
             .HasIndex(x => x.Key)
@@ -226,6 +263,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
+
+
+
+
+
+
 
 
 

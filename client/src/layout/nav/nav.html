@@ -16,6 +16,7 @@
         <a routerLink="/members" routerLinkActive="nav-link-active">Community</a>
         <a routerLink="/groups" routerLinkActive="nav-link-active">Groups</a>
         <a routerLink="/messages" routerLinkActive="nav-link-active">Messages</a>
+        <a *appHasRole="['Admin']" routerLink="/admin" routerLinkActive="nav-link-active">Admin</a>
         <a routerLink="/errors" routerLinkActive="text-accent">Errors</a>
       }
     </nav>
@@ -35,6 +36,7 @@
             <li><a [routerLink]="['/members', user.id]">My Profile</a></li>
             <li><a routerLink="/my-tasks">My Tasks</a></li>
             <li><a routerLink="/groups">Groups</a></li>
+            <li *appHasRole="['Admin']"><a routerLink="/admin">Admin</a></li>
             <li><a (click)="logout()">Logout</a></li>
           </ul>
         </div>
@@ -54,3 +56,4 @@
     </div>
   </div>
 </header>
+
