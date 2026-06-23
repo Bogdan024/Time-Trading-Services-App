@@ -14,8 +14,8 @@
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <span class="rounded-full bg-white/75 px-4 py-2 text-sm font-semibold text-slate-700">{{ group.memberCount }} members</span>
-            <span class="rounded-full bg-white/75 px-4 py-2 text-sm font-semibold text-slate-700">{{ group.moderationStatus }}</span>
+            <span class="rounded-full tt-surface-2 px-4 py-2 text-sm font-semibold text-slate-700">{{ group.memberCount }} members</span>
+            <span class="rounded-full tt-surface-2 px-4 py-2 text-sm font-semibold text-slate-700">{{ group.moderationStatus }}</span>
           </div>
         </div>
 
@@ -29,28 +29,28 @@
           </div>
         }
 
-        <p class="safe-user-text mt-8 rounded-3xl bg-white/60 p-5 text-sm leading-7 text-slate-700">{{ group.description }}</p>
+        <p class="safe-user-text mt-8 rounded-3xl tt-surface-2 p-5 text-sm leading-7 text-slate-700">{{ group.description }}</p>
 
         <div class="mt-6 grid gap-4 md:grid-cols-2">
-          <div class="rounded-3xl bg-white/60 p-5">
+          <div class="rounded-3xl tt-surface-2 p-5">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Location</p>
             <p class="safe-user-text mt-2 text-lg font-semibold text-slate-800">
               {{ group.city || 'Flexible' }}{{ group.countryCode ? ', ' + group.countryCode : '' }}
             </p>
           </div>
 
-          <div class="rounded-3xl bg-white/60 p-5">
+          <div class="rounded-3xl tt-surface-2 p-5">
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Group chat</p>
             <p class="mt-2 text-sm text-slate-600">Members can use the shared conversation for coordination and community updates.</p>
           </div>
         </div>
 
         @if (!group.isOwner) {
-          <div class="mt-8 rounded-3xl bg-white/50 p-5">
+          <div class="mt-8 rounded-3xl tt-surface-2 p-5">
             <h2 class="text-base font-semibold text-slate-800">Report this group</h2>
             <p class="mt-1 text-sm text-slate-600">Send this group to moderators if it looks unsafe, abusive, spammy, or outside community rules.</p>
             <textarea
-              class="textarea mt-4 min-h-24 w-full rounded-3xl bg-white/80"
+              class="textarea mt-4 min-h-24 w-full rounded-3xl tt-surface-2"
               maxlength="1000"
               placeholder="Optional details for moderators"
               [(ngModel)]="reportDetails"

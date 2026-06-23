@@ -16,27 +16,27 @@
       <div class="grid gap-5 md:grid-cols-2">
         <label class="form-control w-full">
           <span class="label-text mb-2 font-semibold text-slate-700">Group name</span>
-          <input class="input w-full rounded-2xl bg-white/80" name="name" maxlength="80" required [(ngModel)]="groupForm.name" />
+          <input class="input w-full rounded-2xl tt-surface-2" name="name" maxlength="80" required [(ngModel)]="groupForm.name" />
         </label>
 
         <label class="form-control w-full">
           <span class="label-text mb-2 font-semibold text-slate-700">Theme</span>
-          <input class="input w-full rounded-2xl bg-white/80" name="theme" maxlength="60" placeholder="Gardening, repairs, language exchange" [(ngModel)]="groupForm.theme" />
+          <input class="input w-full rounded-2xl tt-surface-2" name="theme" maxlength="60" placeholder="Gardening, repairs, language exchange" [(ngModel)]="groupForm.theme" />
         </label>
 
         <label class="form-control w-full md:col-span-2">
           <span class="label-text mb-2 font-semibold text-slate-700">Description</span>
-          <textarea class="textarea min-h-32 w-full rounded-3xl bg-white/80" name="description" maxlength="1000" required [(ngModel)]="groupForm.description"></textarea>
+          <textarea class="textarea min-h-32 w-full rounded-3xl tt-surface-2" name="description" maxlength="1000" required [(ngModel)]="groupForm.description"></textarea>
         </label>
 
         <label class="form-control w-full">
           <span class="label-text mb-2 font-semibold text-slate-700">City</span>
-          <input class="input w-full rounded-2xl bg-white/80" name="city" maxlength="80" [(ngModel)]="groupForm.city" />
+          <input class="input w-full rounded-2xl tt-surface-2" name="city" maxlength="80" [(ngModel)]="groupForm.city" />
         </label>
 
         <label class="form-control w-full">
           <span class="label-text mb-2 font-semibold text-slate-700">Country code</span>
-          <input class="input w-full rounded-2xl bg-white/80 uppercase" name="countryCode" minlength="2" maxlength="2" placeholder="RO" [(ngModel)]="groupForm.countryCode" />
+          <input class="input w-full rounded-2xl tt-surface-2 uppercase" name="countryCode" minlength="2" maxlength="2" placeholder="RO" [(ngModel)]="groupForm.countryCode" />
         </label>
       </div>
 
@@ -62,11 +62,11 @@
           <p class="safe-user-text mt-4 line-clamp-3 text-sm leading-6 text-slate-600">{{ group.description }}</p>
 
           <div class="mt-5 flex flex-wrap gap-2 text-xs text-slate-600">
-            <span class="rounded-full bg-white/70 px-3 py-1">{{ group.memberCount }} members</span>
+            <span class="rounded-full tt-surface-2 px-3 py-1">{{ group.memberCount }} members</span>
             @if (group.city || group.countryCode) {
-              <span class="safe-user-text rounded-full bg-white/70 px-3 py-1">{{ group.city || 'Anywhere' }}{{ group.countryCode ? ', ' + group.countryCode : '' }}</span>
+              <span class="safe-user-text rounded-full tt-surface-2 px-3 py-1">{{ group.city || 'Anywhere' }}{{ group.countryCode ? ', ' + group.countryCode : '' }}</span>
             }
-            <span class="rounded-full bg-white/70 px-3 py-1">{{ group.moderationStatus }}</span>
+            <span class="rounded-full tt-surface-2 px-3 py-1">{{ group.moderationStatus }}</span>
           </div>
 
           <div class="mt-6 flex items-center justify-between gap-3">

@@ -1,8 +1,8 @@
 @if (task(); as task) {
   <section class="mx-auto max-w-5xl px-4 py-8">
-    <a [routerLink]="backLink()" class="btn btn-sm mb-6 rounded-full bg-white/70">{{ backLabel() }}</a>
+    <a [routerLink]="backLink()" class="mb-5 inline-block text-sm font-semibold text-hearth-muted hover:text-[var(--hearth-ink)]">← {{ backLabel() }}</a>
 
-    <div class="civic-card overflow-hidden rounded-4xl p-8">
+    <div class="civic-card overflow-hidden rounded-[1.4rem] p-8">
       <div class="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
         <div>
           <p class="text-xs font-semibold uppercase tracking-[0.18em] text-[--civic-teal]">
@@ -29,17 +29,17 @@
       <p class="safe-user-text mt-8 text-slate-700">{{ task.description }}</p>
 
       <div class="mt-8 grid gap-4 md:grid-cols-3">
-        <div class="rounded-3xl bg-white/60 p-4">
+        <div class="tt-surface-2 rounded-2xl p-4">
           <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Mode</p>
           <p class="mt-1 font-semibold text-slate-800">{{ locationModeName(task.locationMode) }}</p>
         </div>
-        <div class="rounded-3xl bg-white/60 p-4">
+        <div class="tt-surface-2 rounded-2xl p-4">
           <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Location</p>
           <p class="mt-1 font-semibold text-slate-800">
             {{ task.city || 'Flexible' }}{{ task.countryCode ? ', ' + task.countryCode : '' }}
           </p>
         </div>
-        <div class="rounded-3xl bg-white/60 p-4">
+        <div class="tt-surface-2 rounded-2xl p-4">
           <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Due</p>
           <p class="mt-1 font-semibold text-slate-800">
             {{ task.dueAtUtc ? (task.dueAtUtc | date: 'mediumDate') : 'Open' }}
@@ -48,7 +48,7 @@
       </div>
 
       @if (task.acceptedByMember) {
-        <div class="mt-6 rounded-3xl bg-white/60 p-4 text-sm text-slate-600">
+        <div class="mt-6 tt-surface-2 rounded-2xl p-4 text-sm text-slate-600">
           Accepted by
           <a [routerLink]="['/members', task.acceptedByMember.id]" class="font-semibold text-slate-800">
             {{ task.acceptedByMember.displayName }}
@@ -57,11 +57,11 @@
       }
 
       @if (canApply(task)) {
-        <div class="mt-8 rounded-3xl bg-white/60 p-5">
+        <div class="mt-8 tt-surface-2 rounded-2xl p-5">
           <h2 class="text-lg font-semibold text-slate-800">Apply to help</h2>
           <p class="mt-1 text-sm text-slate-600">Send a short note so the poster can choose who fits best.</p>
           <textarea
-            class="textarea mt-4 min-h-28 w-full rounded-3xl bg-white/80"
+            class="textarea mt-4 min-h-28 w-full rounded-3xl tt-surface-2"
             maxlength="1000"
             placeholder="Optional note about your experience, availability, or location."
             [(ngModel)]="applicationMessage"
@@ -71,27 +71,27 @@
           </button>
         </div>
       } @else if (task.hasCurrentUserApplied && task.status === 1) {
-        <div class="mt-8 rounded-3xl bg-white/60 p-5 text-sm text-slate-600">
+        <div class="mt-8 tt-surface-2 rounded-2xl p-5 text-sm text-slate-600">
           Your application is {{ applicationStatusName(task.currentUserApplicationStatus || 1).toLowerCase() }}.
         </div>
       }
 
       @if (canViewApplications(task)) {
-        <div class="mt-8 rounded-3xl bg-white/60 p-5">
+        <div class="mt-8 tt-surface-2 rounded-2xl p-5">
           <div class="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div>
               <h2 class="text-lg font-semibold text-slate-800">Applications</h2>
               <p class="text-sm text-slate-600">Review applicants, open their profiles, and choose one helper.</p>
             </div>
-            <span class="rounded-full bg-white/80 px-3 py-1 text-sm font-semibold text-slate-700">{{ applications().length }} pending</span>
+            <span class="rounded-full tt-surface-2 px-3 py-1 text-sm font-semibold text-slate-700">{{ applications().length }} pending</span>
           </div>
 
           <div class="mt-4 space-y-3">
             @if (loadingApplications()) {
-              <p class="rounded-3xl bg-white/70 p-4 text-sm text-slate-600">Loading applications...</p>
+              <p class="rounded-3xl tt-surface-2 p-4 text-sm text-slate-600">Loading applications...</p>
             } @else {
               @for (application of applications(); track application.id) {
-                <article class="rounded-3xl bg-white/75 p-4">
+                <article class="rounded-3xl tt-surface-2 p-4">
                   <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div class="min-w-0">
                       <div class="flex flex-wrap items-center gap-2">
@@ -135,7 +135,7 @@
                   </div>
                 </article>
               } @empty {
-                <p class="rounded-3xl bg-white/70 p-4 text-sm text-slate-600">No applications yet.</p>
+                <p class="rounded-3xl tt-surface-2 p-4 text-sm text-slate-600">No applications yet.</p>
               }
             }
           </div>
@@ -143,11 +143,11 @@
       }
 
       @if (canReportTask(task)) {
-        <div class="mt-8 rounded-3xl bg-white/50 p-5">
+        <div class="mt-8 rounded-3xl tt-surface-2 p-5">
           <h2 class="text-base font-semibold text-slate-800">Report this task</h2>
           <p class="mt-1 text-sm text-slate-600">Send this task to moderators if it looks unsafe, abusive, spammy, or outside community rules.</p>
           <textarea
-            class="textarea mt-4 min-h-24 w-full rounded-3xl bg-white/80"
+            class="textarea mt-4 min-h-24 w-full rounded-3xl tt-surface-2"
             maxlength="1000"
             placeholder="Optional details for moderators"
             [(ngModel)]="reportDetails"
@@ -173,14 +173,14 @@
 
 @if (selectedApplication(); as application) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 px-4 backdrop-blur-sm">
-    <section class="civic-card w-full max-w-lg rounded-4xl p-6 shadow-2xl">
+    <section class="civic-card w-full max-w-lg rounded-[1.4rem] p-6 shadow-2xl">
       <p class="text-xs font-semibold uppercase tracking-[0.22em] text-[--civic-teal]">Confirm helper</p>
       <h2 class="civic-display mt-2 text-3xl font-semibold text-slate-800">Choose {{ application.applicant.displayName }}?</h2>
       <p class="mt-3 text-sm leading-6 text-slate-600">
         This will move the task to in progress, reject the other pending applications, and open the task conversation with this helper.
       </p>
 
-      <div class="mt-5 rounded-3xl bg-white/70 p-4">
+      <div class="mt-5 rounded-3xl tt-surface-2 p-4">
         <div class="flex flex-wrap items-center gap-2">
           <span class="safe-user-text font-semibold text-slate-800">{{ application.applicant.displayName }}</span>
           @if (application.applicantAverageRating) {

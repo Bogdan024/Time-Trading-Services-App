@@ -1,7 +1,7 @@
 <div class="grid gap-5 md:grid-cols-[1fr_14rem]">
   <label
     for="avatar-upload-input"
-    class="flex min-h-56 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[var(--civic-teal)]/30 bg-white/70 p-6 text-center text-sm text-slate-600 transition hover:border-[var(--civic-teal)] hover:bg-white"
+    class="flex min-h-56 cursor-pointer flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[var(--civic-teal)]/30 tt-surface-2 p-6 text-center text-sm text-slate-600 transition hover:border-[var(--civic-teal)] hover:bg-white"
     [class.border-[var(--civic-teal)]]="isDragging()"
     [class.bg-white]="isDragging()"
     (dragover)="onDragOver($event)"
@@ -13,7 +13,7 @@
     <input id="avatar-upload-input" type="file" accept="image/*" class="hidden" (change)="onFileSelected($event)" />
   </label>
 
-  <div class="rounded-3xl border border-white/70 bg-white/70 p-4 shadow-sm">
+  <div class="rounded-3xl border border-white/70 tt-surface-2 p-4 shadow-sm">
     @if (imageSrc()) {
       <img [src]="imageSrc()?.toString() || ''" alt="Avatar preview" class="aspect-square w-full rounded-2xl object-cover" />
       <div class="mt-4 flex gap-2">
@@ -26,7 +26,7 @@
         </button>
       </div>
     } @else {
-      <div class="flex aspect-square items-center justify-center rounded-2xl bg-white/70 text-sm text-slate-500">Preview</div>
+      <div class="flex aspect-square items-center justify-center rounded-2xl tt-surface-2 text-sm text-slate-500">Preview</div>
     }
   </div>
 </div>

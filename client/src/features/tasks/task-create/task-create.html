@@ -1,5 +1,5 @@
 <section class="mx-auto max-w-5xl px-4 py-8">
-  <a routerLink="/tasks" class="btn btn-sm mb-6 rounded-full bg-white/70">Back to tasks</a>
+  <a routerLink="/tasks" class="btn btn-sm mb-6 rounded-full tt-surface-2">Back to tasks</a>
 
   <div class="mb-8 max-w-3xl">
     <p class="text-xs font-semibold uppercase tracking-[0.25em] text-[--civic-teal]">Post a task</p>
@@ -25,7 +25,7 @@
       }
     </div>
 
-    <div class="mt-8 rounded-4xl bg-white/55 p-5 md:p-7">
+    <div class="mt-8 rounded-4xl tt-surface-2 p-5 md:p-7">
       @if (currentStep() === 1) {
         <section>
           <p class="text-xs font-semibold uppercase tracking-[0.2em] text-[--civic-teal]">What do you need?</p>
@@ -141,26 +141,26 @@
           <p class="mt-2 text-sm text-slate-600">Check the exchange details before publishing the task to the community hub.</p>
 
           <div class="mt-6 grid gap-4 md:grid-cols-2">
-            <div class="rounded-3xl bg-white/70 p-4">
+            <div class="rounded-3xl tt-surface-2 p-4">
               <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Task</p>
               <h3 class="mt-2 text-xl font-semibold text-slate-800">{{ form.value.title || 'Task title' }}</h3>
               <p class="mt-1 text-sm text-slate-600">{{ selectedCategoryName() }}</p>
             </div>
 
-            <div class="rounded-3xl bg-white/70 p-4">
+            <div class="rounded-3xl tt-surface-2 p-4">
               <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Exchange</p>
               <p class="mt-2 font-semibold text-slate-800">{{ form.value.estimatedHours || 1 }} time credits</p>
               <p class="mt-1 text-sm text-slate-600">{{ selectedLocationModeName() }}</p>
             </div>
 
-            <div class="rounded-3xl bg-white/70 p-4">
+            <div class="rounded-3xl tt-surface-2 p-4">
               <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Location</p>
               <p class="mt-2 font-semibold text-slate-800">
                 {{ form.value.city || 'City' }}{{ form.value.countryCode ? ', ' + form.value.countryCode.toUpperCase() : ', country' }}
               </p>
             </div>
 
-            <div class="rounded-3xl bg-white/70 p-4">
+            <div class="rounded-3xl tt-surface-2 p-4">
               <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Due</p>
               @if (form.value.dueDate && form.value.dueTime) {
                 <p class="mt-2 font-semibold text-slate-800">{{ form.value.dueDate }} at {{ form.value.dueTime }}</p>

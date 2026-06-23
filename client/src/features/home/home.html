@@ -1,25 +1,71 @@
 <div class="home-shell min-h-screen pt-5">
   @if (!registerMode()) {
-    <section class="home-hero mx-auto grid max-w-7xl gap-10 px-4 py-8 lg:grid-cols-[1.2fr_0.8fr] lg:px-8">
+    <section class="home-hero mx-auto grid max-w-[1180px] gap-10 px-6 py-10 lg:grid-cols-[1.15fr_0.85fr] lg:px-8">
       <div class="home-copy">
-        <h1 class="civic-display mt-6 text-5xl font-semibold leading-tight text-slate-800 md:text-7xl">
-          Exchange time.
+        <p class="tt-eyebrow">A neighbourhood time bank</p>
+        <h1 class="civic-display mt-4 text-5xl font-semibold leading-[1.05] text-[var(--hearth-ink)] md:text-7xl">
+          Exchange time,<br />not money.
         </h1>
+        <p class="mt-5 max-w-lg text-lg text-hearth-muted">
+          Help a neighbour for an hour, earn a credit, and spend it when you need a hand. Every hour given is an
+          hour you can get back.
+        </p>
         <div class="mt-8 flex flex-wrap items-center gap-4">
           <button (click)="showRegister(true)" class="btn home-primary btn-lg">Join the time bank</button>
         </div>
+
+        <div class="home-metrics mt-10 grid max-w-lg grid-cols-3 gap-4">
+          <div>
+            <div class="metric-value">1h</div>
+            <p class="metric-label">= 1 credit</p>
+          </div>
+          <div>
+            <div class="metric-value">8</div>
+            <p class="metric-label">categories</p>
+          </div>
+          <div>
+            <div class="metric-value">∞</div>
+            <p class="metric-label">ways to help</p>
+          </div>
+        </div>
       </div>
 
-      <aside class="home-panel civic-card rounded-4xl p-6 md:p-8">
+      <aside class="home-panel civic-card rounded-[1.6rem] p-6 md:p-8">
         <div class="panel-header">
           <div>
-            <h2 class="civic-display text-3xl font-semibold text-slate-800"></h2>
+            <p class="panel-kicker">How it works</p>
+            <h2 class="civic-display mt-1 text-2xl font-semibold text-[var(--hearth-ink)]">Three simple steps</h2>
+          </div>
+          <span class="panel-coin grid size-14 place-items-center rounded-full">⏱</span>
+        </div>
+
+        <div class="mt-6 flex flex-col gap-3">
+          <div class="flow-step">
+            <span class="flow-index">01</span>
+            <div>
+              <h3>Post or find a task</h3>
+              <p>Describe what you need help with, or browse open requests near you.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <span class="flow-index">02</span>
+            <div>
+              <h3>Trade your time</h3>
+              <p>Offer to help and agree on the details through messages.</p>
+            </div>
+          </div>
+          <div class="flow-step">
+            <span class="flow-index">03</span>
+            <div>
+              <h3>Earn &amp; spend credits</h3>
+              <p>Complete the exchange to bank credits you can use anytime.</p>
+            </div>
           </div>
         </div>
       </aside>
     </section>
   } @else {
-    <div class="mx-auto flex min-h-screen max-w-7xl items-start justify-center px-4 py-14 lg:px-8">
+    <div class="mx-auto flex min-h-screen max-w-[1180px] items-start justify-center px-6 py-14 lg:px-8">
       <app-register class="w-full" (cancelRegister)="showRegister($event)" />
     </div>
   }

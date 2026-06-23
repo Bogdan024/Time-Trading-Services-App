@@ -14,7 +14,7 @@
     <article class="moderation-panel rounded-[1.5rem] p-5">
       <div class="mb-4 flex items-center justify-between gap-3">
         <h3 class="text-xl font-bold text-slate-900">Group approvals</h3>
-        <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-600">
+        <span class="rounded-full tt-surface-2 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-600">
           {{ pendingGroups().length }} waiting
         </span>
       </div>
@@ -40,7 +40,7 @@
 
           <textarea
             [(ngModel)]="rejectionReason"
-            class="textarea mt-4 min-h-20 w-full rounded-3xl bg-white/80"
+            class="textarea mt-4 min-h-20 w-full rounded-3xl tt-surface-2"
             placeholder="Optional rejection reason"
           ></textarea>
 
@@ -50,14 +50,14 @@
           </div>
         </div>
       } @empty {
-        <p class="rounded-3xl bg-white/65 p-5 text-slate-600">No groups waiting for approval.</p>
+        <p class="rounded-3xl tt-surface-2 p-5 text-slate-600">No groups waiting for approval.</p>
       }
     </article>
 
     <article class="moderation-panel rounded-[1.5rem] p-5">
       <div class="mb-4 flex items-center justify-between gap-3">
         <h3 class="text-xl font-bold text-slate-900">Reports</h3>
-        <span class="rounded-full bg-white/70 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-600">
+        <span class="rounded-full tt-surface-2 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-600">
           {{ pendingReports().length }} pending
         </span>
       </div>
@@ -81,7 +81,7 @@
           }
 
           @if (report.details) {
-            <p class="mt-3 rounded-2xl bg-white/70 p-3 text-sm leading-6 text-slate-700">{{ report.details }}</p>
+            <p class="mt-3 rounded-2xl tt-surface-2 p-3 text-sm leading-6 text-slate-700">{{ report.details }}</p>
           }
 
           <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -90,7 +90,7 @@
 
           <textarea
             [(ngModel)]="reportNotes"
-            class="textarea mt-4 min-h-20 w-full rounded-3xl bg-white/80"
+            class="textarea mt-4 min-h-20 w-full rounded-3xl tt-surface-2"
             placeholder="Moderator notes"
           ></textarea>
 
@@ -100,7 +100,7 @@
           </div>
         </div>
       } @empty {
-        <p class="rounded-3xl bg-white/65 p-5 text-slate-600">No pending reports.</p>
+        <p class="rounded-3xl tt-surface-2 p-5 text-slate-600">No pending reports.</p>
       }
     </article>
   </div>

@@ -1,39 +1,110 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+/* Re-tint Tailwind's cold slate palette toward warm Hearth tones so every
+   existing `text-slate-*` / `border-slate-*` utility across the app reads warm
+   and uniform — without editing each template. (White is left untouched so
+   `text-white` on buttons stays correct.) */
+@theme {
+  --color-slate-400: #a79f94;
+  --color-slate-500: #8a8178;
+  --color-slate-600: #7c736a;
+  --color-slate-700: #5c554d;
+  --color-slate-800: #2c2723;
+  --color-slate-900: #211d1a;
+}
+
+/* ============================================================
+   HEARTH THEME — warm cream / terracotta / sage
+   Design language taken from the Time Trading "Hearth" mockup
+   ============================================================ */
+@plugin "daisyui/theme" {
+  name: "hearth";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-base-100: #fffdf8;
+  --color-base-200: #f9f3e7;
+  --color-base-300: #f4eee2;
+  --color-base-content: #2c2723;
+
+  --color-primary: #bd5239;
+  --color-primary-content: #ffffff;
+  --color-secondary: #5f7355;
+  --color-secondary-content: #ffffff;
+  --color-accent: #bd5239;
+  --color-accent-content: #ffffff;
+  --color-neutral: #2c2723;
+  --color-neutral-content: #f4eee2;
+
+  --color-info: #4f7a8a;
+  --color-info-content: #ffffff;
+  --color-success: #5f7355;
+  --color-success-content: #ffffff;
+  --color-warning: #d98a2b;
+  --color-warning-content: #2c2723;
+  --color-error: #bd5239;
+  --color-error-content: #ffffff;
+
+  --radius-selector: 999px;
+  --radius-field: 0.75rem;
+  --radius-box: 1.1rem;
+  --border: 1px;
+  --depth: 0;
+  --noise: 0;
+}
+
 :root {
-  --civic-cream: #f3efe6;
-  --civic-paper: #fbf8f2;
-  --civic-teal: #0f4c5c;
-  --civic-teal-deep: #123743;
-  --civic-gold: #d9a441;
-  --civic-slate: #1f2937;
-  --civic-mist: #dce5e2;
-  --civic-line: rgba(15, 76, 92, 0.12);
-  --civic-shadow: 0 30px 80px rgba(15, 76, 92, 0.12);
+  /* Hearth palette mapped onto the existing --civic-* token names so the
+     whole app re-themes without touching every template. */
+  --hearth-bg: #f4eee2;
+  --hearth-surface: #fffdf8;
+  --hearth-surface-2: #f9f3e7;
+  --hearth-ink: #2c2723;
+  --hearth-muted: #8a8178;
+  --hearth-line: #e7ddcd;
+  --hearth-accent: #bd5239;
+  --hearth-accent-ink: #ffffff;
+  --hearth-secondary: #5f7355;
+  --hearth-secondary-soft: #e9efe3;
+  --hearth-credit-bg: #f3e7cf;
+  --hearth-credit-ink: #8a5a1d;
+  --hearth-star: #d98a2b;
+
+  --civic-cream: var(--hearth-bg);
+  --civic-paper: var(--hearth-surface);
+  --civic-teal: var(--hearth-accent);
+  --civic-teal-deep: #9d4129;
+  --civic-gold: var(--hearth-star);
+  --civic-slate: var(--hearth-ink);
+  --civic-mist: var(--hearth-secondary-soft);
+  --civic-line: var(--hearth-line);
+  --civic-shadow: 0 18px 40px rgba(44, 39, 35, 0.08);
+
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
 }
 
 html {
-  background:
-    radial-gradient(circle at top left, rgba(217, 164, 65, 0.14), transparent 24rem),
-    radial-gradient(circle at top right, rgba(15, 76, 92, 0.16), transparent 26rem),
-    linear-gradient(180deg, #f8f5ee 0%, #f2ede2 100%);
-  color: var(--civic-slate);
+  background: var(--hearth-bg);
+  color: var(--hearth-ink);
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  color: var(--civic-slate);
-  font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  color: var(--hearth-ink);
+  font-family: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 h1,
 h2,
 h3,
 .civic-display {
-  font-family: Georgia, "Times New Roman", serif;
-  letter-spacing: -0.03em;
+  font-family: var(--serif);
+  letter-spacing: -0.02em;
 }
 
 a,
@@ -46,17 +117,34 @@ input {
     background-color 180ms ease;
 }
 
+::placeholder {
+  color: var(--hearth-muted);
+  opacity: 0.75;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(44, 39, 35, 0.12);
+  border-radius: 8px;
+}
+
+/* ---------- Shared surface primitives (re-skinned) ---------- */
 .civic-card {
-  border: 1px solid var(--civic-line);
-  background: rgba(251, 248, 242, 0.9);
+  border: 1px solid var(--hearth-line);
+  background: var(--hearth-surface);
   box-shadow: var(--civic-shadow);
-  backdrop-filter: blur(12px);
+  backdrop-filter: none;
 }
 
 .civic-badge {
-  border: 1px solid rgba(15, 76, 92, 0.15);
-  background: rgba(255, 255, 255, 0.7);
-  color: var(--civic-teal);
+  border: none;
+  background: var(--hearth-credit-bg);
+  color: var(--hearth-credit-ink);
+  font-weight: 700;
 }
 
 .civic-ring {
@@ -67,19 +155,150 @@ input {
 .civic-ring::before {
   content: "";
   position: absolute;
-  inset: 10%;
-  border: 1px solid rgba(217, 164, 65, 0.28);
+  inset: 12%;
+  border: 1px solid rgba(189, 82, 57, 0.28);
   border-radius: 999px;
 }
 
 .civic-ring::after {
   content: "";
   position: absolute;
-  inset: 24%;
-  border: 1px solid rgba(15, 76, 92, 0.18);
+  inset: 28%;
+  border: 1px solid rgba(95, 115, 85, 0.22);
   border-radius: 999px;
 }
+
 .safe-user-text {
   overflow-wrap: anywhere;
   word-break: break-word;
+}
+
+/* ---------- Hearth helper utilities ---------- */
+.tt-eyebrow {
+  color: var(--hearth-muted);
+  font-size: 0.69rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.tt-surface-2 {
+  background: var(--hearth-surface-2);
+}
+
+.tt-credit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--hearth-credit-bg);
+  color: var(--hearth-credit-ink);
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.tt-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--hearth-secondary-soft);
+  color: var(--hearth-secondary);
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.tt-avatar {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--hearth-secondary);
+  color: #fff;
+  font-weight: 700;
+  object-fit: cover;
+}
+
+.tt-stars {
+  color: var(--hearth-star);
+  letter-spacing: 1px;
+}
+
+.tt-dot {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+}
+
+.tt-card-link {
+  display: flex;
+  flex-direction: column;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
+}
+
+.tt-card-link:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 32px rgba(44, 39, 35, 0.1);
+  border-color: var(--hearth-accent);
+}
+
+.text-hearth-muted {
+  color: var(--hearth-muted);
+}
+
+.text-hearth-accent {
+  color: var(--hearth-accent);
+}
+
+.text-hearth-secondary {
+  color: var(--hearth-secondary);
+}
+
+.tt-tab {
+  border-radius: 999px;
+  border: 1px solid var(--hearth-line);
+  background: var(--hearth-surface);
+  padding: 0.55rem 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--hearth-muted);
+  cursor: pointer;
+}
+
+.tt-tab:hover {
+  border-color: var(--hearth-accent);
+  color: var(--hearth-ink);
+}
+
+.tt-tab-active {
+  background: var(--hearth-accent);
+  border-color: var(--hearth-accent);
+  color: var(--hearth-accent-ink);
+}
+
+/* Inbox segmented control (messages) */
+.inbox-tab-active {
+  background: var(--hearth-surface);
+  color: var(--hearth-ink);
+  box-shadow: 0 1px 3px rgba(44, 39, 35, 0.14);
+}
+
+/* Chat message bubbles */
+.message-own {
+  background: var(--hearth-accent);
+  color: var(--hearth-accent-ink);
+  border-bottom-right-radius: 6px;
+}
+
+.message-other {
+  background: var(--hearth-surface);
+  color: var(--hearth-ink);
+  border: 1px solid var(--hearth-line);
+  border-bottom-left-radius: 6px;
 }

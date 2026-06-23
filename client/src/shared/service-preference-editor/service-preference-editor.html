@@ -5,7 +5,7 @@
   }
 
   @if (canEdit()) {
-    <form [formGroup]="form" class="mt-4 grid gap-3 rounded-2xl bg-white/50 p-3" (ngSubmit)="addPreference()">
+    <form [formGroup]="form" class="mt-4 grid gap-3 rounded-2xl tt-surface-2 p-3" (ngSubmit)="addPreference()">
       <div
         class="grid gap-3"
         [class.md:grid-cols-[1fr_1fr_auto]]="layout() === 'wide'"
@@ -34,7 +34,7 @@
 
   <div class="mt-4 space-y-3">
     @for (item of items(); track item.id ?? item.serviceCategoryId) {
-      <div class="rounded-2xl bg-white/60 p-3">
+      <div class="rounded-2xl tt-surface-2 p-3">
         <div class="flex items-start justify-between gap-3">
           <div class="font-semibold text-slate-800">{{ categoryName(item) }}</div>
           @if (canEdit()) {

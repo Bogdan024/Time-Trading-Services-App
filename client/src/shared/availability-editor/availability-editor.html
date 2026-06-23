@@ -2,7 +2,7 @@
   <div class="flex items-center justify-between gap-3">
     <h2 class="font-semibold text-slate-800">{{ title() }}</h2>
     @if (closeButtonText()) {
-      <button type="button" class="btn btn-xs rounded-full bg-white/80" (click)="closeEditor.emit()">{{ closeButtonText() }}</button>
+      <button type="button" class="btn btn-xs rounded-full tt-surface-2" (click)="closeEditor.emit()">{{ closeButtonText() }}</button>
     }
   </div>
 
@@ -10,7 +10,7 @@
     <p class="mt-2 text-sm text-slate-600">{{ description() }}</p>
   }
 
-  <form [formGroup]="form" class="mt-4 grid gap-3 rounded-2xl bg-white/50 p-3" (ngSubmit)="addAvailabilitySlot()">
+  <form [formGroup]="form" class="mt-4 grid gap-3 rounded-2xl tt-surface-2 p-3" (ngSubmit)="addAvailabilitySlot()">
     <div
       class="grid gap-2"
       [class.md:grid-cols-[1fr_1fr_1fr_1fr_auto]]="layout() === 'wide'"
@@ -52,7 +52,7 @@
 
   <div class="mt-3 space-y-2 text-sm text-slate-600">
     @for (slot of slots(); track slot.id ?? $index; let index = $index) {
-      <div class="rounded-2xl bg-white/60 p-3">
+      <div class="rounded-2xl tt-surface-2 p-3">
         <div class="flex items-start justify-between gap-3">
           <div>
             {{ dayName(slot) }}, {{ slot.startHour }}:00-{{ slot.endHour }}:00

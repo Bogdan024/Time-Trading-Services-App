@@ -13,7 +13,7 @@
         }
       </div>
 
-      <div class="mt-4 grid grid-cols-2 gap-2 rounded-full bg-white/55 p-1">
+      <div class="mt-4 grid grid-cols-2 gap-2 rounded-full tt-surface-2 p-1">
         <button
           type="button"
           class="rounded-full px-3 py-2 text-sm font-semibold transition"
@@ -34,12 +34,12 @@
 
       <div class="mt-4 space-y-2">
         @if (loadingConversations()) {
-          <p class="rounded-3xl bg-white/60 p-4 text-sm text-slate-600">Loading conversations...</p>
+          <p class="rounded-3xl tt-surface-2 p-4 text-sm text-slate-600">Loading conversations...</p>
         } @else {
           @for (conversation of conversations(); track conversation.id) {
             <button
               type="button"
-              class="w-full rounded-3xl p-4 text-left transition hover:bg-white/70"
+              class="w-full rounded-3xl p-4 text-left transition hover:tt-surface-2"
               [class.bg-white]="selectedConversation()?.id === conversation.id"
               (click)="selectConversation(conversation)"
             >
@@ -69,7 +69,7 @@
               </div>
             </button>
           } @empty {
-            <p class="rounded-3xl bg-white/60 p-4 text-sm text-slate-600">
+            <p class="rounded-3xl tt-surface-2 p-4 text-sm text-slate-600">
               {{ selectedInbox() === 'Group' ? 'No group conversations yet.' : 'No task conversations yet.' }}
             </p>
           }
@@ -101,7 +101,7 @@
           </div>
         </div>
 
-        <div #messageThread class="mt-5 flex max-h-[32rem] min-h-96 flex-col gap-3 overflow-y-auto rounded-3xl bg-white/55 p-4">
+        <div #messageThread class="mt-5 flex max-h-[32rem] min-h-96 flex-col gap-3 overflow-y-auto rounded-3xl tt-surface-2 p-4">
           @if (canLoadOlderMessages()) {
             <button type="button" class="btn btn-sm mx-auto rounded-full" [disabled]="loadingOlderMessages()" (click)="loadOlderMessages()">
               {{ loadingOlderMessages() ? 'Loading...' : 'Load older messages' }}
@@ -131,7 +131,7 @@
         @if (conversation.canSendMessages) {
           <div class="mt-4 flex flex-col gap-2 md:flex-row">
             <input
-              class="input min-w-0 flex-1 rounded-2xl bg-white/80"
+              class="input min-w-0 flex-1 rounded-2xl tt-surface-2"
               placeholder="Write a message"
               maxlength="2000"
               [(ngModel)]="messageContent"
@@ -141,10 +141,10 @@
             <button type="button" class="btn btn-accent rounded-full" [disabled]="loading() || !messageContent.trim()" (click)="sendMessage()">Send</button>
           </div>
         } @else {
-          <p class="mt-4 rounded-3xl bg-white/60 p-4 text-sm text-slate-600">This conversation is closed and can only be viewed.</p>
+          <p class="mt-4 rounded-3xl tt-surface-2 p-4 text-sm text-slate-600">This conversation is closed and can only be viewed.</p>
         }
       } @else {
-        <div class="flex min-h-96 items-center justify-center rounded-3xl bg-white/55 p-8 text-center text-sm text-slate-600">
+        <div class="flex min-h-96 items-center justify-center rounded-3xl tt-surface-2 p-8 text-center text-sm text-slate-600">
           Select a conversation to read messages.
         </div>
       }

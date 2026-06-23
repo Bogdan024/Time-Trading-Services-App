@@ -1,15 +1,16 @@
-<header class="nav-shell sticky top-0 z-50 w-full px-4 py-4 lg:px-8" [class.nav-shell-scrolled]="isScrolled()">
-  <div class="nav-frame civic-card mx-auto flex max-w-7xl items-center gap-6 rounded-4xl px-5 py-4 lg:px-8">
-    <a routerLink="/" routerLinkActive="text-accent" [routerLinkActiveOptions]="{ exact: true }" class="nav-brand flex items-center gap-4 pr-6">
-      <div class="civic-ring nav-mark flex size-12 items-center justify-center rounded-full">
-        <img src="/user.png" alt="Time Trading App logo" class="size-7 rounded-full object-cover" />
-      </div>
-      <div>
-        <h3 class="civic-display text-2xl font-semibold text-slate-800">Time Trading</h3>
-      </div>
+<header class="nav-shell sticky top-0 z-50 w-full" [class.nav-shell-scrolled]="isScrolled()">
+  <div class="nav-frame mx-auto flex max-w-[1180px] flex-wrap items-center gap-4 px-6 py-3">
+    <a routerLink="/" routerLinkActive="text-accent" [routerLinkActiveOptions]="{ exact: true }" class="nav-brand flex items-center gap-3">
+      <span class="nav-mark grid size-10 place-items-center rounded-xl">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 7v5l3.2 2"></path>
+        </svg>
+      </span>
+      <span class="nav-wordmark">Time Trading</span>
     </a>
 
-    <nav class="nav-links my-2 hidden gap-2 text-sm font-semibold uppercase tracking-[0.18em] md:flex">
+    <nav class="nav-links ml-2 hidden flex-wrap gap-1 md:flex">
       @if (accountService.currentUser()) {
         <a routerLink="/tasks" routerLinkActive="nav-link-active">Tasks</a>
         <a routerLink="/my-tasks" routerLinkActive="nav-link-active">My Tasks</a>
@@ -17,7 +18,7 @@
         <a routerLink="/groups" routerLinkActive="nav-link-active">Groups</a>
         <a routerLink="/messages" routerLinkActive="nav-link-active">Messages</a>
         <a *appHasRole="['Admin']" routerLink="/admin" routerLinkActive="nav-link-active">Admin</a>
-        <a routerLink="/errors" routerLinkActive="text-accent">Errors</a>
+        <a routerLink="/errors" routerLinkActive="nav-link-active">Errors</a>
       }
     </nav>
 
@@ -27,13 +28,13 @@
           <button
             tabindex="0"
             type="button"
-            class="btn btn-ghost btn-circle relative bg-white/60 text-slate-700 hover:bg-white"
+            class="nav-icon-btn btn btn-ghost btn-circle relative"
             aria-label="Notifications"
             (click)="notificationService.loadNotifications()"
           >
             <svg viewBox="0 0 24 24" aria-hidden="true" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" /><path d="M9.5 19a2.5 2.5 0 0 0 5 0" /></svg>
             @if (notificationService.unreadCount() > 0) {
-              <span class="badge badge-accent badge-sm absolute -right-1 -top-1 text-white">
+              <span class="badge badge-primary badge-sm absolute -right-1 -top-1 text-white">
                 {{ notificationService.unreadCount() > 9 ? '9+' : notificationService.unreadCount() }}
               </span>
             }
@@ -41,9 +42,9 @@
 
           <div tabindex="0" class="dropdown-content civic-card mt-3 w-96 max-w-[calc(100vw-2rem)] rounded-3xl p-3 shadow-sm">
             <div class="flex items-center justify-between gap-3 px-2 py-1">
-              <p class="font-semibold text-slate-800">Notifications</p>
+              <p class="font-semibold text-[var(--hearth-ink)]">Notifications</p>
               @if (notificationService.unreadCount() > 0) {
-                <button type="button" class="text-xs font-semibold text-[var(--civic-teal)]" (click)="notificationService.markAllAsRead()">
+                <button type="button" class="text-xs font-semibold text-hearth-accent" (click)="notificationService.markAllAsRead()">
                   Mark all read
                 </button>
               }
@@ -53,24 +54,23 @@
               @for (notification of notificationService.notifications(); track notification.id) {
                 <button
                   type="button"
-                  class="w-full rounded-3xl p-3 text-left transition hover:bg-white/75"
-                  [class.bg-white]="!notification.isRead"
+                  class="tt-surface-2 w-full rounded-2xl p-3 text-left transition hover:brightness-95"
                   [class.opacity-75]="notification.isRead"
                   (click)="openNotification(notification)"
                 >
                   <div class="flex items-start justify-between gap-3">
                     <div class="min-w-0">
-                      <p class="safe-user-text font-semibold text-slate-800">{{ notification.title }}</p>
-                      <p class="safe-user-text mt-1 text-sm leading-5 text-slate-600">{{ notification.body }}</p>
+                      <p class="safe-user-text font-semibold text-[var(--hearth-ink)]">{{ notification.title }}</p>
+                      <p class="safe-user-text mt-1 text-sm leading-5 text-hearth-muted">{{ notification.body }}</p>
                     </div>
                     @if (!notification.isRead) {
-                      <span class="mt-1 size-2 shrink-0 rounded-full bg-[var(--civic-teal)]"></span>
+                      <span class="mt-1 size-2 shrink-0 rounded-full bg-[var(--hearth-accent)]"></span>
                     }
                   </div>
-                  <p class="mt-2 text-xs text-slate-500">{{ notification.createdAtUtc | date: 'short' }}</p>
+                  <p class="mt-2 text-xs text-hearth-muted">{{ notification.createdAtUtc | date: 'short' }}</p>
                 </button>
               } @empty {
-                <p class="rounded-3xl bg-white/55 p-4 text-sm text-slate-600">No notifications yet.</p>
+                <p class="tt-surface-2 rounded-2xl p-4 text-sm text-hearth-muted">No notifications yet.</p>
               }
             </div>
           </div>
@@ -80,9 +80,9 @@
           <div
             tabindex="0"
             role="button"
-            class="nav-user civic-badge flex cursor-pointer items-center gap-3 rounded-full px-3 py-2 text-base font-semibold"
+            class="nav-user flex cursor-pointer items-center gap-2 rounded-full py-1 pe-4 ps-1 text-base font-semibold"
           >
-            <img [src]="user.imageUrl || '/user.png'" alt="user avatar" class="h-10 w-10 rounded-full" />
+            <img [src]="user.imageUrl || '/user.png'" alt="user avatar" class="size-8 rounded-full object-cover" />
             <span>{{ user.displayName }}</span>
           </div>
           <ul tabindex="0" class="dropdown-content menu civic-card mt-3 w-56 rounded-3xl p-3 shadow-sm" (click)="handleSelectUserItem()">
@@ -94,7 +94,7 @@
           </ul>
         </div>
       } @else {
-        <form #loginForm="ngForm" (ngSubmit)="login()" class="nav-login flex items-center gap-3">
+        <form #loginForm="ngForm" (ngSubmit)="login()" class="nav-login flex items-center gap-2">
           <input [(ngModel)]="creds.email" name="email" type="text" class="input nav-input" placeholder="Email" />
           <input
             [(ngModel)]="creds.password"
@@ -103,7 +103,7 @@
             class="input nav-input"
             placeholder="Password"
           />
-          <button type="submit" class="btn nav-button" [disabled]="loginLoading()">
+          <button type="submit" class="btn btn-primary nav-button" [disabled]="loginLoading()">
             @if (loginLoading()) {
               <span class="loading loading-spinner loading-sm"></span>
             }
@@ -114,6 +114,3 @@
     </div>
   </div>
 </header>
-
-
-
