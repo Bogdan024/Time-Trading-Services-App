@@ -1,0 +1,14 @@
+<dialog #dialogRef class="modal" (click)="closeFromBackdrop($event)">
+  <div class="confirm-card civic-card modal-box max-w-md rounded-4xl border border-white/70 p-0 shadow-2xl">
+    <div class="rounded-t-4xl bg-gradient-to-br from-white via-[rgba(248,244,235,0.96)] to-[rgba(222,236,228,0.9)] px-7 py-6">
+      <p class="text-xs font-semibold uppercase tracking-[0.24em] text-[var(--civic-teal)]">Please confirm</p>
+      <h3 class="civic-display mt-2 text-3xl font-semibold text-slate-800">{{ message }}</h3>
+      <p class="mt-3 text-sm leading-6 text-slate-600">{{ detail }}</p>
+    </div>
+
+    <div class="flex justify-end gap-3 px-7 py-5">
+      <button type="button" class="btn rounded-full bg-white/75" (click)="cancel()">Cancel</button>
+      <button type="button" class="btn btn-accent rounded-full" (click)="confirm()">Confirm</button>
+    </div>
+  </div>
+</dialog>

@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog-service';
 import { GroupService } from '../../../core/services/group-service';
 import { ReportService } from '../../../core/services/report-service';
 import { ToastService } from '../../../core/services/toast-service';
@@ -15,6 +16,7 @@ import { ReportReason, ReportTargetType } from '../../../types/moderation';
   styleUrl: './group-detail.css',
 })
 export class GroupDetail implements OnInit {
+  private confirmDialog = inject(ConfirmDialogService);
   private groupService = inject(GroupService);
   private reportService = inject(ReportService);
   private route = inject(ActivatedRoute);
@@ -49,8 +51,13 @@ export class GroupDetail implements OnInit {
     });
   }
 
-  protected leaveGroup(group: CommunityGroup) {
-    if (!confirm('Are you sure you want to leave this group?')) return;
+  protected async leaveGroup(group: CommunityGroup) {
+    const confirmed = await this.confirmDialog.confirm(
+      `Leave ${group.name}?`,
+      'You can join again later if the group is still available.'
+    );
+
+    if (!confirmed) return;
 
     this.loading.set(true);
     this.groupService.leaveGroup(group.id).subscribe({
@@ -87,3 +94,5 @@ export class GroupDetail implements OnInit {
     });
   }
 }
+
+

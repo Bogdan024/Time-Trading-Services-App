@@ -2,6 +2,7 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { map, Observable } from 'rxjs';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog-service';
 import { ReviewService } from '../../../core/services/review-service';
 import { TaskService } from '../../../core/services/task-service';
 import { ToastService } from '../../../core/services/toast-service';
@@ -16,6 +17,7 @@ import { TimeTask } from '../../../types/task';
   styleUrl: './posted-tasks.css',
 })
 export class PostedTasks {
+  private confirmDialog = inject(ConfirmDialogService);
   private reviewService = inject(ReviewService);
   private taskService = inject(TaskService);
   private toast = inject(ToastService);
@@ -23,8 +25,13 @@ export class PostedTasks {
   protected reviewTarget = signal<TimeTask | null>(null);
   protected reviewLoading = signal(false);
 
-  protected cancelTask(task: TimeTask) {
-    if (!confirm(`Are you sure you want to cancel "${task.title}"?`)) return;
+  protected async cancelTask(task: TimeTask) {
+    const confirmed = await this.confirmDialog.confirm(
+      `Cancel "${task.title}"?`,
+      'Applicants will be notified and this task will move to history.'
+    );
+
+    if (!confirmed) return;
 
     this.taskService.cancelTask(task.id).subscribe({
       next: () => {
@@ -82,3 +89,5 @@ export class PostedTasks {
     return this.taskService.getMyTasks().pipe(map((tasks) => tasks.filter((task) => task.status !== 3 && task.status !== 4)));
   }
 }
+
+

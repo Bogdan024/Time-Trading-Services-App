@@ -9,13 +9,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class MessagesController(IMessageRepository messageRepository) : BaseApiController
+public class MessagesController(IUnitOfWork uow) : BaseApiController
 {
     [HttpGet("conversations")]
     public async Task<ActionResult<PaginatedResult<ConversationDto>>> GetConversations([FromQuery] ConversationParams conversationParams)
     {
         var memberId = User.GetMemberId();
-        var conversations = await messageRepository.GetConversationsForMemberAsync(memberId, conversationParams);
+        var conversations = await uow.MessageRepository.GetConversationsForMemberAsync(memberId, conversationParams);
 
         return Ok(new PaginatedResult<ConversationDto>
         {
@@ -28,7 +28,7 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     public async Task<ActionResult<PaginatedResult<MessageDto>>> GetConversationThread(int conversationId, [FromQuery] MessageParams messageParams)
     {
         var memberId = User.GetMemberId();
-        var conversation = await messageRepository.GetConversationForMemberAsync(conversationId, memberId);
+        var conversation = await uow.MessageRepository.GetConversationForMemberAsync(conversationId, memberId);
 
         if (conversation is null) return NotFound();
 
@@ -39,7 +39,7 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     public async Task<ActionResult<ConversationDto>> GetTaskConversation(int taskId)
     {
         var memberId = User.GetMemberId();
-        var conversation = await messageRepository.GetConversationForTaskAsync(taskId, memberId);
+        var conversation = await uow.MessageRepository.GetConversationForTaskAsync(taskId, memberId);
 
         if (conversation is null) return NotFound();
 
@@ -50,7 +50,7 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     public async Task<ActionResult<PaginatedResult<MessageDto>>> GetTaskConversationThread(int taskId, [FromQuery] MessageParams messageParams)
     {
         var memberId = User.GetMemberId();
-        var conversation = await messageRepository.GetConversationForTaskAsync(taskId, memberId);
+        var conversation = await uow.MessageRepository.GetConversationForTaskAsync(taskId, memberId);
 
         if (conversation is null) return NotFound();
 
@@ -61,7 +61,7 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     public async Task<ActionResult<MessageDto>> SendConversationMessage(int conversationId, CreateMessageDto createMessageDto)
     {
         var memberId = User.GetMemberId();
-        var conversation = await messageRepository.GetConversationForMemberAsync(conversationId, memberId);
+        var conversation = await uow.MessageRepository.GetConversationForMemberAsync(conversationId, memberId);
 
         return await SendMessage(conversation, memberId, createMessageDto);
     }
@@ -70,7 +70,7 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     public async Task<ActionResult<MessageDto>> SendTaskMessage(int taskId, CreateMessageDto createMessageDto)
     {
         var memberId = User.GetMemberId();
-        var conversation = await messageRepository.GetConversationForTaskAsync(taskId, memberId);
+        var conversation = await uow.MessageRepository.GetConversationForTaskAsync(taskId, memberId);
 
         return await SendMessage(conversation, memberId, createMessageDto);
     }
@@ -79,20 +79,20 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
     public async Task<ActionResult> DeleteMessage(string messageId)
     {
         var memberId = User.GetMemberId();
-        var message = await messageRepository.GetMessageForMemberAsync(messageId, memberId);
+        var message = await uow.MessageRepository.GetMessageForMemberAsync(messageId, memberId);
 
         if (message is null) return NotFound();
 
-        messageRepository.DeleteMessageForMember(message, memberId);
+        uow.MessageRepository.DeleteMessageForMember(message, memberId);
 
-        if (await messageRepository.SaveAllAsync()) return NoContent();
+        if (await uow.Complete()) return NoContent();
 
         return BadRequest("Failed to delete message");
     }
 
     private async Task<ActionResult<PaginatedResult<MessageDto>>> GetConversationMessages(int conversationId, string memberId, MessageParams messageParams)
     {
-        var messages = await messageRepository.GetMessagesForConversationAsync(conversationId, memberId, messageParams);
+        var messages = await uow.MessageRepository.GetMessagesForConversationAsync(conversationId, memberId, messageParams);
 
         return Ok(new PaginatedResult<MessageDto>
         {
@@ -117,11 +117,11 @@ public class MessagesController(IMessageRepository messageRepository) : BaseApiC
             Content = content
         };
 
-        messageRepository.AddMessage(message);
+        uow.MessageRepository.AddMessage(message);
 
-        if (!await messageRepository.SaveAllAsync()) return BadRequest("Failed to send message");
+        if (!await uow.Complete()) return BadRequest("Failed to send message");
 
-        var createdMessage = await messageRepository.GetMessageForMemberAsync(message.Id, memberId);
+        var createdMessage = await uow.MessageRepository.GetMessageForMemberAsync(message.Id, memberId);
 
         if (createdMessage is null) return BadRequest("Failed to load created message");
 

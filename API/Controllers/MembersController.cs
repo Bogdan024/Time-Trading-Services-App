@@ -8,18 +8,18 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class MembersController(IMemberRepository memberRepository, IPhotoService photoService) : BaseApiController
+public class MembersController(IUnitOfWork uow, IPhotoService photoService) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<Member>>> GetMembers()
     {
-        return Ok(await memberRepository.GetMembersAsync());
+        return Ok(await uow.MemberRepository.GetMembersAsync());
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult<Member>> GetMember(string id)
     {
-        var member = await memberRepository.GetMemberByIdAsync(id);
+        var member = await uow.MemberRepository.GetMemberByIdAsync(id);
 
         if (member is null) return NotFound();
 
@@ -29,13 +29,13 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
     [HttpGet("{id}/photos")]
     public async Task<ActionResult<IReadOnlyList<Photo>>> GetMemberPhotos(string id)
     {
-        return Ok(await memberRepository.GetPhotosForMemberAsync(id));
+        return Ok(await uow.MemberRepository.GetPhotosForMemberAsync(id));
     }
 
     [HttpPut]
     public async Task<ActionResult> UpdateMember(MemberUpdateDto memberUpdateDto)
     {
-        var member = await memberRepository.GetMemberForUpdateAsync(User.GetMemberId());
+        var member = await uow.MemberRepository.GetMemberForUpdateAsync(User.GetMemberId());
 
         if (member is null) return BadRequest("Could not get member");
 
@@ -46,9 +46,9 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
         member.IsProfilePublic = memberUpdateDto.IsProfilePublic ?? member.IsProfilePublic;
         member.User.DisplayName = member.DisplayName;
 
-        memberRepository.Update(member);
+        uow.MemberRepository.Update(member);
 
-        if (await memberRepository.SaveAllAsync()) return NoContent();
+        if (await uow.Complete()) return NoContent();
 
         return BadRequest("Failed to update member");
     }
@@ -58,12 +58,12 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
     {
         var memberId = User.GetMemberId();
 
-        if (!await memberRepository.ServiceCategoryExistsAsync(serviceCategoryEditDto.ServiceCategoryId))
+        if (!await uow.MemberRepository.ServiceCategoryExistsAsync(serviceCategoryEditDto.ServiceCategoryId))
         {
             return BadRequest("Service category does not exist");
         }
 
-        var member = await memberRepository.GetMemberWithServicePreferencesForUpdateAsync(memberId);
+        var member = await uow.MemberRepository.GetMemberWithServicePreferencesForUpdateAsync(memberId);
 
         if (member is null) return BadRequest("Could not get member");
 
@@ -78,7 +78,7 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
             Note = serviceCategoryEditDto.Note
         });
 
-        if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to add skill");
+        if (!await uow.Complete()) return BadRequest("Failed to add skill");
 
         return await GetUpdatedMember(memberId);
     }
@@ -87,13 +87,13 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
     public async Task<ActionResult<Member>> DeleteSkill(int skillId)
     {
         var memberId = User.GetMemberId();
-        var skill = await memberRepository.GetMemberSkillForUpdateAsync(memberId, skillId);
+        var skill = await uow.MemberRepository.GetMemberSkillForUpdateAsync(memberId, skillId);
 
         if (skill is null) return NotFound();
 
-        memberRepository.DeleteMemberSkill(skill);
+        uow.MemberRepository.DeleteMemberSkill(skill);
 
-        if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to remove skill");
+        if (!await uow.Complete()) return BadRequest("Failed to remove skill");
 
         return await GetUpdatedMember(memberId);
     }
@@ -103,12 +103,12 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
     {
         var memberId = User.GetMemberId();
 
-        if (!await memberRepository.ServiceCategoryExistsAsync(serviceCategoryEditDto.ServiceCategoryId))
+        if (!await uow.MemberRepository.ServiceCategoryExistsAsync(serviceCategoryEditDto.ServiceCategoryId))
         {
             return BadRequest("Service category does not exist");
         }
 
-        var member = await memberRepository.GetMemberWithServicePreferencesForUpdateAsync(memberId);
+        var member = await uow.MemberRepository.GetMemberWithServicePreferencesForUpdateAsync(memberId);
 
         if (member is null) return BadRequest("Could not get member");
 
@@ -123,7 +123,7 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
             Note = serviceCategoryEditDto.Note
         });
 
-        if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to add need");
+        if (!await uow.Complete()) return BadRequest("Failed to add need");
 
         return await GetUpdatedMember(memberId);
     }
@@ -132,13 +132,13 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
     public async Task<ActionResult<Member>> DeleteNeed(int needId)
     {
         var memberId = User.GetMemberId();
-        var need = await memberRepository.GetMemberNeedForUpdateAsync(memberId, needId);
+        var need = await uow.MemberRepository.GetMemberNeedForUpdateAsync(memberId, needId);
 
         if (need is null) return NotFound();
 
-        memberRepository.DeleteMemberNeed(need);
+        uow.MemberRepository.DeleteMemberNeed(need);
 
-        if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to remove need");
+        if (!await uow.Complete()) return BadRequest("Failed to remove need");
 
         return await GetUpdatedMember(memberId);
     }
@@ -153,7 +153,7 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
             return BadRequest("End hour must be after start hour");
         }
 
-        var member = await memberRepository.GetMemberWithAvailabilityForUpdateAsync(memberId);
+        var member = await uow.MemberRepository.GetMemberWithAvailabilityForUpdateAsync(memberId);
 
         if (member is null) return BadRequest("Could not get member");
 
@@ -173,7 +173,7 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
             Mode = availabilitySlotEditDto.Mode
         });
 
-        if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to add availability slot");
+        if (!await uow.Complete()) return BadRequest("Failed to add availability slot");
 
         return await GetUpdatedMember(memberId);
     }
@@ -182,13 +182,13 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
     public async Task<ActionResult<Member>> DeleteAvailabilitySlot(int slotId)
     {
         var memberId = User.GetMemberId();
-        var slot = await memberRepository.GetAvailabilitySlotForUpdateAsync(memberId, slotId);
+        var slot = await uow.MemberRepository.GetAvailabilitySlotForUpdateAsync(memberId, slotId);
 
         if (slot is null) return NotFound();
 
-        memberRepository.DeleteAvailabilitySlot(slot);
+        uow.MemberRepository.DeleteAvailabilitySlot(slot);
 
-        if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to remove availability slot");
+        if (!await uow.Complete()) return BadRequest("Failed to remove availability slot");
 
         return await GetUpdatedMember(memberId);
     }
@@ -200,7 +200,7 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
         if (!file.ContentType.StartsWith("image/")) return BadRequest("Only image files are allowed");
 
         var memberId = User.GetMemberId();
-        var member = await memberRepository.GetMemberForAvatarUpdateAsync(memberId);
+        var member = await uow.MemberRepository.GetMemberForAvatarUpdateAsync(memberId);
 
         if (member is null) return BadRequest("Could not get member");
 
@@ -213,7 +213,7 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
 
         if (oldAvatar is not null)
         {
-            memberRepository.DeletePhoto(oldAvatar);
+            uow.MemberRepository.DeletePhoto(oldAvatar);
         }
 
         var photo = new Photo
@@ -227,7 +227,7 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
         member.User.ImageUrl = photo.Url;
         member.Photos.Add(photo);
 
-        if (!await memberRepository.SaveAllAsync()) return BadRequest("Failed to update avatar");
+        if (!await uow.Complete()) return BadRequest("Failed to update avatar");
 
         if (!string.IsNullOrWhiteSpace(oldAvatarPublicId))
         {
@@ -239,7 +239,7 @@ public class MembersController(IMemberRepository memberRepository, IPhotoService
 
     private async Task<ActionResult<Member>> GetUpdatedMember(string memberId)
     {
-        var updatedMember = await memberRepository.GetMemberByIdAsync(memberId);
+        var updatedMember = await uow.MemberRepository.GetMemberByIdAsync(memberId);
 
         if (updatedMember is null) return BadRequest("Could not load updated member");
 

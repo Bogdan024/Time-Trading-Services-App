@@ -3,6 +3,7 @@ import { Component, HostListener, inject, OnInit, signal, ViewChild } from '@ang
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AccountService } from '../../../core/services/account-service';
+import { ConfirmDialogService } from '../../../core/services/confirm-dialog-service';
 import { MemberService } from '../../../core/services/member-service';
 import { ReviewService } from '../../../core/services/review-service';
 import { ServiceCategoryService } from '../../../core/services/service-category-service';
@@ -40,6 +41,7 @@ export class MemberDetail implements OnInit {
     }
   }
 
+  private confirmDialog = inject(ConfirmDialogService);
   private route = inject(ActivatedRoute);
   private memberService = inject(MemberService);
   private reviewService = inject(ReviewService);
@@ -113,8 +115,15 @@ export class MemberDetail implements OnInit {
     this.editMode.set(true);
   }
 
-  protected cancelEdit(member: Member) {
-    if (this.editForm?.dirty && !confirm('Discard unsaved profile changes?')) return;
+  protected async cancelEdit(member: Member) {
+    if (this.editForm?.dirty) {
+      const confirmed = await this.confirmDialog.confirm(
+        'Discard unsaved profile changes?',
+        'Your profile edits will be lost if you continue.'
+      );
+
+      if (!confirmed) return;
+    }
 
     this.setEditableMember(member);
     this.editForm?.resetForm(this.editableMember);
@@ -287,4 +296,6 @@ export class MemberDetail implements OnInit {
     });
   }
 }
+
+
 

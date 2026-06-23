@@ -8,15 +8,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize(Policy = "ModeratePlatformRole")]
-public class ModerationController(
-    IGroupRepository groupRepository,
-    IMessageRepository messageRepository,
-    IModerationRepository moderationRepository) : BaseApiController
+public class ModerationController(IUnitOfWork uow) : BaseApiController
 {
     [HttpGet("groups/pending")]
     public async Task<ActionResult<IReadOnlyList<PendingGroupDto>>> GetPendingGroups()
     {
-        var groups = await groupRepository.GetPendingGroupsAsync();
+        var groups = await uow.GroupRepository.GetPendingGroupsAsync();
 
         return Ok(groups.Select(ToPendingGroupDto));
     }
@@ -25,7 +22,7 @@ public class ModerationController(
     public async Task<ActionResult<GroupDto>> ApproveGroup(int id)
     {
         var moderatorId = User.GetMemberId();
-        var group = await groupRepository.GetGroupForModerationAsync(id);
+        var group = await uow.GroupRepository.GetGroupForModerationAsync(id);
 
         if (group is null) return NotFound();
         if (group.ModerationStatus == ModerationStatus.Approved) return BadRequest("Group is already approved");
@@ -35,9 +32,9 @@ public class ModerationController(
         group.ReviewedAtUtc = DateTime.UtcNow;
         group.RejectionReason = null;
 
-        await messageRepository.GetOrCreateGroupConversationAsync(group);
+        await uow.MessageRepository.GetOrCreateGroupConversationAsync(group);
 
-        if (!await groupRepository.SaveAllAsync()) return BadRequest("Failed to approve group");
+        if (!await uow.Complete()) return BadRequest("Failed to approve group");
 
         return Ok(group.ToDto(moderatorId));
     }
@@ -46,7 +43,7 @@ public class ModerationController(
     public async Task<ActionResult<GroupDto>> RejectGroup(int id, RejectGroupDto rejectGroupDto)
     {
         var moderatorId = User.GetMemberId();
-        var group = await groupRepository.GetGroupForModerationAsync(id);
+        var group = await uow.GroupRepository.GetGroupForModerationAsync(id);
 
         if (group is null) return NotFound();
         if (group.ModerationStatus == ModerationStatus.Approved) return BadRequest("Approved groups cannot be rejected here");
@@ -56,7 +53,7 @@ public class ModerationController(
         group.ReviewedAtUtc = DateTime.UtcNow;
         group.RejectionReason = string.IsNullOrWhiteSpace(rejectGroupDto.Reason) ? null : rejectGroupDto.Reason.Trim();
 
-        if (!await groupRepository.SaveAllAsync()) return BadRequest("Failed to reject group");
+        if (!await uow.Complete()) return BadRequest("Failed to reject group");
 
         return Ok(group.ToDto(moderatorId));
     }
@@ -64,7 +61,7 @@ public class ModerationController(
     [HttpGet("reports")]
     public async Task<ActionResult<IReadOnlyList<ModerationReportDto>>> GetPendingReports()
     {
-        var reports = await moderationRepository.GetPendingReportsAsync();
+        var reports = await uow.ModerationRepository.GetPendingReportsAsync();
         var reportDtos = new List<ModerationReportDto>();
 
         foreach (var report in reports)
@@ -89,7 +86,7 @@ public class ModerationController(
 
     private async Task<ActionResult<ModerationReportDto>> ResolveReport(int id, ReportStatus status, ResolveReportDto resolveReportDto)
     {
-        var report = await moderationRepository.GetReportByIdAsync(id);
+        var report = await uow.ModerationRepository.GetReportByIdAsync(id);
 
         if (report is null) return NotFound();
         if (report.Status != ReportStatus.Pending) return BadRequest("Only pending reports can be reviewed");
@@ -99,7 +96,7 @@ public class ModerationController(
         report.ReviewedAtUtc = DateTime.UtcNow;
         report.ModeratorNotes = string.IsNullOrWhiteSpace(resolveReportDto.ModeratorNotes) ? null : resolveReportDto.ModeratorNotes.Trim();
 
-        if (!await moderationRepository.SaveAllAsync()) return BadRequest("Failed to resolve report");
+        if (!await uow.Complete()) return BadRequest("Failed to resolve report");
 
         return Ok(await ToReportDto(report));
     }
@@ -136,10 +133,8 @@ public class ModerationController(
             ModeratorNotes = report.ModeratorNotes,
             Reporter = report.ReporterMember.ToTaskMemberDto(),
             ReviewedBy = report.ReviewedByMember?.ToTaskMemberDto(),
-            TargetTitle = await moderationRepository.GetTargetTitleAsync(report),
-            TargetSummary = await moderationRepository.GetTargetSummaryAsync(report)
+            TargetTitle = await uow.ModerationRepository.GetTargetTitleAsync(report),
+            TargetSummary = await uow.ModerationRepository.GetTargetSummaryAsync(report)
         };
     }
 }
-
-

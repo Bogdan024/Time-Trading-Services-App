@@ -33,6 +33,7 @@ builder.Services.AddAuthorizationBuilder()
     .AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"))
     .AddPolicy("ModeratePlatformRole", policy => policy.RequireRole("Admin", "Moderator"));
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IMemberRepository, MemberRepository>();
 builder.Services.AddScoped<ITimeTaskRepository, TimeTaskRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
@@ -114,6 +115,7 @@ catch (Exception ex)
 }
 
 app.Run();
+
 
 
 

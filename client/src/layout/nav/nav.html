@@ -85,7 +85,7 @@
             <img [src]="user.imageUrl || '/user.png'" alt="user avatar" class="h-10 w-10 rounded-full" />
             <span>{{ user.displayName }}</span>
           </div>
-          <ul tabindex="0" class="dropdown-content menu civic-card mt-3 w-56 rounded-3xl p-3 shadow-sm">
+          <ul tabindex="0" class="dropdown-content menu civic-card mt-3 w-56 rounded-3xl p-3 shadow-sm" (click)="handleSelectUserItem()">
             <li><a [routerLink]="['/members', user.id]">My Profile</a></li>
             <li><a routerLink="/my-tasks">My Tasks</a></li>
             <li><a routerLink="/groups">Groups</a></li>
@@ -103,11 +103,17 @@
             class="input nav-input"
             placeholder="Password"
           />
-          <button type="submit" class="btn nav-button">Login</button>
+          <button type="submit" class="btn nav-button" [disabled]="loginLoading()">
+            @if (loginLoading()) {
+              <span class="loading loading-spinner loading-sm"></span>
+            }
+            Login
+          </button>
         </form>
       }
     </div>
   </div>
 </header>
+
 
 

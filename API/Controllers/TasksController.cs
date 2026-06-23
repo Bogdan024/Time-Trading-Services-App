@@ -10,8 +10,7 @@ namespace API.Controllers;
 
 [Authorize]
 public class TasksController(
-    ITimeTaskRepository taskRepository,
-    IMessageRepository messageRepository,
+    IUnitOfWork uow,
     INotificationService notificationService) : BaseApiController
 {
     [HttpGet]
@@ -19,7 +18,7 @@ public class TasksController(
     {
         var memberId = User.GetMemberId();
         taskParams.CurrentMemberId = memberId;
-        var tasks = await taskRepository.GetTasksAsync(taskParams);
+        var tasks = await uow.TimeTaskRepository.GetTasksAsync(taskParams);
 
         return Ok(new PaginatedResult<TimeTaskDto>
         {
@@ -32,7 +31,7 @@ public class TasksController(
     public async Task<ActionResult<IReadOnlyList<TimeTaskDto>>> GetMyTasks()
     {
         var memberId = User.GetMemberId();
-        var tasks = await taskRepository.GetTasksForMemberAsync(memberId);
+        var tasks = await uow.TimeTaskRepository.GetTasksForMemberAsync(memberId);
 
         return Ok(tasks.Select(x => x.ToDto(memberId)));
     }
@@ -41,7 +40,7 @@ public class TasksController(
     public async Task<ActionResult<IReadOnlyList<TimeTaskDto>>> GetAcceptedTasks()
     {
         var memberId = User.GetMemberId();
-        var tasks = await taskRepository.GetAcceptedTasksForMemberAsync(memberId);
+        var tasks = await uow.TimeTaskRepository.GetAcceptedTasksForMemberAsync(memberId);
 
         return Ok(tasks.Select(x => x.ToDto(memberId)));
     }
@@ -49,7 +48,7 @@ public class TasksController(
     [HttpGet("transactions")]
     public async Task<ActionResult<IReadOnlyList<TimeTransactionDto>>> GetMyTransactions()
     {
-        var transactions = await taskRepository.GetTransactionsForMemberAsync(User.GetMemberId());
+        var transactions = await uow.TimeTaskRepository.GetTransactionsForMemberAsync(User.GetMemberId());
 
         return Ok(transactions.Select(x => x.ToDto()));
     }
@@ -57,7 +56,7 @@ public class TasksController(
     [HttpGet("{id:int}")]
     public async Task<ActionResult<TimeTaskDto>> GetTask(int id)
     {
-        var task = await taskRepository.GetTaskByIdAsync(id);
+        var task = await uow.TimeTaskRepository.GetTaskByIdAsync(id);
 
         if (task is null) return NotFound();
 
@@ -76,13 +75,13 @@ public class TasksController(
     [HttpGet("{id:int}/applications")]
     public async Task<ActionResult<IReadOnlyList<TaskApplicationDto>>> GetTaskApplications(int id)
     {
-        var task = await taskRepository.GetTaskByIdAsync(id);
+        var task = await uow.TimeTaskRepository.GetTaskByIdAsync(id);
 
         if (task is null) return NotFound();
         if (task.PostedByMemberId != User.GetMemberId()) return Forbid();
 
-        var applications = await taskRepository.GetApplicationsForTaskAsync(id);
-        var ratingSummaries = await taskRepository.GetRatingSummariesForMembersAsync(applications.Select(x => x.ApplicantMemberId));
+        var applications = await uow.TimeTaskRepository.GetApplicationsForTaskAsync(id);
+        var ratingSummaries = await uow.TimeTaskRepository.GetRatingSummariesForMembersAsync(applications.Select(x => x.ApplicantMemberId));
 
         return Ok(applications.Select(application =>
         {
@@ -95,7 +94,7 @@ public class TasksController(
     [HttpPost]
     public async Task<ActionResult<TimeTaskDto>> CreateTask(CreateTimeTaskDto createTaskDto)
     {
-        if (!await taskRepository.ServiceCategoryExistsAsync(createTaskDto.ServiceCategoryId))
+        if (!await uow.TimeTaskRepository.ServiceCategoryExistsAsync(createTaskDto.ServiceCategoryId))
         {
             return BadRequest("Service category does not exist");
         }
@@ -119,14 +118,14 @@ public class TasksController(
             PostedByMemberId = memberId
         };
 
-        taskRepository.Add(task);
+        uow.TimeTaskRepository.Add(task);
 
-        if (!await taskRepository.SaveAllAsync())
+        if (!await uow.Complete())
         {
             return BadRequest("Failed to create task");
         }
 
-        var createdTask = await taskRepository.GetTaskByIdAsync(task.Id);
+        var createdTask = await uow.TimeTaskRepository.GetTaskByIdAsync(task.Id);
 
         if (createdTask is null) return BadRequest("Failed to load created task");
 
@@ -136,7 +135,7 @@ public class TasksController(
     [HttpPost("{id:int}/applications")]
     public async Task<ActionResult<TaskApplicationDto>> ApplyForTask(int id, CreateTaskApplicationDto createApplicationDto)
     {
-        var task = await taskRepository.GetTaskByIdAsync(id);
+        var task = await uow.TimeTaskRepository.GetTaskByIdAsync(id);
 
         if (task is null) return NotFound();
 
@@ -161,7 +160,7 @@ public class TasksController(
         }
         else
         {
-            taskRepository.AddApplication(new TaskApplication
+            uow.TimeTaskRepository.AddApplication(new TaskApplication
             {
                 TimeTaskId = task.Id,
                 ApplicantMemberId = memberId,
@@ -176,16 +175,16 @@ public class TasksController(
             $"Someone applied to {task.Title}.",
             timeTaskId: task.Id);
 
-        if (!await taskRepository.SaveAllAsync()) return BadRequest("Failed to apply for task");
+        if (!await uow.Complete()) return BadRequest("Failed to apply for task");
 
         await notificationService.SendAsync(applicationNotification);
 
-        var applications = await taskRepository.GetApplicationsForTaskAsync(task.Id);
+        var applications = await uow.TimeTaskRepository.GetApplicationsForTaskAsync(task.Id);
         var application = applications.SingleOrDefault(x => x.ApplicantMemberId == memberId);
 
         if (application is null) return BadRequest("Failed to load application");
 
-        var ratingSummaries = await taskRepository.GetRatingSummariesForMembersAsync([memberId]);
+        var ratingSummaries = await uow.TimeTaskRepository.GetRatingSummariesForMembersAsync([memberId]);
         ratingSummaries.TryGetValue(memberId, out var ratingSummary);
 
         return Ok(application.ToDto(ratingSummary?.AverageRating, ratingSummary?.ReviewCount ?? 0));
@@ -194,7 +193,7 @@ public class TasksController(
     [HttpPost("{id:int}/applications/{applicationId:int}/accept")]
     public async Task<ActionResult> AcceptApplication(int id, int applicationId)
     {
-        var application = await taskRepository.GetApplicationForTaskAsync(id, applicationId);
+        var application = await uow.TimeTaskRepository.GetApplicationForTaskAsync(id, applicationId);
 
         if (application is null) return NotFound();
 
@@ -216,7 +215,7 @@ public class TasksController(
             pendingApplication.UpdatedAtUtc = DateTime.UtcNow;
         }
 
-        var conversation = await messageRepository.GetOrCreateTaskConversationAsync(task);
+        var conversation = await uow.MessageRepository.GetOrCreateTaskConversationAsync(task);
         var acceptedNotification = notificationService.Create(
             application.ApplicantMemberId,
             NotificationType.TaskApplicationAccepted,
@@ -225,9 +224,9 @@ public class TasksController(
             timeTaskId: task.Id,
             conversationId: conversation.Id);
 
-        taskRepository.Update(task);
+        uow.TimeTaskRepository.Update(task);
 
-        if (await taskRepository.SaveAllAsync())
+        if (await uow.Complete())
         {
             await notificationService.SendAsync(acceptedNotification);
             return NoContent();
@@ -239,7 +238,7 @@ public class TasksController(
     [HttpPost("{id:int}/applications/{applicationId:int}/withdraw")]
     public async Task<ActionResult> WithdrawApplication(int id, int applicationId)
     {
-        var application = await taskRepository.GetApplicationForTaskAsync(id, applicationId);
+        var application = await uow.TimeTaskRepository.GetApplicationForTaskAsync(id, applicationId);
 
         if (application is null) return NotFound();
         if (application.ApplicantMemberId != User.GetMemberId()) return Forbid();
@@ -249,7 +248,7 @@ public class TasksController(
         application.Status = TaskApplicationStatus.Withdrawn;
         application.UpdatedAtUtc = DateTime.UtcNow;
 
-        if (await taskRepository.SaveAllAsync()) return NoContent();
+        if (await uow.Complete()) return NoContent();
 
         return BadRequest("Failed to withdraw application");
     }
@@ -257,7 +256,7 @@ public class TasksController(
     [HttpPut("{id:int}")]
     public async Task<ActionResult> UpdateTask(int id, UpdateTimeTaskDto updateTaskDto)
     {
-        var task = await taskRepository.GetTaskByIdAsync(id);
+        var task = await uow.TimeTaskRepository.GetTaskByIdAsync(id);
 
         if (task is null) return NotFound();
 
@@ -268,7 +267,7 @@ public class TasksController(
             return BadRequest("Only open tasks can be edited");
         }
 
-        if (!await taskRepository.ServiceCategoryExistsAsync(updateTaskDto.ServiceCategoryId))
+        if (!await uow.TimeTaskRepository.ServiceCategoryExistsAsync(updateTaskDto.ServiceCategoryId))
         {
             return BadRequest("Service category does not exist");
         }
@@ -288,9 +287,9 @@ public class TasksController(
         task.DueAtUtc = updateTaskDto.DueAtUtc;
         task.UpdatedAtUtc = DateTime.UtcNow;
 
-        taskRepository.Update(task);
+        uow.TimeTaskRepository.Update(task);
 
-        if (await taskRepository.SaveAllAsync()) return NoContent();
+        if (await uow.Complete()) return NoContent();
 
         return BadRequest("Failed to update task");
     }
@@ -298,7 +297,7 @@ public class TasksController(
     [HttpPatch("{id:int}/cancel")]
     public async Task<ActionResult> CancelTask(int id)
     {
-        var task = await taskRepository.GetTaskByIdAsync(id);
+        var task = await uow.TimeTaskRepository.GetTaskByIdAsync(id);
 
         if (task is null) return NotFound();
 
@@ -326,10 +325,10 @@ public class TasksController(
                 timeTaskId: task.Id));
         }
 
-        await messageRepository.CloseTaskConversationAsync(task.Id);
-        taskRepository.Update(task);
+        await uow.MessageRepository.CloseTaskConversationAsync(task.Id);
+        uow.TimeTaskRepository.Update(task);
 
-        if (await taskRepository.SaveAllAsync())
+        if (await uow.Complete())
         {
             await notificationService.SendAsync(cancellationNotifications);
             return NoContent();
@@ -341,7 +340,7 @@ public class TasksController(
     [HttpPatch("{id:int}/complete")]
     public async Task<ActionResult<TimeTransactionDto>> CompleteTask(int id)
     {
-        var task = await taskRepository.GetTaskByIdAsync(id);
+        var task = await uow.TimeTaskRepository.GetTaskByIdAsync(id);
 
         if (task is null) return NotFound();
 
@@ -360,7 +359,7 @@ public class TasksController(
         task.Status = TimeTaskStatus.Completed;
         task.CompletedAtUtc = DateTime.UtcNow;
         task.UpdatedAtUtc = DateTime.UtcNow;
-        await messageRepository.CloseTaskConversationAsync(task.Id);
+        await uow.MessageRepository.CloseTaskConversationAsync(task.Id);
 
         var completionNotification = notificationService.Create(
             task.AcceptedByMemberId,
@@ -378,17 +377,17 @@ public class TasksController(
             Note = $"Completed task: {task.Title}"
         };
 
-        taskRepository.AddTransaction(transaction);
-        taskRepository.Update(task);
+        uow.TimeTaskRepository.AddTransaction(transaction);
+        uow.TimeTaskRepository.Update(task);
 
-        if (!await taskRepository.SaveAllAsync())
+        if (!await uow.Complete())
         {
             return BadRequest("Failed to complete task");
         }
 
         await notificationService.SendAsync(completionNotification);
 
-        var createdTransaction = await taskRepository.GetTransactionForTaskAsync(task.Id);
+        var createdTransaction = await uow.TimeTaskRepository.GetTransactionForTaskAsync(task.Id);
 
         if (createdTransaction is null) return BadRequest("Failed to load time transaction");
 
@@ -400,3 +399,5 @@ public class TasksController(
         return dueAtUtc.HasValue && dueAtUtc.Value <= DateTime.UtcNow;
     }
 }
+
+

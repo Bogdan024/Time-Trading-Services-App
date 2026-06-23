@@ -2,6 +2,7 @@ import { DatePipe } from '@angular/common';
 import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog-service';
 import { MessageService } from '../../core/services/message-service';
 import { ToastService } from '../../core/services/toast-service';
 import { Conversation, ConversationInboxType, Message, conversationStatusLabel } from '../../types/message';
@@ -14,6 +15,7 @@ import { Pagination } from '../../types/pagination';
   styleUrl: './messages.css',
 })
 export class Messages implements OnInit, OnDestroy {
+  private confirmDialog = inject(ConfirmDialogService);
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
@@ -83,7 +85,14 @@ export class Messages implements OnInit, OnDestroy {
     });
   }
 
-  protected deleteMessage(message: Message) {
+  protected async deleteMessage(message: Message) {
+    const confirmed = await this.confirmDialog.confirm(
+      'Delete this message?',
+      'It will be removed from your view of this conversation.'
+    );
+
+    if (!confirmed) return;
+
     this.messageService.deleteMessage(message.id).subscribe({
       next: () => {
         this.messages.update((messages) => messages.filter((x) => x.id !== message.id));
@@ -285,3 +294,5 @@ type ConversationSelectionOptions = {
   selectedTaskId?: number;
   selectedGroupId?: number;
 };
+
+

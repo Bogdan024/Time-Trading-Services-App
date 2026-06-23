@@ -8,13 +8,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class GroupsController(IGroupRepository groupRepository, IMessageRepository messageRepository) : BaseApiController
+public class GroupsController(IUnitOfWork uow) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<GroupDto>>> GetGroups()
     {
         var memberId = User.GetMemberId();
-        var groups = await groupRepository.GetGroupsAsync(memberId);
+        var groups = await uow.GroupRepository.GetGroupsAsync(memberId);
 
         return Ok(groups.Select(x => x.ToDto(memberId)));
     }
@@ -23,7 +23,7 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
     public async Task<ActionResult<GroupDto>> GetGroup(int id)
     {
         var memberId = User.GetMemberId();
-        var group = await groupRepository.GetGroupByIdAsync(id, memberId);
+        var group = await uow.GroupRepository.GetGroupByIdAsync(id, memberId);
 
         if (group is null) return NotFound();
 
@@ -36,7 +36,7 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
         var memberId = User.GetMemberId();
         var name = createGroupDto.Name.Trim();
 
-        if (await groupRepository.GroupNameExistsAsync(name))
+        if (await uow.GroupRepository.GroupNameExistsAsync(name))
         {
             return BadRequest("A group with this name already exists");
         }
@@ -60,11 +60,11 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
             ]
         };
 
-        groupRepository.AddGroup(group);
+        uow.GroupRepository.AddGroup(group);
 
-        if (!await groupRepository.SaveAllAsync()) return BadRequest("Failed to create group");
+        if (!await uow.Complete()) return BadRequest("Failed to create group");
 
-        var createdGroup = await groupRepository.GetGroupByIdAsync(group.Id, memberId);
+        var createdGroup = await uow.GroupRepository.GetGroupByIdAsync(group.Id, memberId);
 
         if (createdGroup is null) return BadRequest("Failed to load created group");
 
@@ -75,17 +75,17 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
     public async Task<ActionResult<GroupDto>> JoinGroup(int id)
     {
         var memberId = User.GetMemberId();
-        var group = await groupRepository.GetGroupByIdAsync(id, memberId);
+        var group = await uow.GroupRepository.GetGroupByIdAsync(id, memberId);
 
         if (group is null) return NotFound();
         if (group.ModerationStatus != ModerationStatus.Approved) return BadRequest("Group must be approved before members can join");
 
-        await messageRepository.GetOrCreateGroupConversationAsync(group);
-        groupRepository.JoinGroup(group, memberId);
+        await uow.MessageRepository.GetOrCreateGroupConversationAsync(group);
+        uow.GroupRepository.JoinGroup(group, memberId);
 
-        if (!await groupRepository.SaveAllAsync()) return BadRequest("Failed to join group");
+        if (!await uow.Complete()) return BadRequest("Failed to join group");
 
-        var updatedGroup = await groupRepository.GetGroupByIdAsync(id, memberId);
+        var updatedGroup = await uow.GroupRepository.GetGroupByIdAsync(id, memberId);
 
         if (updatedGroup is null) return BadRequest("Failed to load group");
 
@@ -96,18 +96,16 @@ public class GroupsController(IGroupRepository groupRepository, IMessageReposito
     public async Task<ActionResult> LeaveGroup(int id)
     {
         var memberId = User.GetMemberId();
-        var group = await groupRepository.GetGroupByIdAsync(id, memberId);
+        var group = await uow.GroupRepository.GetGroupByIdAsync(id, memberId);
 
         if (group is null) return NotFound();
         if (group.OwnerMemberId == memberId) return BadRequest("Group owner cannot leave the group");
-        if (!await groupRepository.IsGroupMemberAsync(id, memberId)) return BadRequest("You are not a member of this group");
+        if (!await uow.GroupRepository.IsGroupMemberAsync(id, memberId)) return BadRequest("You are not a member of this group");
 
-        groupRepository.LeaveGroup(group, memberId);
+        uow.GroupRepository.LeaveGroup(group, memberId);
 
-        if (await groupRepository.SaveAllAsync()) return NoContent();
+        if (await uow.Complete()) return NoContent();
 
         return BadRequest("Failed to leave group");
     }
 }
-
-

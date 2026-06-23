@@ -1,5 +1,5 @@
-import { Component, HostListener, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { AccountService } from '../../core/services/account-service';
@@ -22,6 +22,7 @@ export class Nav {
   private toast = inject(ToastService);
   protected creds = {} as LoginCreds;
   protected readonly isScrolled = signal(false);
+  protected readonly loginLoading = signal(false);
 
   @HostListener('window:scroll')
   onWindowScroll() {
@@ -29,14 +30,17 @@ export class Nav {
   }
 
   login() {
+    this.loginLoading.set(true);
     this.accountService.login(this.creds).subscribe({
       next: () => {
         this.creds = {} as LoginCreds;
         this.router.navigateByUrl('/tasks');
         this.toast.success('Signed in');
+        this.loginLoading.set(false);
       },
       error: (error) => {
         this.toast.error(error.error ?? 'Login failed');
+        this.loginLoading.set(false);
       },
     });
   }
@@ -44,6 +48,12 @@ export class Nav {
   logout() {
     this.accountService.logout();
     this.router.navigateByUrl('/');
+  }
+
+  protected handleSelectUserItem() {
+    const activeElement = document.activeElement as HTMLElement | null;
+
+    activeElement?.blur();
   }
 
   protected openNotification(notification: AppNotification) {

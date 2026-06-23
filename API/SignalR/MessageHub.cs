@@ -9,7 +9,7 @@ namespace API.SignalR;
 
 [Authorize]
 public class MessageHub(
-    IMessageRepository messageRepository,
+    IUnitOfWork uow,
     ConversationPresenceTracker conversationPresenceTracker,
     IHubContext<PresenceHub> presenceHub) : Hub
 {
@@ -19,7 +19,7 @@ public class MessageHub(
     {
         var conversationId = GetConversationId();
         var memberId = GetMemberId();
-        var conversation = await messageRepository.GetConversationForMemberAsync(conversationId, memberId);
+        var conversation = await uow.MessageRepository.GetConversationForMemberAsync(conversationId, memberId);
 
         if (conversation is null)
         {
@@ -29,14 +29,14 @@ public class MessageHub(
         Context.Items[ConversationIdKey] = conversationId;
         await Groups.AddToGroupAsync(Context.ConnectionId, GetSignalRGroupName(conversationId));
         await conversationPresenceTracker.UserJoinedConversation(conversationId, memberId, Context.ConnectionId);
-        await messageRepository.MarkConversationReadAsync(conversationId, memberId);
+        await uow.MessageRepository.MarkConversationReadAsync(conversationId, memberId);
     }
 
     public async Task SendMessage(CreateMessageDto createMessageDto)
     {
         var conversationId = GetStoredConversationId();
         var memberId = GetMemberId();
-        var conversation = await messageRepository.GetConversationForMemberAsync(conversationId, memberId);
+        var conversation = await uow.MessageRepository.GetConversationForMemberAsync(conversationId, memberId);
 
         if (conversation is null)
         {
@@ -62,14 +62,14 @@ public class MessageHub(
             Content = content
         };
 
-        messageRepository.AddMessage(message);
+        uow.MessageRepository.AddMessage(message);
 
-        if (!await messageRepository.SaveAllAsync())
+        if (!await uow.Complete())
         {
             throw new HubException("Failed to send message");
         }
 
-        var createdMessage = await messageRepository.GetMessageForMemberAsync(message.Id, memberId);
+        var createdMessage = await uow.MessageRepository.GetMessageForMemberAsync(message.Id, memberId);
 
         if (createdMessage is null)
         {
@@ -80,7 +80,7 @@ public class MessageHub(
 
         foreach (var activeMemberId in activeMembers.Where(x => x != memberId))
         {
-            await messageRepository.MarkConversationReadAsync(conversation.Id, activeMemberId);
+            await uow.MessageRepository.MarkConversationReadAsync(conversation.Id, activeMemberId);
         }
 
         await Clients.Group(GetSignalRGroupName(conversation.Id)).SendAsync("NewMessage", createdMessage.ToDto(memberId));
@@ -149,3 +149,5 @@ public class MessageHub(
         return $"conversation-{conversationId}";
     }
 }
+
+
