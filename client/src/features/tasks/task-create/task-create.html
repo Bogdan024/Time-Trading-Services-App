@@ -95,9 +95,12 @@
                 }
               </select>
             </label>
-
-            <app-text-input label="City" formControlName="city" />
-            <app-text-input label="Country code" placeholder="RO" formControlName="countryCode" />
+            <div class="md:col-span-2">
+              <app-location-picker (locationSelected)="onLocationSelected($event)" (locationCleared)="onLocationCleared()" />
+              @if (!selectedLocation() && currentStep() === 2) {
+                <p class="mt-2 text-xs text-error">Choose a task location from the suggestions.</p>
+              }
+            </div>
           </div>
         </section>
       }
@@ -155,9 +158,12 @@
 
             <div class="rounded-3xl tt-surface-2 p-4">
               <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Location</p>
-              <p class="mt-2 font-semibold text-slate-800">
-                {{ form.value.city || 'City' }}{{ form.value.countryCode ? ', ' + form.value.countryCode.toUpperCase() : ', country' }}
-              </p>
+              @if (selectedLocation(); as location) {
+                <p class="safe-user-text mt-2 font-semibold text-slate-800">{{ location.formattedAddress }}</p>
+                <p class="mt-1 text-sm text-slate-600">{{ location.city }}, {{ location.countryCode }}</p>
+              } @else {
+                <p class="mt-2 font-semibold text-slate-800">No location selected</p>
+              }
             </div>
 
             <div class="rounded-3xl tt-surface-2 p-4">
@@ -197,3 +203,4 @@
     </div>
   </form>
 </section>
+

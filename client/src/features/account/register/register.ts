@@ -13,20 +13,22 @@ import { finalize, switchMap } from 'rxjs';
 import { AccountService } from '../../../core/services/account-service';
 import { MemberService } from '../../../core/services/member-service';
 import { ServiceCategoryService } from '../../../core/services/service-category-service';
+import { AvailabilityEditor, AvailabilitySlotRemove } from '../../../shared/availability-editor/availability-editor';
+import { LocationPicker } from '../../../shared/location-picker/location-picker';
+import { ServicePreferenceEditor } from '../../../shared/service-preference-editor/service-preference-editor';
+import { TextInput } from '../../../shared/text-input/text-input';
 import {
   MemberAvailabilitySlotEdit,
   MemberServiceCategoryEdit,
   ServiceCategory,
   ServicePreferenceItem,
 } from '../../../types/member';
+import { TaskLocation } from '../../../types/task';
 import { RegisterCreds } from '../../../types/user';
-import { TextInput } from '../../../shared/text-input/text-input';
-import { ServicePreferenceEditor } from '../../../shared/service-preference-editor/service-preference-editor';
-import { AvailabilityEditor, AvailabilitySlotRemove } from '../../../shared/availability-editor/availability-editor';
 
 @Component({
   selector: 'app-register',
-  imports: [AvailabilityEditor, ReactiveFormsModule, ServicePreferenceEditor, TextInput],
+  imports: [AvailabilityEditor, LocationPicker, ReactiveFormsModule, ServicePreferenceEditor, TextInput],
   templateUrl: './register.html',
   styleUrl: './register.css',
 })
@@ -45,6 +47,7 @@ export class Register implements OnInit {
   protected selectedSkills = signal<MemberServiceCategoryEdit[]>([]);
   protected selectedNeeds = signal<MemberServiceCategoryEdit[]>([]);
   protected selectedAvailabilitySlots = signal<MemberAvailabilitySlotEdit[]>([]);
+  protected selectedProfileLocation = signal<TaskLocation | null>(null);
   protected readonly steps = ['Account', 'Profile', 'Skills', 'Needs', 'Availability', 'Review'];
 
   protected credentialsForm: FormGroup;
@@ -54,7 +57,7 @@ export class Register implements OnInit {
     this.credentialsForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       displayName: ['', [Validators.required, Validators.maxLength(80)]],
-      password: ['', [Validators.required, Validators.minLength(4), Validators.maxLength(64)]],
+      password: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(64), this.passwordPolicyValidator()]],
       confirmPassword: ['', [Validators.required, this.matchValues('password')]],
     });
 
@@ -71,6 +74,11 @@ export class Register implements OnInit {
   }
 
   ngOnInit(): void {
+    if (this.accountService.currentUser()) {
+      this.router.navigateByUrl('/tasks');
+      return;
+    }
+
     this.serviceCategoryService.getServiceCategories().subscribe({
       next: (categories) => this.serviceCategories.set(categories),
     });
@@ -94,6 +102,22 @@ export class Register implements OnInit {
     if (this.currentStep() === 2) return this.profileForm.valid;
 
     return true;
+  }
+
+  protected onProfileLocationSelected(location: TaskLocation) {
+    this.selectedProfileLocation.set(location);
+    this.profileForm.patchValue({
+      city: location.city,
+      countryCode: location.countryCode,
+    });
+  }
+
+  protected onProfileLocationCleared() {
+    this.selectedProfileLocation.set(null);
+    this.profileForm.patchValue({
+      city: '',
+      countryCode: '',
+    });
   }
 
   protected addSkill(skill: MemberServiceCategoryEdit) {
@@ -121,6 +145,11 @@ export class Register implements OnInit {
   }
 
   protected register() {
+    if (this.accountService.currentUser()) {
+      this.router.navigateByUrl('/tasks');
+      return;
+    }
+
     if (this.credentialsForm.invalid || this.profileForm.invalid) {
       this.credentialsForm.markAllAsTouched();
       this.profileForm.markAllAsTouched();
@@ -164,6 +193,19 @@ export class Register implements OnInit {
     this.cancelRegister.emit(false);
   }
 
+  private passwordPolicyValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? '');
+      const errors: ValidationErrors = {};
+
+      if (!/\d/.test(value)) errors['passwordRequiresDigit'] = true;
+      if (!/[a-z]/.test(value)) errors['passwordRequiresLowercase'] = true;
+      if (!/[A-Z]/.test(value)) errors['passwordRequiresUppercase'] = true;
+
+      return Object.keys(errors).length ? errors : null;
+    };
+  }
+
   private matchValues(matchTo: string): ValidatorFn {
     return (control: AbstractControl): ValidationErrors | null => {
       const parent = control.parent;
@@ -175,7 +217,9 @@ export class Register implements OnInit {
 
   private markCurrentStepTouched() {
     if (this.currentStep() === 1) this.credentialsForm.markAllAsTouched();
-    if (this.currentStep() === 2) this.profileForm.markAllAsTouched();
+    if (this.currentStep() === 2) {
+      this.profileForm.markAllAsTouched();
+    }
   }
 
   private normalizeErrors(error: unknown) {
@@ -185,3 +229,8 @@ export class Register implements OnInit {
     return ['Something went wrong while creating your account'];
   }
 }
+
+
+
+
+

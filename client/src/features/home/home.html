@@ -11,7 +11,11 @@
           hour you can get back.
         </p>
         <div class="mt-8 flex flex-wrap items-center gap-4">
-          <button (click)="showRegister(true)" class="btn home-primary btn-lg">Join the time bank</button>
+          @if (!accountService.currentUser()) {
+            <button (click)="showRegister(true)" class="btn home-primary btn-lg">Join the time bank</button>
+          } @else {
+            <a routerLink="/tasks" class="btn home-primary btn-lg">Go to tasks</a>
+          }
         </div>
 
         <div class="home-metrics mt-10 grid max-w-lg grid-cols-3 gap-4">
@@ -20,7 +24,7 @@
             <p class="metric-label">= 1 credit</p>
           </div>
           <div>
-            <div class="metric-value">8</div>
+            <div class="metric-value">23</div>
             <p class="metric-label">categories</p>
           </div>
           <div>
@@ -70,3 +74,4 @@
     </div>
   }
 </div>
+

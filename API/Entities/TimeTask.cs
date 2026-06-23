@@ -22,6 +22,15 @@ public class TimeTask
     [MaxLength(2)]
     public string? CountryCode { get; set; }
 
+    [MaxLength(250)]
+    public string? FormattedAddress { get; set; }
+
+    [MaxLength(150)]
+    public string? PlaceId { get; set; }
+
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAtUtc { get; set; }
     public DateTime? DueAtUtc { get; set; }

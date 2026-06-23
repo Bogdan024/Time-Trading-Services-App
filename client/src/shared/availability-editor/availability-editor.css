@@ -1,0 +1,15 @@
+:host select {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+:host form {
+  container-type: inline-size;
+}
+
+@container (max-width: 34rem) {
+  :host form > div {
+    grid-template-columns: 1fr !important;
+  }
+}

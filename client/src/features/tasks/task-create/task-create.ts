@@ -4,13 +4,14 @@ import { Router, RouterLink } from '@angular/router';
 import { ServiceCategoryService } from '../../../core/services/service-category-service';
 import { TaskService } from '../../../core/services/task-service';
 import { ToastService } from '../../../core/services/toast-service';
+import { LocationPicker } from '../../../shared/location-picker/location-picker';
 import { TextInput } from '../../../shared/text-input/text-input';
 import { ServiceCategory } from '../../../types/member';
-import { CreateTimeTask, TaskLocationMode } from '../../../types/task';
+import { CreateTimeTask, TaskLocation, TaskLocationMode } from '../../../types/task';
 
 @Component({
   selector: 'app-task-create',
-  imports: [ReactiveFormsModule, RouterLink, TextInput],
+  imports: [ReactiveFormsModule, RouterLink, TextInput, LocationPicker],
   templateUrl: './task-create.html',
   styleUrl: './task-create.css',
 })
@@ -23,6 +24,7 @@ export class TaskCreate implements OnInit {
 
   protected currentStep = signal(1);
   protected serviceCategories = signal<ServiceCategory[]>([]);
+  protected selectedLocation = signal<TaskLocation | null>(null);
   protected validationErrors = signal<string[]>([]);
   protected loading = signal(false);
   protected readonly steps = ['Task details', 'Exchange and location', 'Due window', 'Review'];
@@ -41,8 +43,6 @@ export class TaskCreate implements OnInit {
       serviceCategoryId: [0, [Validators.required, Validators.min(1)]],
       estimatedHours: [1, [Validators.required, Validators.min(1), Validators.max(10)]],
       locationMode: [3, Validators.required],
-      city: ['', [Validators.required, Validators.maxLength(80)]],
-      countryCode: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(2), Validators.pattern(/^[a-zA-Z]{2}$/)]],
       dueDate: [''],
       dueTime: [''],
     },
@@ -74,19 +74,22 @@ export class TaskCreate implements OnInit {
     }
 
     if (this.currentStep() === 2) {
-      return (
-        this.form.controls.estimatedHours.valid &&
-        this.form.controls.locationMode.valid &&
-        this.form.controls.city.valid &&
-        this.form.controls.countryCode.valid
-      );
+      return this.form.controls.estimatedHours.valid && this.form.controls.locationMode.valid && !!this.selectedLocation();
     }
 
     if (this.currentStep() === 3) {
       return !this.form.hasError('incompleteDueDate') && !this.form.hasError('dueDateInPast');
     }
 
-    return this.form.valid;
+    return this.form.valid && !!this.selectedLocation();
+  }
+
+  protected onLocationSelected(location: TaskLocation) {
+    this.selectedLocation.set(location);
+  }
+
+  protected onLocationCleared() {
+    this.selectedLocation.set(null);
   }
 
   protected selectedCategoryName() {
@@ -98,8 +101,11 @@ export class TaskCreate implements OnInit {
   }
 
   protected createTask() {
-    if (this.form.invalid) {
+    const location = this.selectedLocation();
+
+    if (this.form.invalid || !location) {
       this.form.markAllAsTouched();
+      if (!location) this.validationErrors.set(['Choose a task location from the suggestions before posting']);
       return;
     }
 
@@ -113,8 +119,12 @@ export class TaskCreate implements OnInit {
       serviceCategoryId: Number(value.serviceCategoryId),
       estimatedHours: Number(value.estimatedHours),
       locationMode: Number(value.locationMode) as TaskLocationMode,
-      city: value.city?.trim(),
-      countryCode: value.countryCode?.trim().toUpperCase(),
+      city: location.city,
+      countryCode: location.countryCode,
+      formattedAddress: location.formattedAddress,
+      latitude: location.latitude,
+      longitude: location.longitude,
+      placeId: location.placeId,
       dueAtUtc: this.getDueAtUtc(),
     };
 
@@ -140,8 +150,6 @@ export class TaskCreate implements OnInit {
     if (this.currentStep() === 2) {
       this.form.controls.estimatedHours.markAsTouched();
       this.form.controls.locationMode.markAsTouched();
-      this.form.controls.city.markAsTouched();
-      this.form.controls.countryCode.markAsTouched();
     }
 
     if (this.currentStep() === 3) {
@@ -178,3 +186,4 @@ export class TaskCreate implements OnInit {
     return ['Something went wrong while creating the task'];
   }
 }
+

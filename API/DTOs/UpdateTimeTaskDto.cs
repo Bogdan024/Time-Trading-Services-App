@@ -30,6 +30,19 @@ public class UpdateTimeTaskDto
     [StringLength(2, MinimumLength = 2)]
     public required string CountryCode { get; set; }
 
+    [Required]
+    [StringLength(250)]
+    public required string FormattedAddress { get; set; }
+
+    [StringLength(150)]
+    public string? PlaceId { get; set; }
+
+    [Range(-90, 90)]
+    public double Latitude { get; set; }
+
+    [Range(-180, 180)]
+    public double Longitude { get; set; }
+
     public DateTime? DueAtUtc { get; set; }
 }
 

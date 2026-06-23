@@ -44,10 +44,18 @@
 
         @if (currentStep() === 2) {
           <form [formGroup]="profileForm" class="grid gap-4">
-            <div class="grid gap-4 md:grid-cols-2">
-              <app-text-input label="City" formControlName="city" />
-              <app-text-input label="Country code" placeholder="RO" formControlName="countryCode" />
-            </div>
+            <app-location-picker
+              label="Profile location"
+              helperText="Choose your city or area. We only save city and country code for your profile."
+              placeholder="Search your city or area"
+              selectedLabel="Selected profile location"
+              (locationSelected)="onProfileLocationSelected($event)"
+              (locationCleared)="onProfileLocationCleared()"
+            />
+
+            @if (profileForm.controls['city'].invalid && profileForm.controls['city'].touched) {
+              <span class="text-xs text-error">Choose a profile location from the suggestions.</span>
+            }
 
             <label class="form-control text-left">
               <span class="label-text font-semibold text-slate-700">About</span>
@@ -59,11 +67,6 @@
               @if (profileForm.controls['about'].hasError('maxlength') && profileForm.controls['about'].touched) {
                 <span class="mt-1 text-xs text-error">About must be at most 1000 characters</span>
               }
-            </label>
-
-            <label class="flex items-center gap-3 text-sm font-semibold text-slate-700">
-              <input type="checkbox" class="checkbox" formControlName="isProfilePublic" />
-              Show my profile in the community
             </label>
           </form>
         }
@@ -141,20 +144,32 @@
         </div>
       }
 
-      <div class="mt-8 flex items-center justify-between gap-3">
-        <button type="button" class="btn register-cancel" [disabled]="currentStep() === 1 || loading()" (click)="previousStep()">Back</button>
+      <div class="mt-8 grid gap-3">
 
-        @if (currentStep() < steps.length) {
-          <button type="button" class="btn register-submit" [disabled]="!canContinue() || loading()" (click)="nextStep()">Continue</button>
-        } @else {
-          <button type="button" class="btn register-submit" [disabled]="loading()" (click)="register()">
-            @if (loading()) {
-              <span class="loading loading-spinner loading-sm"></span>
-            }
-            Create account
-          </button>
-        }
+        <div class="flex items-center justify-between gap-3">
+          @if (currentStep() > 1) {
+            <button type="button" class="btn register-cancel" [disabled]="loading()" (click)="previousStep()">Back</button>
+          } @else {
+            <span aria-hidden="true"></span>
+          }
+
+          @if (currentStep() < steps.length) {
+            <button type="button" class="btn register-submit" [class.register-submit-disabled]="!canContinue()" [disabled]="!canContinue() || loading()" (click)="nextStep()">Continue</button>
+          } @else {
+            <button type="button" class="btn register-submit" [disabled]="loading()" (click)="register()">
+              @if (loading()) {
+                <span class="loading loading-spinner loading-sm"></span>
+              }
+              Create account
+            </button>
+          }
+        </div>
       </div>
     </section>
   </div>
 </div>
+
+
+
+
+

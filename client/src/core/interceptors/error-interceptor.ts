@@ -2,6 +2,7 @@ import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { NavigationExtras, Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { ToastService } from '../services/toast-service';
 import { AccountService } from '../services/account-service';
 
@@ -45,12 +46,18 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
               );
             }
 
-            toast.error('Unauthorized');
+            if (isAppApiRequest(req.url)) {
+              toast.error('Unauthorized');
+            }
             break;
           case 404:
-            router.navigateByUrl('/not-found');
+            if (isAppApiRequest(req.url)) {
+              router.navigateByUrl('/not-found');
+            }
             break;
           case 500: {
+            if (!isAppApiRequest(req.url)) break;
+
             const navigationExtras: NavigationExtras = {
               state: { error: error.error },
             };
@@ -58,7 +65,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             break;
           }
           default:
-            toast.error('Something went wrong');
+            if (isAppApiRequest(req.url)) {
+              toast.error('Something went wrong');
+            }
             break;
         }
       }
@@ -69,7 +78,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 };
 
 function shouldAttemptRefresh(url: string, accountService: AccountService) {
-  return !!accountService.currentUser() && !isAuthRequest(url);
+  return isAppApiRequest(url) && !!accountService.currentUser() && !isAuthRequest(url);
+}
+
+function isAppApiRequest(url: string) {
+  return url.startsWith(environment.apiUrl);
 }
 
 function isAuthRequest(url: string) {
@@ -82,4 +95,3 @@ function isAuthRequest(url: string) {
 function isRefreshRequest(url: string) {
   return url.includes('account/refresh-token');
 }
-

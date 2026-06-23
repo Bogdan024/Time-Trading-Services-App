@@ -1,6 +1,6 @@
 @if (task(); as task) {
   <section class="mx-auto max-w-5xl px-4 py-8">
-    <a [routerLink]="backLink()" class="mb-5 inline-block text-sm font-semibold text-hearth-muted hover:text-[var(--hearth-ink)]">← {{ backLabel() }}</a>
+    <a [routerLink]="backLink()" class="mb-5 inline-block text-sm font-semibold text-hearth-muted hover:text-[--hearth-ink]">← {{ backLabel() }}</a>
 
     <div class="civic-card overflow-hidden rounded-[1.4rem] p-8">
       <div class="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
@@ -35,8 +35,8 @@
         </div>
         <div class="tt-surface-2 rounded-2xl p-4">
           <p class="text-xs uppercase tracking-[0.16em] text-slate-500">Location</p>
-          <p class="mt-1 font-semibold text-slate-800">
-            {{ task.city || 'Flexible' }}{{ task.countryCode ? ', ' + task.countryCode : '' }}
+          <p class="safe-user-text mt-1 font-semibold text-slate-800">
+            {{ task.formattedAddress || task.city || 'Flexible' }}{{ !task.formattedAddress && task.countryCode ? ', ' + task.countryCode : '' }}
           </p>
         </div>
         <div class="tt-surface-2 rounded-2xl p-4">
@@ -47,9 +47,15 @@
         </div>
       </div>
 
+      @if (task.latitude != null && task.longitude != null) {
+        <div class="mt-6">
+          <app-task-location-map [latitude]="task.latitude" [longitude]="task.longitude" [label]="task.formattedAddress || task.title" />
+        </div>
+      }
+
       @if (task.acceptedByMember) {
         <div class="mt-6 tt-surface-2 rounded-2xl p-4 text-sm text-slate-600">
-          Accepted by
+          Assigned to
           <a [routerLink]="['/members', task.acceptedByMember.id]" class="font-semibold text-slate-800">
             {{ task.acceptedByMember.displayName }}
           </a>

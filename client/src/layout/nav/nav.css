@@ -104,3 +104,10 @@
     flex: 1 1 12rem;
   }
 }
+.nav-balance {
+  border: 1px solid var(--hearth-line);
+  background: var(--hearth-credit-bg);
+  color: var(--hearth-credit-ink);
+  white-space: nowrap;
+}
+

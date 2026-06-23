@@ -10,31 +10,43 @@
     [placeholder]="placeholder() || label()"
   />
 
-  @if (control.hasError('required') && control.touched) {
-    <span class="mt-1 text-xs text-error">{{ label() }} is required</span>
-  }
+  @if (control.invalid && control.touched) {
+    <div class="field-errors mt-2 grid gap-1 text-xs text-error">
+      @if (control.hasError('required')) {
+        <span>{{ label() }} is required</span>
+      }
 
-  @if (control.hasError('email') && control.touched) {
-    <span class="mt-1 text-xs text-error">Enter a valid email address</span>
-  }
+      @if (control.hasError('email')) {
+        <span>Enter a valid email address</span>
+      }
 
-  @if (control.hasError('minlength') && control.touched) {
-    <span class="mt-1 text-xs text-error">
-      {{ label() }} must be at least {{ control.errors?.['minlength'].requiredLength }} characters
-    </span>
-  }
+      @if (control.hasError('minlength')) {
+        <span>{{ label() }} must be at least {{ control.errors?.['minlength'].requiredLength }} characters</span>
+      }
 
-  @if (control.hasError('maxlength') && control.touched) {
-    <span class="mt-1 text-xs text-error">
-      {{ label() }} must be at most {{ control.errors?.['maxlength'].requiredLength }} characters
-    </span>
-  }
+      @if (control.hasError('maxlength')) {
+        <span>{{ label() }} must be at most {{ control.errors?.['maxlength'].requiredLength }} characters</span>
+      }
 
-  @if (control.hasError('pattern') && control.touched) {
-    <span class="mt-1 text-xs text-error">Use a valid format for {{ label() }}</span>
-  }
+      @if (control.hasError('passwordRequiresDigit')) {
+        <span>Password must contain at least one digit</span>
+      }
 
-  @if (control.hasError('passwordMismatch') && control.touched) {
-    <span class="mt-1 text-xs text-error">Passwords do not match</span>
+      @if (control.hasError('passwordRequiresLowercase')) {
+        <span>Password must contain at least one lowercase letter</span>
+      }
+
+      @if (control.hasError('passwordRequiresUppercase')) {
+        <span>Password must contain at least one uppercase letter</span>
+      }
+
+      @if (control.hasError('pattern')) {
+        <span>Use a valid format for {{ label() }}</span>
+      }
+
+      @if (control.hasError('passwordMismatch')) {
+        <span>Passwords do not match</span>
+      }
+    </div>
   }
 </label>

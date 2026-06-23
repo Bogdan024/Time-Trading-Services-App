@@ -6,12 +6,13 @@ import { AccountService } from '../../../core/services/account-service';
 import { TaskService } from '../../../core/services/task-service';
 import { ReportService } from '../../../core/services/report-service';
 import { ToastService } from '../../../core/services/toast-service';
+import { TaskLocationMap } from '../../../shared/task-location-map/task-location-map';
 import { TaskApplication, TimeTask } from '../../../types/task';
 import { ReportReason, ReportTargetType } from '../../../types/moderation';
 
 @Component({
   selector: 'app-task-detail',
-  imports: [DatePipe, FormsModule, RouterLink],
+  imports: [DatePipe, FormsModule, RouterLink, TaskLocationMap],
   templateUrl: './task-detail.html',
   styleUrl: './task-detail.css',
 })
@@ -198,6 +199,4 @@ export class TaskDetail implements OnInit {
     });
   }
 }
-
-
 

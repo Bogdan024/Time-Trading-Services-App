@@ -3,11 +3,13 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { GroupService } from '../../../core/services/group-service';
 import { ToastService } from '../../../core/services/toast-service';
+import { LocationPicker } from '../../../shared/location-picker/location-picker';
 import { CommunityGroup, CreateGroup } from '../../../types/group';
+import { TaskLocation } from '../../../types/task';
 
 @Component({
   selector: 'app-group-list',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, LocationPicker, RouterLink],
   templateUrl: './group-list.html',
   styleUrl: './group-list.css',
 })
@@ -50,7 +52,20 @@ export class GroupList implements OnInit {
   }
 
   protected canCreateGroup() {
-    return this.groupForm.name.trim().length >= 3 && this.groupForm.description.trim().length >= 10;
+    return this.groupForm.name.trim().length >= 3
+      && this.groupForm.description.trim().length >= 10
+      && !!this.groupForm.city?.trim()
+      && !!this.groupForm.countryCode?.trim();
+  }
+
+  protected onGroupLocationSelected(location: TaskLocation) {
+    this.groupForm.city = location.city;
+    this.groupForm.countryCode = location.countryCode;
+  }
+
+  protected onGroupLocationCleared() {
+    this.groupForm.city = '';
+    this.groupForm.countryCode = '';
   }
 
   private loadGroups() {
@@ -83,5 +98,3 @@ export class GroupList implements OnInit {
     };
   }
 }
-
-

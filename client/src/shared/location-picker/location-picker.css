@@ -1,0 +1,25 @@
+.location-results {
+  box-shadow: 0 18px 50px rgba(44, 39, 35, 0.08);
+}
+
+.location-result {
+  display: block;
+  width: 100%;
+  padding: 1rem 1.1rem;
+  text-align: left;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.location-result + .location-result {
+  border-top: 1px solid var(--hearth-line);
+}
+
+.location-result:hover,
+.location-result:focus-visible {
+  background: var(--hearth-surface-2);
+  outline: none;
+}
+
+.selected-location {
+  border: 1px solid rgba(231, 221, 205, 0.75);
+}

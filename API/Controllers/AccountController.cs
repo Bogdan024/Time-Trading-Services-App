@@ -17,6 +17,11 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
     {
+        if (User.Identity?.IsAuthenticated == true)
+        {
+            return BadRequest("Signed-in users cannot create a new account");
+        }
+
         var email = registerDto.Email.Trim().ToLowerInvariant();
         var displayName = registerDto.DisplayName.Trim();
         var city = registerDto.City.Trim();
@@ -221,3 +226,4 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         return await userManager.FindByEmailAsync(email) is not null;
     }
 }
+

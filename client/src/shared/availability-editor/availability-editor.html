@@ -13,7 +13,7 @@
   <form [formGroup]="form" class="mt-4 grid gap-3 rounded-2xl tt-surface-2 p-3" (ngSubmit)="addAvailabilitySlot()">
     <div
       class="grid gap-2"
-      [class.md:grid-cols-[1fr_1fr_1fr_1fr_auto]]="layout() === 'wide'"
+      [class.md:grid-cols-[minmax(8.5rem,1fr)_minmax(9.5rem,1fr)_minmax(8.5rem,1fr)_auto]]="layout() === 'wide'"
       [class.grid-cols-1]="layout() === 'compact'"
     >
       <select class="select select-sm w-full rounded-2xl" formControlName="dayOfWeek">
@@ -22,7 +22,7 @@
         }
       </select>
 
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid min-w-0 grid-cols-2 gap-2">
         <select class="select select-sm w-full rounded-2xl" formControlName="startHour">
           @for (hour of startHours; track hour) {
             <option [ngValue]="hour">{{ hour }}:00</option>
@@ -42,7 +42,7 @@
         }
       </select>
 
-      <button type="submit" class="btn btn-sm rounded-full" [class.w-full]="layout() === 'compact'">{{ addButtonText() }}</button>
+      <button type="submit" class="btn btn-sm rounded-full px-5" [class.w-full]="layout() === 'compact'">{{ addButtonText() }}</button>
     </div>
 
     @if (validationError()) {
@@ -66,3 +66,4 @@
     }
   </div>
 </div>
+

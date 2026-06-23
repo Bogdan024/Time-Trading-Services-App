@@ -112,8 +112,12 @@ public class TasksController(
             ServiceCategoryId = createTaskDto.ServiceCategoryId,
             EstimatedHours = createTaskDto.EstimatedHours,
             LocationMode = createTaskDto.LocationMode,
-            City = createTaskDto.City,
-            CountryCode = createTaskDto.CountryCode,
+            City = createTaskDto.City.Trim(),
+            CountryCode = createTaskDto.CountryCode.Trim().ToUpperInvariant(),
+            FormattedAddress = createTaskDto.FormattedAddress.Trim(),
+            PlaceId = string.IsNullOrWhiteSpace(createTaskDto.PlaceId) ? null : createTaskDto.PlaceId.Trim(),
+            Latitude = createTaskDto.Latitude,
+            Longitude = createTaskDto.Longitude,
             DueAtUtc = createTaskDto.DueAtUtc,
             PostedByMemberId = memberId
         };
@@ -282,8 +286,12 @@ public class TasksController(
         task.ServiceCategoryId = updateTaskDto.ServiceCategoryId;
         task.EstimatedHours = updateTaskDto.EstimatedHours;
         task.LocationMode = updateTaskDto.LocationMode;
-        task.City = updateTaskDto.City;
-        task.CountryCode = updateTaskDto.CountryCode;
+        task.City = updateTaskDto.City.Trim();
+        task.CountryCode = updateTaskDto.CountryCode.Trim().ToUpperInvariant();
+        task.FormattedAddress = updateTaskDto.FormattedAddress.Trim();
+        task.PlaceId = string.IsNullOrWhiteSpace(updateTaskDto.PlaceId) ? null : updateTaskDto.PlaceId.Trim();
+        task.Latitude = updateTaskDto.Latitude;
+        task.Longitude = updateTaskDto.Longitude;
         task.DueAtUtc = updateTaskDto.DueAtUtc;
         task.UpdatedAtUtc = DateTime.UtcNow;
 
@@ -399,5 +407,4 @@ public class TasksController(
         return dueAtUtc.HasValue && dueAtUtc.Value <= DateTime.UtcNow;
     }
 }
-
 

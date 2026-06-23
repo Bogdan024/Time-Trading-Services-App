@@ -20,6 +20,10 @@ public static class TimeTaskExtensions
             LocationMode = task.LocationMode,
             City = task.City,
             CountryCode = task.CountryCode,
+            FormattedAddress = task.FormattedAddress,
+            PlaceId = task.PlaceId,
+            Latitude = task.Latitude,
+            Longitude = task.Longitude,
             CreatedAtUtc = task.CreatedAtUtc,
             UpdatedAtUtc = task.UpdatedAtUtc,
             DueAtUtc = task.DueAtUtc,
@@ -39,3 +43,4 @@ public static class TimeTaskExtensions
         };
     }
 }
+

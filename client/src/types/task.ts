@@ -4,6 +4,15 @@ export type TaskLocationMode = 1 | 2 | 3;
 export type TimeTaskStatus = 1 | 2 | 3 | 4;
 export type TaskApplicationStatus = 1 | 2 | 3 | 4;
 
+export type TaskLocation = {
+  city: string;
+  countryCode: string;
+  formattedAddress: string;
+  latitude: number;
+  longitude: number;
+  placeId?: string;
+};
+
 export type TaskMember = {
   id: string;
   displayName: string;
@@ -33,6 +42,10 @@ export type TimeTask = {
   locationMode: TaskLocationMode;
   city?: string;
   countryCode?: string;
+  formattedAddress?: string;
+  placeId?: string;
+  latitude?: number | null;
+  longitude?: number | null;
   createdAtUtc: string;
   updatedAtUtc?: string;
   dueAtUtc?: string;
@@ -52,8 +65,12 @@ export type CreateTimeTask = {
   serviceCategoryId: number;
   estimatedHours: number;
   locationMode: TaskLocationMode;
-  city?: string;
-  countryCode?: string;
+  city: string;
+  countryCode: string;
+  formattedAddress: string;
+  latitude: number;
+  longitude: number;
+  placeId?: string;
   dueAtUtc?: string;
 };
 
