@@ -131,6 +131,13 @@ public class MessageRepository(AppDbContext context) : IMessageRepository
         return messages;
     }
 
+    public async Task MarkConversationReadAsync(int conversationId, string memberId)
+    {
+        await context.ConversationParticipants
+            .Where(x => x.ConversationId == conversationId && x.MemberId == memberId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(x => x.LastReadAtUtc, DateTime.UtcNow));
+    }
+
     public async Task<Message?> GetMessageForMemberAsync(string messageId, string memberId)
     {
         return await context.Messages
@@ -187,3 +194,5 @@ public class MessageRepository(AppDbContext context) : IMessageRepository
         };
     }
 }
+
+

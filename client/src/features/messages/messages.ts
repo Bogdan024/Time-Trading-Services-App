@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnDestroy, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MessageService } from '../../core/services/message-service';
@@ -13,7 +13,7 @@ import { Pagination } from '../../types/pagination';
   templateUrl: './messages.html',
   styleUrl: './messages.css',
 })
-export class Messages implements OnInit {
+export class Messages implements OnInit, OnDestroy {
   private messageService = inject(MessageService);
   private route = inject(ActivatedRoute);
   private toast = inject(ToastService);
@@ -21,7 +21,7 @@ export class Messages implements OnInit {
   protected conversations = signal<Conversation[]>([]);
   protected conversationPagination = signal<Pagination | null>(null);
   protected selectedConversation = signal<Conversation | null>(null);
-  protected messages = signal<Message[]>([]);
+  protected messages = this.messageService.messageThread;
   protected messagePagination = signal<Pagination | null>(null);
   protected selectedInbox = signal<ConversationInboxType>('TaskDirect');
   protected messageContent = '';
@@ -44,22 +44,21 @@ export class Messages implements OnInit {
     this.loadConversations({ selectedConversationId: conversationId, selectedTaskId: taskId, selectedGroupId: groupId });
   }
 
+  ngOnDestroy() {
+    this.messageService.stopHubConnection();
+  }
+
   protected changeInbox(type: ConversationInboxType) {
     if (this.selectedInbox() === type) return;
 
     this.selectedInbox.set(type);
     this.conversationPage = 1;
-    this.selectedConversation.set(null);
-    this.messages.set([]);
-    this.messagePagination.set(null);
+    this.closeActiveConversation();
     this.loadConversations();
   }
 
   protected selectConversation(conversation: Conversation) {
-    this.selectedConversation.set(conversation);
-    this.messages.set([]);
-    this.messagePagination.set(null);
-    this.loadMessages(conversation.id, 1);
+    this.openConversation(conversation);
   }
 
   protected sendMessage() {
@@ -69,16 +68,18 @@ export class Messages implements OnInit {
     if (!conversation?.canSendMessages || !content) return;
 
     this.loading.set(true);
-    this.messageService.sendConversationMessage(conversation.id, content).subscribe({
-      next: (message) => {
-        this.messages.update((messages) => [...messages, message]);
+    this.messageService.sendRealtimeMessage(content).subscribe({
+      next: () => {
         this.messageContent = '';
         this.loading.set(false);
         this.conversationPage = 1;
         this.scrollThreadToBottom();
         this.loadConversations({ selectedConversationId: conversation.id });
       },
-      error: () => this.loading.set(false),
+      error: () => {
+        this.loading.set(false);
+        this.toast.error('Message could not be sent. Please try again.');
+      },
     });
   }
 
@@ -162,7 +163,7 @@ export class Messages implements OnInit {
         const selectedConversation = this.findSelectedConversation(result.items, options);
 
         if (selectedConversation) {
-          this.selectedConversation.set(selectedConversation);
+          this.openConversation(selectedConversation, false);
 
           if (!this.messages().length || this.messages()[0]?.conversationId !== selectedConversation.id) {
             this.loadMessages(selectedConversation.id, 1);
@@ -170,9 +171,7 @@ export class Messages implements OnInit {
         } else if (options.selectedTaskId) {
           this.loadTaskConversation(options.selectedTaskId);
         } else if (options.selectedConversationId || options.selectedGroupId) {
-          this.selectedConversation.set(null);
-          this.messages.set([]);
-          this.messagePagination.set(null);
+          this.closeActiveConversation();
         }
       },
       error: () => this.loadingConversations.set(false),
@@ -181,10 +180,7 @@ export class Messages implements OnInit {
 
   private loadTaskConversation(taskId: number) {
     this.messageService.getTaskConversation(taskId).subscribe({
-      next: (conversation) => {
-        this.selectedConversation.set(conversation);
-        this.loadMessages(conversation.id, 1);
-      },
+      next: (conversation) => this.openConversation(conversation),
     });
   }
 
@@ -198,7 +194,7 @@ export class Messages implements OnInit {
     this.messageService.getConversationThread(conversationId, pageNumber, this.messagePageSize).subscribe({
       next: (result) => {
         this.messagePagination.set(result.metadata);
-        this.messages.update((messages) => (prepend ? [...result.items, ...messages] : result.items));
+        this.messages.update((messages) => this.mergeMessages(messages, result.items, prepend));
         this.loadingOlderMessages.set(false);
 
         if (prepend) {
@@ -208,6 +204,42 @@ export class Messages implements OnInit {
         }
       },
       error: () => this.loadingOlderMessages.set(false),
+    });
+  }
+
+  private openConversation(conversation: Conversation, loadThread = true) {
+    const alreadySelected = this.selectedConversation()?.id === conversation.id;
+
+    this.selectedConversation.set(conversation);
+
+    if (alreadySelected) return;
+
+    this.messageService.stopHubConnection();
+    this.messages.set([]);
+    this.messagePagination.set(null);
+    this.messageService.createHubConnection(conversation.id);
+
+    if (loadThread) {
+      this.loadMessages(conversation.id, 1);
+    }
+  }
+
+  private closeActiveConversation() {
+    this.messageService.stopHubConnection();
+    this.selectedConversation.set(null);
+    this.messages.set([]);
+    this.messagePagination.set(null);
+  }
+
+  private mergeMessages(existingMessages: Message[], incomingMessages: Message[], prepend: boolean) {
+    const mergedMessages = prepend ? [...incomingMessages, ...existingMessages] : [...incomingMessages, ...existingMessages];
+    const seenMessageIds = new Set<string>();
+
+    return mergedMessages.filter((message) => {
+      if (seenMessageIds.has(message.id)) return false;
+
+      seenMessageIds.add(message.id);
+      return true;
     });
   }
 
@@ -226,6 +258,7 @@ export class Messages implements OnInit {
 
     return null;
   }
+
   private scrollThreadToBottom() {
     setTimeout(() => {
       const thread = this.messageThread?.nativeElement;
@@ -252,5 +285,3 @@ type ConversationSelectionOptions = {
   selectedTaskId?: number;
   selectedGroupId?: number;
 };
-
-

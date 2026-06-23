@@ -16,7 +16,6 @@ public interface IMessageRepository
     Task<PaginatedResult<Conversation>> GetConversationsForMemberAsync(string memberId, ConversationParams conversationParams);
     Task<PaginatedResult<Message>> GetMessagesForConversationAsync(int conversationId, string memberId, MessageParams messageParams);
     Task<Message?> GetMessageForMemberAsync(string messageId, string memberId);
+    Task MarkConversationReadAsync(int conversationId, string memberId);
     void DeleteMessageForMember(Message message, string memberId);
 }
-
-

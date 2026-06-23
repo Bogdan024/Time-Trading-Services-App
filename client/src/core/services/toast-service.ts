@@ -28,17 +28,22 @@ export class ToastService {
 
     const toast = document.createElement('div');
     toast.classList.add('alert', alertClass, 'shadow-lg');
-    toast.innerHTML = `
-      <span>${message}</span>
-      <button class="ml-4 btn btn-sm btn-ghost">x</button>
-    `;
 
-    toast.querySelector('button')?.addEventListener('click', () => {
+    const messageText = document.createElement('span');
+    messageText.textContent = message;
+
+    const closeButton = document.createElement('button');
+    closeButton.className = 'ml-4 btn btn-sm btn-ghost';
+    closeButton.type = 'button';
+    closeButton.textContent = 'x';
+
+    closeButton.addEventListener('click', () => {
       if (toastContainer.contains(toast)) {
         toastContainer.removeChild(toast);
       }
     });
 
+    toast.append(messageText, closeButton);
     toastContainer.append(toast);
 
     setTimeout(() => {
