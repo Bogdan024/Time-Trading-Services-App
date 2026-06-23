@@ -39,7 +39,9 @@ builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 builder.Services.AddScoped<IModerationRepository, ModerationRepository>();
+builder.Services.AddScoped<INotificationRepository, NotificationRepository>();
 builder.Services.AddScoped<IPhotoService, PhotoService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 builder.Services.AddScoped<LogUserActivity>();
 builder.Services.AddSingleton<PresenceTracker>();
 builder.Services.AddSingleton<ConversationPresenceTracker>();
@@ -112,6 +114,7 @@ catch (Exception ex)
 }
 
 app.Run();
+
 
 
 

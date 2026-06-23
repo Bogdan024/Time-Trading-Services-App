@@ -2,13 +2,16 @@ import { HubConnection, HubConnectionBuilder, HubConnectionState } from '@micros
 import { inject, Injectable, signal } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { Message } from '../../types/message';
+import { AppNotification } from '../../types/notification';
 import { User } from '../../types/user';
+import { NotificationService } from './notification-service';
 import { ToastService } from './toast-service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PresenceService {
+  private notificationService = inject(NotificationService);
   private toast = inject(ToastService);
   private hubUrl = environment.hubUrl;
   private hubConnection?: HubConnection;
@@ -41,6 +44,11 @@ export class PresenceService {
 
     this.hubConnection.on('NewMessageReceived', (message: Message) => {
       this.toast.info(`New message from ${message.sender.displayName}`);
+    });
+
+    this.hubConnection.on('NewNotification', (notification: AppNotification) => {
+      this.notificationService.addRealtimeNotification(notification);
+      this.toast.info(notification.title);
     });
 
     this.hubConnection.start().catch((error) => console.log(error));

@@ -24,6 +24,59 @@
     <div class="nav-right ml-auto flex items-center gap-3">
       @if (accountService.currentUser(); as user) {
         <div class="dropdown dropdown-end">
+          <button
+            tabindex="0"
+            type="button"
+            class="btn btn-ghost btn-circle relative bg-white/60 text-slate-700 hover:bg-white"
+            aria-label="Notifications"
+            (click)="notificationService.loadNotifications()"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" class="size-5" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" /><path d="M9.5 19a2.5 2.5 0 0 0 5 0" /></svg>
+            @if (notificationService.unreadCount() > 0) {
+              <span class="badge badge-accent badge-sm absolute -right-1 -top-1 text-white">
+                {{ notificationService.unreadCount() > 9 ? '9+' : notificationService.unreadCount() }}
+              </span>
+            }
+          </button>
+
+          <div tabindex="0" class="dropdown-content civic-card mt-3 w-96 max-w-[calc(100vw-2rem)] rounded-3xl p-3 shadow-sm">
+            <div class="flex items-center justify-between gap-3 px-2 py-1">
+              <p class="font-semibold text-slate-800">Notifications</p>
+              @if (notificationService.unreadCount() > 0) {
+                <button type="button" class="text-xs font-semibold text-[var(--civic-teal)]" (click)="notificationService.markAllAsRead()">
+                  Mark all read
+                </button>
+              }
+            </div>
+
+            <div class="mt-2 max-h-96 space-y-2 overflow-y-auto pr-1">
+              @for (notification of notificationService.notifications(); track notification.id) {
+                <button
+                  type="button"
+                  class="w-full rounded-3xl p-3 text-left transition hover:bg-white/75"
+                  [class.bg-white]="!notification.isRead"
+                  [class.opacity-75]="notification.isRead"
+                  (click)="openNotification(notification)"
+                >
+                  <div class="flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                      <p class="safe-user-text font-semibold text-slate-800">{{ notification.title }}</p>
+                      <p class="safe-user-text mt-1 text-sm leading-5 text-slate-600">{{ notification.body }}</p>
+                    </div>
+                    @if (!notification.isRead) {
+                      <span class="mt-1 size-2 shrink-0 rounded-full bg-[var(--civic-teal)]"></span>
+                    }
+                  </div>
+                  <p class="mt-2 text-xs text-slate-500">{{ notification.createdAtUtc | date: 'short' }}</p>
+                </button>
+              } @empty {
+                <p class="rounded-3xl bg-white/55 p-4 text-sm text-slate-600">No notifications yet.</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="dropdown dropdown-end">
           <div
             tabindex="0"
             role="button"
@@ -56,4 +109,5 @@
     </div>
   </div>
 </header>
+
 

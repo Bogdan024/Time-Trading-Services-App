@@ -1,19 +1,23 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AccountService } from '../../core/services/account-service';
-import { LoginCreds } from '../../types/user';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { AccountService } from '../../core/services/account-service';
+import { NotificationService } from '../../core/services/notification-service';
 import { ToastService } from '../../core/services/toast-service';
 import { HasRole } from '../../shared/directives/has-role';
+import { AppNotification } from '../../types/notification';
+import { LoginCreds } from '../../types/user';
 
 @Component({
   selector: 'app-nav',
-  imports: [FormsModule, RouterLink, RouterLinkActive, HasRole],
+  imports: [DatePipe, FormsModule, RouterLink, RouterLinkActive, HasRole],
   templateUrl: './nav.html',
   styleUrl: './nav.css',
 })
 export class Nav {
   protected accountService = inject(AccountService);
+  protected notificationService = inject(NotificationService);
   private router = inject(Router);
   private toast = inject(ToastService);
   protected creds = {} as LoginCreds;
@@ -41,5 +45,22 @@ export class Nav {
     this.accountService.logout();
     this.router.navigateByUrl('/');
   }
-}
 
+  protected openNotification(notification: AppNotification) {
+    this.notificationService.markAsRead(notification);
+
+    if (notification.conversationId) {
+      this.router.navigate(['/messages'], { queryParams: { conversationId: notification.conversationId } });
+      return;
+    }
+
+    if (notification.timeTaskId) {
+      this.router.navigate(['/tasks', notification.timeTaskId]);
+      return;
+    }
+
+    if (notification.groupId) {
+      this.router.navigate(['/groups', notification.groupId]);
+    }
+  }
+}

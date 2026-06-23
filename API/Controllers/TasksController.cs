@@ -9,7 +9,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class TasksController(ITimeTaskRepository taskRepository, IMessageRepository messageRepository) : BaseApiController
+public class TasksController(
+    ITimeTaskRepository taskRepository,
+    IMessageRepository messageRepository,
+    INotificationService notificationService) : BaseApiController
 {
     [HttpGet]
     public async Task<ActionResult<PaginatedResult<TimeTaskDto>>> GetTasks([FromQuery] TaskParams taskParams)
@@ -166,7 +169,16 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
             });
         }
 
+        var applicationNotification = notificationService.Create(
+            task.PostedByMemberId,
+            NotificationType.TaskApplicationReceived,
+            "New task application",
+            $"Someone applied to {task.Title}.",
+            timeTaskId: task.Id);
+
         if (!await taskRepository.SaveAllAsync()) return BadRequest("Failed to apply for task");
+
+        await notificationService.SendAsync(applicationNotification);
 
         var applications = await taskRepository.GetApplicationsForTaskAsync(task.Id);
         var application = applications.SingleOrDefault(x => x.ApplicantMemberId == memberId);
@@ -204,10 +216,22 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
             pendingApplication.UpdatedAtUtc = DateTime.UtcNow;
         }
 
-        await messageRepository.GetOrCreateTaskConversationAsync(task);
+        var conversation = await messageRepository.GetOrCreateTaskConversationAsync(task);
+        var acceptedNotification = notificationService.Create(
+            application.ApplicantMemberId,
+            NotificationType.TaskApplicationAccepted,
+            "You were chosen for a task",
+            $"You were accepted for {task.Title}.",
+            timeTaskId: task.Id,
+            conversationId: conversation.Id);
+
         taskRepository.Update(task);
 
-        if (await taskRepository.SaveAllAsync()) return NoContent();
+        if (await taskRepository.SaveAllAsync())
+        {
+            await notificationService.SendAsync(acceptedNotification);
+            return NoContent();
+        }
 
         return BadRequest("Failed to accept application");
     }
@@ -288,16 +312,28 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
         task.Status = TimeTaskStatus.Cancelled;
         task.UpdatedAtUtc = DateTime.UtcNow;
 
+        var cancellationNotifications = new List<Notification>();
+
         foreach (var pendingApplication in task.Applications.Where(x => x.Status == TaskApplicationStatus.Pending))
         {
             pendingApplication.Status = TaskApplicationStatus.Rejected;
             pendingApplication.UpdatedAtUtc = DateTime.UtcNow;
+            cancellationNotifications.Add(notificationService.Create(
+                pendingApplication.ApplicantMemberId,
+                NotificationType.TaskCancelled,
+                "Task was cancelled",
+                $"{task.Title} was cancelled by the poster.",
+                timeTaskId: task.Id));
         }
 
         await messageRepository.CloseTaskConversationAsync(task.Id);
         taskRepository.Update(task);
 
-        if (await taskRepository.SaveAllAsync()) return NoContent();
+        if (await taskRepository.SaveAllAsync())
+        {
+            await notificationService.SendAsync(cancellationNotifications);
+            return NoContent();
+        }
 
         return BadRequest("Failed to cancel task");
     }
@@ -326,6 +362,13 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
         task.UpdatedAtUtc = DateTime.UtcNow;
         await messageRepository.CloseTaskConversationAsync(task.Id);
 
+        var completionNotification = notificationService.Create(
+            task.AcceptedByMemberId,
+            NotificationType.TaskCompleted,
+            "Task completed",
+            $"{task.Title} was completed. You received {task.EstimatedHours} time credits.",
+            timeTaskId: task.Id);
+
         var transaction = new TimeTransaction
         {
             TimeTaskId = task.Id,
@@ -343,6 +386,8 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
             return BadRequest("Failed to complete task");
         }
 
+        await notificationService.SendAsync(completionNotification);
+
         var createdTransaction = await taskRepository.GetTransactionForTaskAsync(task.Id);
 
         if (createdTransaction is null) return BadRequest("Failed to load time transaction");
@@ -355,4 +400,3 @@ public class TasksController(ITimeTaskRepository taskRepository, IMessageReposit
         return dueAtUtc.HasValue && dueAtUtc.Value <= DateTime.UtcNow;
     }
 }
-

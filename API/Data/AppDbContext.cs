@@ -26,6 +26,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
     public DbSet<MessageDeletion> MessageDeletions { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }
     public DbSet<ModerationReport> ModerationReports { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -291,6 +292,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : IdentityDbCo
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
+
 
 
 

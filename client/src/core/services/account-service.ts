@@ -3,6 +3,7 @@ import { inject, Injectable, signal } from '@angular/core';
 import { tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { LoginCreds, RegisterCreds, User } from '../../types/user';
+import { NotificationService } from './notification-service';
 import { PresenceService } from './presence-service';
 
 @Injectable({
@@ -10,6 +11,7 @@ import { PresenceService } from './presence-service';
 })
 export class AccountService {
   private http = inject(HttpClient);
+  private notificationService = inject(NotificationService);
   private presenceService = inject(PresenceService);
   currentUser = signal<User | null>(null);
   private baseUrl = environment.apiUrl;
@@ -35,6 +37,7 @@ export class AccountService {
   setCurrentUser(user: User) {
     user.roles = user.roles?.length ? user.roles : this.getDecodedRoles(user.token);
     this.currentUser.set(user);
+    this.notificationService.loadNotifications();
     this.presenceService.createHubConnection(user);
   }
 
@@ -51,6 +54,7 @@ export class AccountService {
     localStorage.removeItem('taskFilters');
     this.currentUser.set(null);
     this.presenceService.stopHubConnection();
+    this.notificationService.reset();
   }
 
   private getDecodedRoles(token: string) {
