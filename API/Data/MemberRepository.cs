@@ -51,6 +51,7 @@ public class MemberRepository(AppDbContext context) : IMemberRepository
     public async Task<IReadOnlyList<Member>> GetMembersAsync()
     {
         return await context.Members
+            .Where(x => x.IsProfilePublic && x.Id != "admin-user-id")
             .Include(x => x.Photos)
             .Include(x => x.OfferedSkills)
                 .ThenInclude(x => x.ServiceCategory)
@@ -121,3 +122,4 @@ public class MemberRepository(AppDbContext context) : IMemberRepository
         context.Entry(member).State = EntityState.Modified;
     }
 }
+

@@ -31,5 +31,6 @@ public enum NotificationType
     TaskApplicationReceived = 1,
     TaskApplicationAccepted = 2,
     TaskCompleted = 3,
-    TaskCancelled = 4
+    TaskCancelled = 4,
+    ReviewReceived = 5
 }

@@ -21,6 +21,6 @@ public interface ITimeTaskRepository
     Task<IReadOnlyDictionary<string, MemberRatingSummaryDto>> GetRatingSummariesForMembersAsync(IEnumerable<string> memberIds);
     Task<TimeTransaction?> GetTransactionForTaskAsync(int taskId);
     Task<IReadOnlyList<TimeTransaction>> GetTransactionsForMemberAsync(string memberId);
+    Task<int> GetAvailableTimeCreditsForMemberAsync(string memberId, int? excludedTaskId = null);
 }
-
 

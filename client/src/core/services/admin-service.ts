@@ -51,4 +51,9 @@ export class AdminService {
   actionReport(reportId: number, moderatorNotes?: string) {
     return this.http.post<ModerationReport>(this.baseUrl + `moderation/reports/${reportId}/action`, { moderatorNotes });
   }
+
+  cancelReportedTask(reportId: number, moderatorNotes?: string) {
+    return this.http.post<ModerationReport>(this.baseUrl + `moderation/reports/${reportId}/tasks/cancel`, { moderatorNotes });
+  }
 }
+

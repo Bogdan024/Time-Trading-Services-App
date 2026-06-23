@@ -85,6 +85,16 @@
                 }
               </select>
               <span class="mt-1 text-xs text-slate-500">Transferred to the helper when you complete the task.</span>
+              @if (availableCredits() === null) {
+                <span class="mt-1 text-xs text-slate-500">Checking your available credits...</span>
+              } @else {
+                <span class="mt-1 text-xs" [class.text-error]="!hasEnoughAvailableCredits()" [class.text-slate-500]="hasEnoughAvailableCredits()">
+                  You have {{ availableCredits() }} available time credits.
+                </span>
+              }
+              @if (availableCredits() !== null && !hasEnoughAvailableCredits()) {
+                <span class="mt-1 text-xs text-error">Choose fewer credits or earn more time before posting this task.</span>
+              }
             </label>
 
             <label class="form-control text-left">
@@ -193,7 +203,7 @@
       @if (currentStep() < steps.length) {
         <button type="button" class="btn btn-accent rounded-full" [disabled]="!canContinue() || loading()" (click)="nextStep()">Continue</button>
       } @else {
-        <button type="submit" class="btn btn-accent rounded-full" [disabled]="loading()">
+        <button type="submit" class="btn btn-accent rounded-full" [disabled]="loading() || !canContinue()">
           @if (loading()) {
             <span class="loading loading-spinner loading-sm"></span>
           }

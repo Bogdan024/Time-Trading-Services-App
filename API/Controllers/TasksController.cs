@@ -53,6 +53,14 @@ public class TasksController(
         return Ok(transactions.Select(x => x.ToDto()));
     }
 
+    [HttpGet("available-credits")]
+    public async Task<ActionResult<int>> GetAvailableTimeCredits()
+    {
+        var availableCredits = await uow.TimeTaskRepository.GetAvailableTimeCreditsForMemberAsync(User.GetMemberId());
+
+        return Ok(Math.Max(availableCredits, 0));
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<TimeTaskDto>> GetTask(int id)
     {
@@ -105,6 +113,13 @@ public class TasksController(
         }
 
         var memberId = User.GetMemberId();
+        var availableCredits = await uow.TimeTaskRepository.GetAvailableTimeCreditsForMemberAsync(memberId);
+
+        if (availableCredits < createTaskDto.EstimatedHours)
+        {
+            return BadRequest($"You have {Math.Max(availableCredits, 0)} available time credits. This task requires {createTaskDto.EstimatedHours}.");
+        }
+
         var task = new TimeTask
         {
             Title = createTaskDto.Title,
@@ -281,6 +296,13 @@ public class TasksController(
             return BadRequest("Due date must be in the future");
         }
 
+        var availableCredits = await uow.TimeTaskRepository.GetAvailableTimeCreditsForMemberAsync(User.GetMemberId(), task.Id);
+
+        if (availableCredits < updateTaskDto.EstimatedHours)
+        {
+            return BadRequest($"You have {Math.Max(availableCredits, 0)} available time credits. This task requires {updateTaskDto.EstimatedHours}.");
+        }
+
         task.Title = updateTaskDto.Title;
         task.Description = updateTaskDto.Description;
         task.ServiceCategoryId = updateTaskDto.ServiceCategoryId;
@@ -362,6 +384,13 @@ public class TasksController(
         if (task.TimeTransaction is not null)
         {
             return BadRequest("Task already has a time transaction");
+        }
+
+        var availableCredits = await uow.TimeTaskRepository.GetAvailableTimeCreditsForMemberAsync(task.PostedByMemberId, task.Id);
+
+        if (availableCredits < task.EstimatedHours)
+        {
+            return BadRequest("Task poster does not have enough available time credits to complete this task");
         }
 
         task.Status = TimeTaskStatus.Completed;

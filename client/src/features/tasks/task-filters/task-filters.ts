@@ -31,11 +31,6 @@ export class TaskFilters {
     this.taskParams().locationMode = value ? Number(value) as TaskLocationMode : undefined;
   }
 
-  protected setTextFilter(field: 'city' | 'countryCode', target: EventTarget | null) {
-    const value = this.getTargetValue(target).trim();
-    this.taskParams()[field] = value || undefined;
-  }
-
   protected setDueSoon(target: EventTarget | null) {
     this.taskParams().dueSoon = target instanceof HTMLInputElement ? target.checked : false;
   }
@@ -44,14 +39,13 @@ export class TaskFilters {
     const value = this.getTargetValue(target);
     this.taskParams().orderBy = value || 'newest';
   }
-
   protected apply() {
     const params = this.taskParams();
 
     this.applyFilters.emit({
       ...params,
-      city: params.city?.trim() || undefined,
-      countryCode: params.countryCode?.trim().toUpperCase() || undefined,
+      city: undefined,
+      countryCode: undefined,
     });
   }
 

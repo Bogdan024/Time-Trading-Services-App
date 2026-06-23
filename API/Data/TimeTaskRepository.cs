@@ -165,6 +165,30 @@ public class TimeTaskRepository(AppDbContext context) : ITimeTaskRepository
             .ToListAsync();
     }
 
+    public async Task<int> GetAvailableTimeCreditsForMemberAsync(string memberId, int? excludedTaskId = null)
+    {
+        var earned = await context.TimeTransactions
+            .Where(x => x.ToMemberId == memberId)
+            .SumAsync(x => (int?)x.Hours) ?? 0;
+
+        var spent = await context.TimeTransactions
+            .Where(x => x.FromMemberId == memberId)
+            .SumAsync(x => (int?)x.Hours) ?? 0;
+
+        var reservedTasks = context.TimeTasks
+            .Where(x => x.PostedByMemberId == memberId)
+            .Where(x => x.Status == TimeTaskStatus.Open || x.Status == TimeTaskStatus.InProgress);
+
+        if (excludedTaskId.HasValue)
+        {
+            reservedTasks = reservedTasks.Where(x => x.Id != excludedTaskId.Value);
+        }
+
+        var reserved = await reservedTasks.SumAsync(x => (int?)x.EstimatedHours) ?? 0;
+
+        return earned - spent - reserved;
+    }
+
     public async Task<bool> SaveAllAsync()
     {
         return await context.SaveChangesAsync() > 0;
@@ -192,5 +216,4 @@ public class TimeTaskRepository(AppDbContext context) : ITimeTaskRepository
                 .ThenInclude(x => x.ApplicantMember);
     }
 }
-
 

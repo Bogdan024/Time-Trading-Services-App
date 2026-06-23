@@ -13,6 +13,8 @@ namespace API.Controllers;
 public class AccountController(UserManager<AppUser> userManager, ITokenService tokenService, AppDbContext context) : BaseApiController
 {
     private const string RefreshTokenCookieName = "refreshToken";
+    private const string AdminMemberId = "admin-user-id";
+    private const int StartingTimeCredits = 10;
 
     [HttpPost("register")]
     public async Task<ActionResult<UserDto>> Register(RegisterDto registerDto)
@@ -61,6 +63,7 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
             return BadRequest(roleResult.Errors);
         }
 
+        await GrantStartingCredits(user);
         await AddRefreshToken(user);
 
         return await user.ToDto(tokenService, userManager);
@@ -166,6 +169,52 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         return Ok();
     }
 
+    private async Task GrantStartingCredits(AppUser user)
+    {
+        var category = await context.ServiceCategories
+            .SingleOrDefaultAsync(x => x.Key == "mentoring")
+            ?? await context.ServiceCategories.FirstOrDefaultAsync();
+
+        if (category is null || !await context.Members.AnyAsync(x => x.Id == AdminMemberId))
+        {
+            throw new InvalidOperationException("Starting time credits could not be granted because reference data is missing.");
+        }
+
+        var now = DateTime.UtcNow;
+        var grantTask = new TimeTask
+        {
+            Title = $"Welcome time-credit grant for {user.DisplayName}",
+            Description = "Initial registration credit grant so new members can start posting time exchanges.",
+            ServiceCategoryId = category.Id,
+            EstimatedHours = StartingTimeCredits,
+            LocationMode = TaskLocationMode.Remote,
+            City = user.Member.City,
+            CountryCode = user.Member.CountryCode,
+            FormattedAddress = user.Member.City is null || user.Member.CountryCode is null ? null : $"{user.Member.City}, {user.Member.CountryCode}",
+            CreatedAtUtc = now,
+            UpdatedAtUtc = now,
+            CompletedAtUtc = now,
+            Status = TimeTaskStatus.Completed,
+            PostedByMemberId = AdminMemberId,
+            AcceptedByMemberId = user.Id
+        };
+
+        context.TimeTasks.Add(grantTask);
+        await context.SaveChangesAsync();
+
+        context.TimeTransactions.Add(new TimeTransaction
+        {
+            TimeTaskId = grantTask.Id,
+            FromMemberId = AdminMemberId,
+            ToMemberId = user.Id,
+            Hours = StartingTimeCredits,
+            CreatedAtUtc = now,
+            Note = "Registration starting balance"
+        });
+
+        await context.SaveChangesAsync();
+    }
+
     private async Task AddRefreshToken(AppUser user)
     {
         var refreshToken = GenerateRefreshToken();
@@ -226,4 +275,5 @@ public class AccountController(UserManager<AppUser> userManager, ITokenService t
         return await userManager.FindByEmailAsync(email) is not null;
     }
 }
+
 

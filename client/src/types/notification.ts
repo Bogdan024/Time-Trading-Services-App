@@ -1,4 +1,4 @@
-export type NotificationType = 1 | 2 | 3 | 4;
+export type NotificationType = 1 | 2 | 3 | 4 | 5;
 
 export type AppNotification = {
   id: number;
@@ -12,3 +12,4 @@ export type AppNotification = {
   readAtUtc?: string;
   isRead: boolean;
 };
+

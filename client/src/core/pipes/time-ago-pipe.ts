@@ -7,7 +7,7 @@ export class TimeAgoPipe implements PipeTransform {
   transform(value?: string | Date | null) {
     if (!value) return '';
 
-    const date = new Date(value);
+    const date = this.toDate(value);
     const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
 
     if (Number.isNaN(seconds)) return '';
@@ -27,5 +27,12 @@ export class TimeAgoPipe implements PipeTransform {
 
     const count = Math.floor(seconds / interval.seconds);
     return `${count} ${interval.label}${count === 1 ? '' : 's'} ago`;
+  }
+
+  private toDate(value: string | Date) {
+    if (value instanceof Date) return value;
+
+    const hasTimezone = /(?:Z|[+-]\d{2}:?\d{2})$/i.test(value);
+    return new Date(hasTimezone ? value : `${value}Z`);
   }
 }

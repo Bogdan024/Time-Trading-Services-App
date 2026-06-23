@@ -81,10 +81,15 @@ export class TaskList implements OnInit {
     if (!storedParams) return new TaskParams();
 
     try {
-      return Object.assign(new TaskParams(), JSON.parse(storedParams));
+      const taskParams = Object.assign(new TaskParams(), JSON.parse(storedParams));
+      taskParams.city = undefined;
+      taskParams.countryCode = undefined;
+
+      return taskParams;
     } catch {
       localStorage.removeItem(this.filterStorageKey);
       return new TaskParams();
     }
   }
 }
+

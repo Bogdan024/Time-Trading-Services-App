@@ -1,14 +1,13 @@
 import { DatePipe } from '@angular/common';
 import { Component, HostListener, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive, UrlTree } from '@angular/router';
 import { AccountService } from '../../core/services/account-service';
+import { BalanceService } from '../../core/services/balance-service';
 import { NotificationService } from '../../core/services/notification-service';
-import { TaskService } from '../../core/services/task-service';
 import { ToastService } from '../../core/services/toast-service';
 import { HasRole } from '../../shared/directives/has-role';
 import { AppNotification } from '../../types/notification';
-import { TimeTransaction } from '../../types/task';
 import { LoginCreds } from '../../types/user';
 
 @Component({
@@ -19,21 +18,20 @@ import { LoginCreds } from '../../types/user';
 })
 export class Nav {
   protected accountService = inject(AccountService);
+  protected balanceService = inject(BalanceService);
   protected notificationService = inject(NotificationService);
-  private taskService = inject(TaskService);
   private router = inject(Router);
   private toast = inject(ToastService);
   protected creds = {} as LoginCreds;
   protected readonly isScrolled = signal(false);
   protected readonly loginLoading = signal(false);
-  protected readonly transactions = signal<TimeTransaction[]>([]);
 
   constructor() {
     effect(() => {
       if (this.accountService.currentUser()) {
-        this.loadBalance();
+        this.balanceService.refreshBalance();
       } else {
-        this.transactions.set([]);
+        this.balanceService.reset();
       }
     });
   }
@@ -41,17 +39,6 @@ export class Nav {
   @HostListener('window:scroll')
   onWindowScroll() {
     this.isScrolled.set(window.scrollY > 24);
-  }
-
-  protected balance() {
-    const userId = this.accountService.currentUser()?.id;
-
-    return this.transactions().reduce((total, transaction) => {
-      if (transaction.toMember.id === userId) return total + transaction.hours;
-      if (transaction.fromMember.id === userId) return total - transaction.hours;
-
-      return total;
-    }, 0);
   }
 
   login() {
@@ -83,25 +70,42 @@ export class Nav {
 
   protected openNotification(notification: AppNotification) {
     this.notificationService.markAsRead(notification);
+    this.balanceService.refreshBalance();
+
+    if (notification.type === 5) {
+      const userId = this.accountService.currentUser()?.id;
+
+      if (userId) {
+        this.navigateOrReload(this.router.createUrlTree(['/members', userId]));
+      }
+
+      return;
+    }
 
     if (notification.conversationId) {
-      this.router.navigate(['/messages'], { queryParams: { conversationId: notification.conversationId } });
+      this.navigateOrReload(this.router.createUrlTree(['/messages'], { queryParams: { conversationId: notification.conversationId } }));
       return;
     }
 
     if (notification.timeTaskId) {
-      this.router.navigate(['/tasks', notification.timeTaskId]);
+      this.navigateOrReload(this.router.createUrlTree(['/tasks', notification.timeTaskId]));
       return;
     }
 
     if (notification.groupId) {
-      this.router.navigate(['/groups', notification.groupId]);
+      this.navigateOrReload(this.router.createUrlTree(['/groups', notification.groupId]));
     }
   }
 
-  private loadBalance() {
-    this.taskService.getTransactions().subscribe({
-      next: (transactions) => this.transactions.set(transactions),
-    });
+  private navigateOrReload(targetTree: UrlTree) {
+    const targetUrl = this.router.serializeUrl(targetTree);
+
+    if (this.router.url === targetUrl) {
+      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => this.router.navigateByUrl(targetUrl));
+      return;
+    }
+
+    this.router.navigateByUrl(targetUrl);
   }
 }
+

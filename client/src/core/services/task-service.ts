@@ -49,6 +49,10 @@ export class TaskService {
     return this.http.get<TimeTransaction[]>(this.baseUrl + 'tasks/transactions');
   }
 
+  getAvailableCredits() {
+    return this.http.get<number>(this.baseUrl + 'tasks/available-credits');
+  }
+
   createTask(task: CreateTimeTask) {
     return this.http.post<TimeTask>(this.baseUrl + 'tasks', task);
   }
@@ -77,3 +81,4 @@ export class TaskService {
     return this.http.patch<void>(this.baseUrl + 'tasks/' + id + '/cancel', {});
   }
 }
+

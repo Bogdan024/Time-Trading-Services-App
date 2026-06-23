@@ -8,10 +8,11 @@ export const adminGuard: CanActivateFn = () => {
   const router = inject(Router);
   const toast = inject(ToastService);
 
-  if (accountService.hasRole(['Admin'])) {
+  if (accountService.hasRole(['Admin', 'Moderator'])) {
     return true;
   }
 
-  toast.error('Admin access required');
+  toast.error('Moderation access required');
   return router.createUrlTree(['/tasks']);
 };
+

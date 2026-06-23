@@ -8,8 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize(Policy = "ModeratePlatformRole")]
-public class ModerationController(IUnitOfWork uow) : BaseApiController
+public class ModerationController(IUnitOfWork uow, INotificationService notificationService) : BaseApiController
 {
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpGet("groups/pending")]
     public async Task<ActionResult<IReadOnlyList<PendingGroupDto>>> GetPendingGroups()
     {
@@ -18,6 +19,7 @@ public class ModerationController(IUnitOfWork uow) : BaseApiController
         return Ok(groups.Select(ToPendingGroupDto));
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("groups/{id:int}/approve")]
     public async Task<ActionResult<GroupDto>> ApproveGroup(int id)
     {
@@ -39,6 +41,7 @@ public class ModerationController(IUnitOfWork uow) : BaseApiController
         return Ok(group.ToDto(moderatorId));
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpPost("groups/{id:int}/reject")]
     public async Task<ActionResult<GroupDto>> RejectGroup(int id, RejectGroupDto rejectGroupDto)
     {
@@ -82,6 +85,75 @@ public class ModerationController(IUnitOfWork uow) : BaseApiController
     public async Task<ActionResult<ModerationReportDto>> ActionReport(int id, ResolveReportDto resolveReportDto)
     {
         return await ResolveReport(id, ReportStatus.Actioned, resolveReportDto);
+    }
+
+    [HttpPost("reports/{id:int}/tasks/cancel")]
+    public async Task<ActionResult<ModerationReportDto>> CancelReportedTask(int id, ResolveReportDto resolveReportDto)
+    {
+        var report = await uow.ModerationRepository.GetReportByIdAsync(id);
+
+        if (report is null) return NotFound("Report not found");
+        if (report.Status != ReportStatus.Pending) return BadRequest("Only pending reports can be actioned");
+        if (report.TargetType != ReportTargetType.Task || report.TargetIntId is null)
+        {
+            return BadRequest("This report is not connected to a task");
+        }
+
+        var task = await uow.TimeTaskRepository.GetTaskByIdAsync(report.TargetIntId.Value);
+
+        if (task is null) return NotFound("Task not found");
+        if (task.Status == TimeTaskStatus.Completed) return BadRequest("Completed tasks cannot be cancelled by moderation");
+        if (task.Status == TimeTaskStatus.Cancelled) return BadRequest("Task is already cancelled");
+
+        task.Status = TimeTaskStatus.Cancelled;
+        task.UpdatedAtUtc = DateTime.UtcNow;
+
+        var notifications = new List<Notification>
+        {
+            notificationService.Create(
+                task.PostedByMemberId,
+                NotificationType.TaskCancelled,
+                "Task cancelled by moderation",
+                $"{task.Title} was cancelled after a moderation review.",
+                timeTaskId: task.Id)
+        };
+
+        if (!string.IsNullOrWhiteSpace(task.AcceptedByMemberId))
+        {
+            notifications.Add(notificationService.Create(
+                task.AcceptedByMemberId,
+                NotificationType.TaskCancelled,
+                "Task cancelled by moderation",
+                $"{task.Title} was cancelled after a moderation review.",
+                timeTaskId: task.Id));
+        }
+
+        foreach (var pendingApplication in task.Applications.Where(x => x.Status == TaskApplicationStatus.Pending))
+        {
+            pendingApplication.Status = TaskApplicationStatus.Rejected;
+            pendingApplication.UpdatedAtUtc = DateTime.UtcNow;
+            notifications.Add(notificationService.Create(
+                pendingApplication.ApplicantMemberId,
+                NotificationType.TaskCancelled,
+                "Task cancelled by moderation",
+                $"{task.Title} was cancelled after a moderation review."));
+        }
+
+        await uow.MessageRepository.CloseTaskConversationAsync(task.Id);
+        uow.TimeTaskRepository.Update(task);
+
+        report.Status = ReportStatus.Actioned;
+        report.ReviewedByMemberId = User.GetMemberId();
+        report.ReviewedAtUtc = DateTime.UtcNow;
+        report.ModeratorNotes = string.IsNullOrWhiteSpace(resolveReportDto.ModeratorNotes)
+            ? "Task cancelled by moderation."
+            : resolveReportDto.ModeratorNotes.Trim();
+
+        if (!await uow.Complete()) return BadRequest("Failed to cancel reported task");
+
+        await notificationService.SendAsync(notifications);
+
+        return Ok(await ToReportDto(report));
     }
 
     private async Task<ActionResult<ModerationReportDto>> ResolveReport(int id, ReportStatus status, ResolveReportDto resolveReportDto)
@@ -138,3 +210,4 @@ public class ModerationController(IUnitOfWork uow) : BaseApiController
         };
     }
 }
+

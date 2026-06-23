@@ -2,6 +2,7 @@ import { AsyncPipe, DatePipe } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { map, Observable } from 'rxjs';
+import { BalanceService } from '../../../core/services/balance-service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog-service';
 import { ReviewService } from '../../../core/services/review-service';
 import { TaskService } from '../../../core/services/task-service';
@@ -17,6 +18,7 @@ import { TimeTask } from '../../../types/task';
   styleUrl: './posted-tasks.css',
 })
 export class PostedTasks {
+  private balanceService = inject(BalanceService);
   private confirmDialog = inject(ConfirmDialogService);
   private reviewService = inject(ReviewService);
   private taskService = inject(TaskService);
@@ -45,6 +47,7 @@ export class PostedTasks {
     this.taskService.completeTask(task.id).subscribe({
       next: () => {
         this.toast.success('Task completed');
+        this.balanceService.refreshBalance();
         this.tasks$ = this.getVisibleTasks();
 
         if (task.acceptedByMember) {
@@ -89,5 +92,7 @@ export class PostedTasks {
     return this.taskService.getMyTasks().pipe(map((tasks) => tasks.filter((task) => task.status !== 3 && task.status !== 4)));
   }
 }
+
+
 
 

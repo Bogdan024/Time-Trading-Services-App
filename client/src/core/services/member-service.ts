@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { forkJoin, of } from 'rxjs';
+import { concat, of, toArray } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   EditableMember,
@@ -60,7 +60,7 @@ export class MemberService {
       ...setup.availabilitySlots.map((slot) => this.addAvailabilitySlot(slot)),
     ];
 
-    return requests.length > 0 ? forkJoin(requests) : of([]);
+    return requests.length > 0 ? concat(...requests).pipe(toArray()) : of([]);
   }
 
   uploadAvatar(file: File) {
@@ -70,3 +70,4 @@ export class MemberService {
     return this.http.post<Member>(this.baseUrl + 'members/avatar', formData);
   }
 }
+

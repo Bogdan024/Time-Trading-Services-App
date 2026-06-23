@@ -25,6 +25,7 @@ export class TaskCreate implements OnInit {
   protected currentStep = signal(1);
   protected serviceCategories = signal<ServiceCategory[]>([]);
   protected selectedLocation = signal<TaskLocation | null>(null);
+  protected availableCredits = signal<number | null>(null);
   protected validationErrors = signal<string[]>([]);
   protected loading = signal(false);
   protected readonly steps = ['Task details', 'Exchange and location', 'Due window', 'Review'];
@@ -53,6 +54,8 @@ export class TaskCreate implements OnInit {
     this.serviceCategoryService.getServiceCategories().subscribe({
       next: (categories) => this.serviceCategories.set(categories),
     });
+
+    this.loadAvailableCredits();
   }
 
   protected nextStep() {
@@ -74,14 +77,14 @@ export class TaskCreate implements OnInit {
     }
 
     if (this.currentStep() === 2) {
-      return this.form.controls.estimatedHours.valid && this.form.controls.locationMode.valid && !!this.selectedLocation();
+      return this.form.controls.estimatedHours.valid && this.hasEnoughAvailableCredits() && this.form.controls.locationMode.valid && !!this.selectedLocation();
     }
 
     if (this.currentStep() === 3) {
       return !this.form.hasError('incompleteDueDate') && !this.form.hasError('dueDateInPast');
     }
 
-    return this.form.valid && !!this.selectedLocation();
+    return this.form.valid && this.hasEnoughAvailableCredits() && !!this.selectedLocation();
   }
 
   protected onLocationSelected(location: TaskLocation) {
@@ -90,6 +93,16 @@ export class TaskCreate implements OnInit {
 
   protected onLocationCleared() {
     this.selectedLocation.set(null);
+  }
+
+  protected selectedCredits() {
+    return Number(this.form.value.estimatedHours ?? 0);
+  }
+
+  protected hasEnoughAvailableCredits() {
+    const availableCredits = this.availableCredits();
+
+    return availableCredits !== null && this.selectedCredits() <= availableCredits;
   }
 
   protected selectedCategoryName() {
@@ -103,9 +116,12 @@ export class TaskCreate implements OnInit {
   protected createTask() {
     const location = this.selectedLocation();
 
-    if (this.form.invalid || !location) {
+    if (this.form.invalid || !location || !this.hasEnoughAvailableCredits()) {
       this.form.markAllAsTouched();
       if (!location) this.validationErrors.set(['Choose a task location from the suggestions before posting']);
+      if (!this.hasEnoughAvailableCredits()) {
+        this.validationErrors.set([`You have ${this.availableCredits() ?? 0} available time credits. This task requires ${this.selectedCredits()}.`]);
+      }
       return;
     }
 
@@ -137,6 +153,13 @@ export class TaskCreate implements OnInit {
         this.loading.set(false);
         this.validationErrors.set(this.normalizeErrors(error));
       },
+    });
+  }
+
+  private loadAvailableCredits() {
+    this.taskService.getAvailableCredits().subscribe({
+      next: (credits) => this.availableCredits.set(credits),
+      error: () => this.availableCredits.set(0),
     });
   }
 
@@ -179,9 +202,13 @@ export class TaskCreate implements OnInit {
     };
   }
 
-  private normalizeErrors(error: unknown) {
+  private normalizeErrors(error: unknown): string[] {
     if (Array.isArray(error)) return error.map((item) => String(item));
     if (typeof error === 'string') return [error];
+
+    if (error && typeof error === 'object' && 'error' in error) {
+      return this.normalizeErrors((error as { error?: unknown }).error);
+    }
 
     return ['Something went wrong while creating the task'];
   }

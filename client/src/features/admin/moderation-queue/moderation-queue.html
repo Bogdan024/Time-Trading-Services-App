@@ -3,56 +3,64 @@
     <div>
       <p class="civic-kicker text-xs uppercase tracking-[0.28em] text-teal-800">Moderation</p>
       <h2 class="civic-display mt-1 text-3xl font-semibold text-slate-900">Trust queue</h2>
-      <p class="mt-2 text-slate-600">Approve new groups and review reports from the community.</p>
+      <p class="mt-2 text-slate-600">
+        @if (isAdmin()) {
+          Approve new groups and review reports from the community.
+        } @else {
+          Review reports from the community and take safety actions when needed.
+        }
+      </p>
     </div>
     <span class="civic-badge self-start rounded-full px-4 py-2 text-sm font-semibold text-teal-900 sm:self-auto">
-      {{ pendingGroups().length + pendingReports().length }} pending
+      {{ (isAdmin() ? pendingGroups().length : 0) + pendingReports().length }} pending
     </span>
   </div>
 
   <div class="grid gap-5 lg:grid-cols-2">
-    <article class="moderation-panel rounded-[1.5rem] p-5">
-      <div class="mb-4 flex items-center justify-between gap-3">
-        <h3 class="text-xl font-bold text-slate-900">Group approvals</h3>
-        <span class="rounded-full tt-surface-2 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-600">
-          {{ pendingGroups().length }} waiting
-        </span>
-      </div>
-
-      @for (group of pendingGroups(); track group.id) {
-        <div class="queue-card rounded-3xl p-4">
-          <div class="flex items-start justify-between gap-4">
-            <div>
-              <h4 class="text-lg font-bold text-slate-900">{{ group.name }}</h4>
-              <p class="mt-1 text-sm text-slate-500">
-                {{ group.city || 'Remote/unspecified' }} @if (group.countryCode) { <span>, {{ group.countryCode }}</span> }
-              </p>
-            </div>
-            <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-amber-800">
-              {{ group.moderationStatus }}
-            </span>
-          </div>
-
-          <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{{ group.description }}</p>
-          <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-            Owner: {{ group.owner?.displayName || 'Unknown' }}
-          </p>
-
-          <textarea
-            [(ngModel)]="rejectionReason"
-            class="textarea mt-4 min-h-20 w-full rounded-3xl tt-surface-2"
-            placeholder="Optional rejection reason"
-          ></textarea>
-
-          <div class="mt-4 flex flex-wrap justify-end gap-3">
-            <button type="button" class="btn civic-button-secondary rounded-full" (click)="rejectGroup(group)">Reject</button>
-            <button type="button" class="btn civic-button rounded-full" (click)="approveGroup(group)">Approve</button>
-          </div>
+    @if (isAdmin()) {
+      <article class="moderation-panel rounded-[1.5rem] p-5">
+        <div class="mb-4 flex items-center justify-between gap-3">
+          <h3 class="text-xl font-bold text-slate-900">Group approvals</h3>
+          <span class="rounded-full tt-surface-2 px-3 py-1 text-xs font-bold uppercase tracking-[0.16em] text-slate-600">
+            {{ pendingGroups().length }} waiting
+          </span>
         </div>
-      } @empty {
-        <p class="rounded-3xl tt-surface-2 p-5 text-slate-600">No groups waiting for approval.</p>
-      }
-    </article>
+
+        @for (group of pendingGroups(); track group.id) {
+          <div class="queue-card rounded-3xl p-4">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h4 class="text-lg font-bold text-slate-900">{{ group.name }}</h4>
+                <p class="mt-1 text-sm text-slate-500">
+                  {{ group.city || 'Remote/unspecified' }} @if (group.countryCode) { <span>, {{ group.countryCode }}</span> }
+                </p>
+              </div>
+              <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-bold uppercase tracking-[0.14em] text-amber-800">
+                {{ group.moderationStatus }}
+              </span>
+            </div>
+
+            <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate-600">{{ group.description }}</p>
+            <p class="mt-3 text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Owner: {{ group.owner?.displayName || 'Unknown' }}
+            </p>
+
+            <textarea
+              [(ngModel)]="rejectionReason"
+              class="textarea mt-4 min-h-20 w-full rounded-3xl tt-surface-2"
+              placeholder="Optional rejection reason"
+            ></textarea>
+
+            <div class="mt-4 flex flex-wrap justify-end gap-3">
+              <button type="button" class="btn civic-button-secondary rounded-full" (click)="rejectGroup(group)">Reject</button>
+              <button type="button" class="btn civic-button rounded-full" (click)="approveGroup(group)">Approve</button>
+            </div>
+          </div>
+        } @empty {
+          <p class="rounded-3xl tt-surface-2 p-5 text-slate-600">No groups waiting for approval.</p>
+        }
+      </article>
+    }
 
     <article class="moderation-panel rounded-[1.5rem] p-5">
       <div class="mb-4 flex items-center justify-between gap-3">
@@ -88,15 +96,14 @@
             Reporter: {{ report.reporter?.displayName || 'Unknown' }}
           </p>
 
-          <textarea
-            [(ngModel)]="reportNotes"
-            class="textarea mt-4 min-h-20 w-full rounded-3xl tt-surface-2"
-            placeholder="Moderator notes"
-          ></textarea>
-
           <div class="mt-4 flex flex-wrap justify-end gap-3">
+            @if (isTaskReport(report)) {
+              <a class="btn rounded-full" [routerLink]="['/tasks', report.targetIntId]">View task</a>
+              <button type="button" class="btn bg-rose-600 text-white hover:bg-rose-700 rounded-full" (click)="cancelReportedTask(report)">
+                Cancel task
+              </button>
+            }
             <button type="button" class="btn civic-button-secondary rounded-full" (click)="dismissReport(report)">Dismiss</button>
-            <button type="button" class="btn civic-button rounded-full" (click)="markActioned(report)">Mark actioned</button>
           </div>
         </div>
       } @empty {
@@ -105,3 +112,4 @@
     </article>
   </div>
 </section>
+

@@ -1,12 +1,13 @@
 <section class="admin-page mx-auto flex max-w-6xl flex-col gap-8 px-4 py-10">
   <header class="civic-card rounded-[2rem] px-8 py-7">
     <p class="civic-kicker text-sm uppercase tracking-[0.28em] text-teal-800">Platform care</p>
-    <h1 class="civic-display mt-2 text-4xl font-semibold text-slate-900">Admin area</h1>
+    <h1 class="civic-display mt-2 text-4xl font-semibold text-slate-900">Platform care</h1>
     <p class="mt-3 max-w-2xl text-slate-600">
-      Manage trust, safety, roles, group approvals, and reports for the time-banking community.
+      Review community reports, keep tasks safe, and manage platform administration.
     </p>
   </header>
 
   <app-moderation-queue />
-  <app-user-management />
+  <app-user-management *appHasRole="['Admin']" />
 </section>
+

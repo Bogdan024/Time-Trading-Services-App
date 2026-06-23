@@ -18,13 +18,18 @@
           }
         </select>
 
-        <input class="input w-full rounded-2xl" formControlName="note" maxlength="250" placeholder="Optional note" />
+        <div>
+          <input class="input w-full rounded-2xl" formControlName="note" maxlength="250" placeholder="Optional note" />
+          @if (form.controls.note.hasError('maxlength') && form.controls.note.touched) {
+            <p class="mt-1 text-xs text-error">Notes must be 250 characters or less.</p>
+          }
+        </div>
 
         <button
           type="submit"
           class="btn btn-sm rounded-full"
           [class.w-full]="layout() === 'compact'"
-          [disabled]="!form.value.serviceCategoryId"
+          [disabled]="!form.value.serviceCategoryId || form.invalid"
         >
           {{ addButtonText() }}
         </button>

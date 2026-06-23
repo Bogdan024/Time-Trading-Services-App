@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace API.Controllers;
 
 [Authorize]
-public class ReviewsController(IReviewRepository reviewRepository) : BaseApiController
+public class ReviewsController(IReviewRepository reviewRepository, INotificationService notificationService) : BaseApiController
 {
     [HttpPost("tasks/{taskId:int}")]
     public async Task<ActionResult<MemberReviewDto>> CreateReview(int taskId, CreateReviewDto createReviewDto)
@@ -51,11 +51,19 @@ public class ReviewsController(IReviewRepository reviewRepository) : BaseApiCont
 
         reviewRepository.AddReview(review);
 
+        var reviewNotification = notificationService.Create(
+            reviewedMemberId!,
+            NotificationType.ReviewReceived,
+            "New review received",
+            $"You received a {createReviewDto.Rating}-star review for {task.Title}.");
+
         if (!await reviewRepository.SaveAllAsync()) return BadRequest("Failed to add review");
 
         var createdReview = await reviewRepository.GetReviewByIdAsync(review.Id);
 
         if (createdReview is null) return BadRequest("Failed to load created review");
+
+        await notificationService.SendAsync(reviewNotification);
 
         return Ok(createdReview.ToDto());
     }

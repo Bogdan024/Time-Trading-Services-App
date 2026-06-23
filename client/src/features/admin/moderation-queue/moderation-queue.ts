@@ -1,23 +1,29 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin-service';
+import { AccountService } from '../../../core/services/account-service';
 import { ToastService } from '../../../core/services/toast-service';
 import { PendingGroup } from '../../../types/group';
 import { ModerationReport } from '../../../types/moderation';
 
 @Component({
   selector: 'app-moderation-queue',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './moderation-queue.html',
   styleUrl: './moderation-queue.css',
 })
 export class ModerationQueue implements OnInit {
   private adminService = inject(AdminService);
+  private accountService = inject(AccountService);
   private toast = inject(ToastService);
   protected readonly pendingGroups = signal<PendingGroup[]>([]);
   protected readonly pendingReports = signal<ModerationReport[]>([]);
   protected rejectionReason = '';
-  protected reportNotes = '';
+
+  protected isAdmin() {
+    return this.accountService.hasRole(['Admin']);
+  }
 
   ngOnInit() {
     this.loadQueue();
@@ -45,18 +51,36 @@ export class ModerationQueue implements OnInit {
   }
 
   dismissReport(report: ModerationReport) {
-    this.resolveReport(report, 'dismiss');
+    this.adminService.dismissReport(report.id).subscribe({
+      next: () => {
+        this.removeReport(report.id);
+        this.toast.success('Report dismissed');
+      },
+      error: (error) => this.toast.error(error.error ?? 'Failed to dismiss report'),
+    });
   }
 
-  markActioned(report: ModerationReport) {
-    this.resolveReport(report, 'action');
+  cancelReportedTask(report: ModerationReport) {
+    this.adminService.cancelReportedTask(report.id).subscribe({
+      next: () => {
+        this.removeReport(report.id);
+        this.toast.success('Reported task cancelled');
+      },
+      error: (error) => this.toast.error(error.error ?? 'Failed to cancel reported task'),
+    });
+  }
+
+  protected isTaskReport(report: ModerationReport) {
+    return report.targetType === 'Task' && !!report.targetIntId;
   }
 
   private loadQueue() {
-    this.adminService.getPendingGroups().subscribe({
-      next: (groups) => this.pendingGroups.set(groups),
-      error: (error) => this.toast.error(error.error ?? 'Failed to load pending groups'),
-    });
+    if (this.isAdmin()) {
+      this.adminService.getPendingGroups().subscribe({
+        next: (groups) => this.pendingGroups.set(groups),
+        error: (error) => this.toast.error(error.error ?? 'Failed to load pending groups'),
+      });
+    }
 
     this.adminService.getPendingReports().subscribe({
       next: (reports) => this.pendingReports.set(reports),
@@ -64,18 +88,7 @@ export class ModerationQueue implements OnInit {
     });
   }
 
-  private resolveReport(report: ModerationReport, action: 'dismiss' | 'action') {
-    const request = action === 'dismiss'
-      ? this.adminService.dismissReport(report.id, this.reportNotes)
-      : this.adminService.actionReport(report.id, this.reportNotes);
-
-    request.subscribe({
-      next: () => {
-        this.pendingReports.update((reports) => reports.filter((x) => x.id !== report.id));
-        this.reportNotes = '';
-        this.toast.success(action === 'dismiss' ? 'Report dismissed' : 'Report marked actioned');
-      },
-      error: (error) => this.toast.error(error.error ?? 'Failed to resolve report'),
-    });
+  private removeReport(reportId: number) {
+    this.pendingReports.update((reports) => reports.filter((x) => x.id !== reportId));
   }
 }
