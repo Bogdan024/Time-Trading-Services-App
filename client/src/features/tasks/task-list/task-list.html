@@ -1,8 +1,8 @@
-<section class="mx-auto max-w-[1180px] px-6 py-9">
+<section class="mx-auto max-w-1180px px-6 py-9">
   <div class="mb-7 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
     <div>
       <p class="tt-eyebrow">Open exchanges</p>
-      <h1 class="civic-display mt-2 text-4xl font-semibold leading-tight text-[var(--hearth-ink)] md:text-5xl">
+      <h1 class="civic-display mt-2 text-4xl font-semibold leading-tight text-[--hearth-ink] md:text-5xl">
         Find a task to help with
       </h1>
       <p class="mt-2 max-w-xl text-hearth-muted">
@@ -22,7 +22,7 @@
 
   @if (tasks(); as result) {
     <div class="mt-7 mb-4 text-sm text-hearth-muted">
-      <b class="text-base text-[var(--hearth-ink)]">{{ result.metadata.totalCount }}</b>
+      <b class="text-base text-[--hearth-ink]">{{ result.metadata.totalCount }}</b>
       open task{{ result.metadata.totalCount === 1 ? '' : 's' }} in the community
     </div>
 
@@ -38,7 +38,7 @@
           </div>
 
           <div>
-            <h2 class="civic-display text-xl font-semibold leading-snug text-[var(--hearth-ink)]">{{ task.title }}</h2>
+            <h2 class="civic-display text-xl font-semibold leading-snug text-[--hearth-ink]">{{ task.title }}</h2>
             <p class="mt-2 line-clamp-2 text-sm text-hearth-muted">{{ task.description }}</p>
           </div>
 
@@ -53,17 +53,17 @@
             <span>· Posted {{ task.createdAtUtc | timeAgo }}</span>
           </div>
 
-          <div class="mt-auto flex items-center justify-between gap-3 border-t border-[var(--hearth-line)] pt-4">
+          <div class="mt-auto flex items-center justify-between gap-3 border-t border-[--hearth-line] pt-4">
             <a [routerLink]="['/members', task.postedByMember.id]" class="flex items-center gap-2">
               <span class="tt-avatar size-8 text-xs">{{ task.postedByMember.displayName.charAt(0) }}</span>
-              <span class="text-sm font-semibold text-[var(--hearth-ink)]">{{ task.postedByMember.displayName }}</span>
+              <span class="text-sm font-semibold text-[--hearth-ink]">{{ task.postedByMember.displayName }}</span>
             </a>
             <a [routerLink]="['/tasks', task.id]" [queryParams]="{ from: 'tasks' }" class="btn btn-sm btn-primary rounded-full">View</a>
           </div>
         </article>
       } @empty {
         <div class="civic-card col-span-full rounded-[1.1rem] border-dashed p-12 text-center">
-          <p class="civic-display text-xl font-semibold text-[var(--hearth-ink)]">No tasks match those filters</p>
+          <p class="civic-display text-xl font-semibold text-[--hearth-ink]">No tasks match those filters</p>
           <p class="mt-1 text-hearth-muted">Try widening your search or clearing a filter.</p>
         </div>
       }
